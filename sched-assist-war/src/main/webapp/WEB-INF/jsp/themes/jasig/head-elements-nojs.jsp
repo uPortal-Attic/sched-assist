@@ -20,7 +20,7 @@
 --%>
 
 <%@ taglib prefix="rs" uri="http://www.jasig.org/resource-server" %>
-<%-- this file should contain solely the stylesheet, meta tags, and javascript elements needed in the head --%>
+<%-- this file should contain solely the stylesheet and meta tags needed in the head (javascript excluded as this is displayed on noscript pages) --%>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <rs:resourceURL var="mainStyle" value="/themes/jasig/css/main_one_column.css"/>
 <link rel="stylesheet" href="${mainStyle}" type="text/css" media="all" />
