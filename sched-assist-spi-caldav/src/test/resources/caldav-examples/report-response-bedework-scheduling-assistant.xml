@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+
+<DAV:multistatus xmlns:DAV="DAV:"
+              xmlns="urn:ietf:params:xml:ns:caldav"
+              xmlns:ical="http://www.w3.org/2002/12/cal/ical#">
+  <DAV:response>
+    <DAV:href>/ucaldav/user/schwag/calendar/68b9d022-7a39-41ec-97c7-0e0e7fca74a6.ics</DAV:href>
+    <DAV:propstat>
+      <DAV:prop>
+        <DAV:getetag>"20110505T173152Z-0"</DAV:getetag>
+        <calendar-data><![CDATA[BEGIN:VCALENDAR
+PRODID://Bedework.org//BedeWork V3.7//EN
+VERSION:2.0
+BEGIN:VEVENT
+ATTENDEE;CN="Schwartz, Gary";PARTSTAT=ACCEPTED;CUTYPE=INDIVIDUAL;X-UW-AVAI
+ LABLE-APPOINTMENT-ROLE=OWNER:mailto:schwag@mysite.org
+ATTENDEE;CN="Johnson, Arlen";PARTSTAT=ACCEPTED;CUTYPE=INDIVIDUAL;X-UW-AVAI
+ LABLE-APPOINTMENT-ROLE=VISITOR:mailto:johnsa@mysite.org
+CLASS:PRIVATE
+CREATED:20110505T173152Z
+DESCRIPTION:need help picking classes
+DTEND:20110505T183100Z
+DTSTAMP:20110505T173152Z
+DTSTART:20110505T173100Z
+LAST-MODIFIED:20110505T173152Z
+LOCATION;X-BEDEWORK-UID=ff808081-2fc13737-012f-c137393d-00000005:meeting r
+ oom 1a
+ORGANIZER;CN="Schwartz, Gary":mailto:schwag@mysite.org
+STATUS:CONFIRMED
+SUMMARY:test appointment with Johnson\, Arlen
+UID:68b9d022-7a39-41ec-97c7-0e0e7fca74a6
+X-UW-AVAILABLE-APPOINTMENT:TRUE
+X-UW-AVAILABLE-VERSION:1.2
+X-UW-AVAILABLE-VISITOR-LIMIT:1
+END:VEVENT
+END:VCALENDAR
+]]></calendar-data>
+      </DAV:prop>
+      <DAV:status>HTTP/1.1 200 ok</DAV:status>
+    </DAV:propstat>
+  </DAV:response>
+</DAV:multistatus> 

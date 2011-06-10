@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:webflow="http://www.springframework.org/schema/webflow-config"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context 
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/util 
+           http://www.springframework.org/schema/util/spring-util-2.5.xsd
+           http://www.springframework.org/schema/webflow-config
+           http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.0.xsd">
+  
+  	<context:annotation-config base-package="org.jasig.schedassist.portlet.webflow"/>
+	<context:component-scan base-package="org.jasig.schedassist.portlet.webflow"/>
+	
+  	<webflow:flow-registry id="flowRegistry" flow-builder-services="flowBuilderServices">
+    	<webflow:flow-location path="/WEB-INF/flows/main/main.xml" />
+    	<webflow:flow-location path="/WEB-INF/flows/create-appointment/create-appointment.xml" />
+    	<webflow:flow-location path="/WEB-INF/flows/cancel-appointment/cancel-appointment.xml" />
+	</webflow:flow-registry>
+  	<webflow:flow-executor id="flowExecutor" flow-registry="flowRegistry" />
+  	<webflow:flow-builder-services id="flowBuilderServices" view-factory-creator="mvcViewFactoryCreator"/>
+  	
+  	<bean id="mvcViewFactoryCreator" class="org.springframework.webflow.mvc.builder.MvcViewFactoryCreator">
+    	<property name="viewResolvers">
+    		<list>
+    			<ref bean="flowViewResolver"/>
+    			<ref bean="xmlViewResolver"/>
+    			<ref bean="jspViewResolver"/>
+    		</list>
+    	</property>
+	</bean>
+  	
+  	<bean id="flowHandlerAdapter" class="org.springframework.webflow.mvc.portlet.FlowHandlerAdapter">
+    	<property name="flowExecutor" ref="flowExecutor"/>
+	</bean>
+	
+	
+	<bean id="authenticationRequiredInterceptor" class="org.jasig.schedassist.portlet.web.AuthenticationRequiredHandlerInterceptorImpl"/>
+	
+	<bean id="portletModeHandlerMapping" class="org.springframework.web.portlet.handler.PortletModeHandlerMapping">
+		<property name="portletModeMap">
+			<map>
+				<entry key="view">
+					<bean class="org.jasig.schedassist.portlet.webflow.MainFlowHandler" />
+				</entry>
+			</map>
+		</property>
+		<property name="interceptors">
+			<list>
+				<bean class="org.jasig.schedassist.portlet.spring.MinimizedStateHandlerInterceptor"/>
+				<ref bean="authenticationRequiredInterceptor"/>
+			</list>
+		</property>
+	</bean>
+
+	
+	<bean id="xmlViewResolver" class="org.springframework.web.servlet.view.XmlViewResolver"
+            p:order="0" 
+            p:location="/WEB-INF/views.xml"/>
+
+    <bean id="jspViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver"   
+    		p:order="1" 
+    		p:cache="true"
+        	p:viewClass="org.springframework.web.servlet.view.JstlView"
+       	 	p:prefix="/WEB-INF/jsp/" p:suffix=".jsp" />
+	<bean id="flowViewResolver" class="org.jasig.schedassist.portlet.webflow.FlowViewResolverDelegatingViewResolver"/>
+	
+	<bean id="exceptionResolver" class="org.springframework.web.portlet.handler.SimpleMappingExceptionResolver">
+		<property name="defaultErrorView"><value>service-unavailable</value></property>
+		<property name="exceptionMappings">
+		<value>
+		java.lang.Exception=service-unavailable
+		</value>
+		</property>
+	</bean>
+
+	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="alwaysUseMessageFormat" value="true" />
+        <property name="cacheSeconds" value="60" />
+        <property name="useCodeAsDefaultMessage" value="true" />
+        <property name="basenames">
+            <list>
+                <value>classpath:/i18n/Messages</value>
+            </list>
+        </property>                                     
+    </bean>
+</beans>

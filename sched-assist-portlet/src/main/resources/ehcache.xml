@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://ehcache.svn.sourceforge.net/viewvc/*checkout*/ehcache/branches/ehcache-1.4.0/core/src/main/config/ehcache.xsd?revision=579">
+
+	<!--
+		| Please see
+		http://ehcache.sourceforge.net/documentation/configuration.html for
+		detailed information on | how to configure caches in this file +
+	-->
+	<!-- Location of persistent caches on disk -->
+	<diskStore path="java.io.tmpdir/WiscCalAvailableCaches" />
+
+	<defaultCache eternal="false" maxElementsInMemory="1000"
+		overflowToDisk="false" diskPersistent="false" timeToIdleSeconds="0"
+		timeToLiveSeconds="600" memoryStoreEvictionPolicy="LRU" />
+
+	<!--
+		timeToIdle = idle setting not used, timeToLive set to 1 minute
+	-->
+	<cache name="RelationshipsForVisitorCache" eternal="false"
+		maxElementsInMemory="1000" overflowToDisk="false" diskPersistent="false"
+		timeToIdleSeconds="0" timeToLiveSeconds="60"
+		memoryStoreEvictionPolicy="LRU" />
+
+</ehcache>

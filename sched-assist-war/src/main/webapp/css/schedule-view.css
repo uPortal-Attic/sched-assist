@@ -1,0 +1,189 @@
+/**
+ * Licensed to Jasig under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work
+ * for additional information regarding copyright ownership.
+ * Jasig licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a
+ * copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+#schedulechangestatus {
+	margin-top: 2px;
+	margin-bottom: 4px;
+}
+#schedulecaption {
+	font-weight: bold;
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 2px;
+}
+#clearWeek	{
+	padding-right: 18px;
+	background: transparent url(/scheduling-assistant/rs/famfamfam/silk/1.3/cross.png) no-repeat center right;
+}
+#return	{
+	padding-right: 18px;
+	background: transparent url(/scheduling-assistant/rs/famfamfam/silk/1.3/date_go.png) no-repeat center right;
+}
+#preview {
+	padding-right: 18px;
+	background: transparent url(/scheduling-assistant/rs/famfamfam/silk/1.3/calendar.png) no-repeat center right;
+}
+
+#currentschedule {
+	height: 42.5em;
+	max-height: 96em;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding: 0px;
+  	overflow: auto;
+  	position: relative;
+  	background-position: fixed;
+}
+
+li {
+	margin: 0px;
+	padding: 0px 0px 3px 0px; 
+}
+.dateheader {
+	margin: 0px;
+	padding: 0px;
+}
+.timeheadercolumn {
+	float: left;
+	width: 5.5em;
+	margin-right: 1px;
+	padding-left: 0px;
+	margin-top: 0px;
+	padding-top: 0px;
+	display: inline;
+}
+.timeheadercolumn ul {
+	padding: 0px;
+	margin: 0px 0px 1px 0px;
+}
+.timeheadercolumn ul li	{
+	height: 1.25em;
+	padding-bottom: 1px;
+	font-size: 100%;
+	list-style: none;
+	border-top: 1px solid #A2ADBC;
+	border-right: 1px solid #A2ADBC;
+	border-bottom: 1px solid #A2ADBC;
+	border-left: 1px solid #A2ADBC;
+	text-align: center;
+	list-style: none;
+	font-weight: bold;
+	background: #F3F3F3;
+}
+.dateheadercolumn {
+	float: left;
+	width: 8.5em;
+	margin-right: 1px;
+	padding-left: 0px;
+	margin-top: 0px;
+	padding-top: 0px;
+	display: inline;
+}
+.dateheadercolumn ul {
+	padding: 0px;
+	margin: 0px 0px 1px 0px;
+}
+.dateheadercolumn ul li	{
+	height: 1.25em;
+	padding-bottom: 1px;
+	font-size: 100%;
+	list-style: none;
+	border-top: 1px solid #A2ADBC;
+	border-right: 1px solid #A2ADBC;
+	border-bottom: 1px solid #A2ADBC;
+	border-left: 1px solid #A2ADBC;
+	text-align: center;
+	list-style: none;
+	font-weight: bold;
+	background: #F3F3F3;
+}
+.dateheadercolumnclear	{
+	clear: both;
+}
+.timecolumn {
+	float: left;
+	width: 5.5em;
+	min-width: 5.5em;
+	height: 96em;
+	max-height: 96em;
+	margin: 0px 1px 0px 0px;
+	padding: 0px;
+	display: inline;
+}
+.timecolumn ul {
+	padding: 0px;
+	margin: 0px;
+	border-top: 1px solid #A2ADBC;
+}
+.timecolumn ul li {
+	background: #F3F3F3;	
+	height: 1em;
+	font-size: 100%;
+	list-style: none;
+	border-right: 1px solid #A2ADBC;
+	border-bottom: 1px solid #A2ADBC;
+	border-left: 1px solid #A2ADBC;
+	border-top: none;
+}
+.timecell {
+	text-align: center;
+}
+
+.weekday {
+	float: left;
+	width: 8.5em;
+	min-width: 8.5em;
+	height: 96em;
+	max-height: 96em;
+	margin: 0px 1px 0px 0px;
+	padding: 0px;
+	display: inline;
+}
+.weekday ul {
+	padding: 0px;
+	margin: 0px;
+	border-top: 1px solid #A2ADBC;
+}
+.weekday ul li	{
+	height: 1em;
+	font-size: 100%;
+	list-style: none;
+	border-right: 1px solid #A2ADBC;
+	border-bottom: 1px solid #A2ADBC;
+	border-left: 1px solid #A2ADBC;
+	border-top: none;
+}
+
+.weekday .ui-selecting { background: #FECA40; }
+.weekday .ui-selected { background: #F39814; }
+
+.storedblock {
+	background: #4761BA;
+}
+.storedblock img {
+	border: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+.warnlink {
+	padding-right: 18px;
+	background: transparent url(/scheduling-assistant/rs/famfamfam/silk/1.3/error.png) no-repeat center right;
+}

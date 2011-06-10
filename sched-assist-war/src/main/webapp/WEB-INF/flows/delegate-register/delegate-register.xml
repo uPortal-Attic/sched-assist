@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+<flow xmlns="http://www.springframework.org/schema/webflow"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow
+                          http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+	
+	<on-start>
+		<set name="flowScope.registration" value="new org.jasig.schedassist.web.register.Registration()"/>
+		<set name="flowScope.delegateUsername" value="delegateRegistrationHelper.currentDelegateUsername()"/>
+		<set name="flowScope.accountLocation" value="delegateRegistrationHelper.currentDelegateLocation()"/>
+	</on-start>
+	
+	<decision-state id="testEmailValidity">
+		<on-entry>
+			<evaluate expression="delegateRegistrationHelper.currentDelegateHasInvalidEmailAddress()" result="flowScope.invalidEmailAddress"/>
+		</on-entry>
+		<if test="invalidEmailAddress" then="registrationBlocked" else="setPreferences"/>
+	</decision-state>
+	
+	<view-state id="setPreferences" model="registration">
+        <transition on="submit" to="setSchedule" />
+    </view-state>
+
+	<view-state id="setSchedule" model="registration">
+        <transition on="submit" to="confirm" />
+        <transition on="skipSchedule" to="confirm" validate="false"/>
+    </view-state>
+    
+	<view-state id="confirm" model="registration">
+        <transition on="confirm" to="registrationConfirmed">
+        	<evaluate expression="delegateRegistrationHelper.executeDelegateRegistration(registration)"></evaluate>
+        </transition>
+        <transition on="alterPreferences" to="setPreferences" />
+        <transition on="alterSchedule" to="setSchedule" />
+        <transition on="cancel" to="registrationCancelled" />
+    </view-state>
+	
+	<end-state id="registrationBlocked" view="registration-blocked.jsp"/>
+	<end-state id="registrationConfirmed" view="registration-success.jsp"/>
+    <end-state id="registrationCancelled" view="externalRedirect:contextRelative:/delegate_switch_exit"/>
+	
+</flow>

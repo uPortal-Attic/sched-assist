@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>  
+				<value>classpath:/scheduling-assistant.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="securementInterceptor" class="org.springframework.ws.soap.security.wss4j.Wss4jSecurityInterceptor">
+		<property name="secureRequest" value="true" />
+		<property name="secureResponse" value="false" />
+		<property name="validateRequest" value="false" />
+		<property name="validateResponse" value="false" />
+		<property name="securementActions" value="UsernameToken" />
+		<property name="securementPasswordType" value="PasswordText" />
+		<property name="securementUsername" value="${ws.username}" />
+		<property name="securementPassword" value="${ws.password}" />
+	</bean>
+	
+	<bean id="marshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+        <property name="contextPaths">
+            <list>
+                <value>org.jasig.schedassist.messaging</value>
+            </list>
+        </property>
+    </bean>
+    
+	<bean id="portletWebServiceTemplate" class="org.springframework.ws.client.core.WebServiceTemplate">
+		<property name="marshaller" ref="marshaller" />
+		<property name="unmarshaller" ref="marshaller" />
+		<property name="messageSender">
+			<bean class="org.springframework.ws.transport.http.CommonsHttpMessageSender">
+				<property name="connectionTimeout" value="${portlet.httpclient.connectTimeout}" />
+				<property name="readTimeout" value="${portlet.httpclient.readTimeout}" />
+				<property name="maxTotalConnections" value="${portlet.httpclient.maxConnections}" />
+				<property name="maxConnectionsPerHost">
+					<props>
+						<prop key="*">${portlet.httpclient.maxConnections}</prop>
+					</props>
+				</property>
+			</bean>
+        </property>
+        <property name="destinationProvider">
+            <bean class="org.jasig.schedassist.portlet.spring.FailSafeWsdl11DestinationProvider">
+                <property name="wsdl" value="${wsdl.address}" />
+            </bean>
+        </property>
+        <property name="interceptors">
+            <ref bean="securementInterceptor"/>
+        </property>
+    </bean>
+	
+	<bean id="portletAvailableService" class="org.jasig.schedassist.portlet.PortletSchedulingAssistantServiceImpl">
+		<property name="webServiceTemplate" ref="portletWebServiceTemplate"/>
+		<qualifier value="portlet"/>
+	</bean>
+	
+	<!-- a separate webServiceTemplate is provided to the ajax controller to allow for separate class of service -->
+	<bean id="ajaxWebServiceTemplate" class="org.springframework.ws.client.core.WebServiceTemplate">
+		<property name="marshaller" ref="marshaller" />
+		<property name="unmarshaller" ref="marshaller" />
+		<property name="messageSender">
+			<bean class="org.springframework.ws.transport.http.CommonsHttpMessageSender">
+				<property name="connectionTimeout" value="${ajax.httpclient.connectTimeout}" />
+				<property name="readTimeout" value="${ajax.httpclient.readTimeout}" />
+				<property name="maxTotalConnections" value="${ajax.httpclient.maxConnections}" />
+				<property name="maxConnectionsPerHost">
+					<props>
+						<prop key="*">${ajax.httpclient.maxConnections}</prop>
+					</props>
+				</property>
+			</bean>
+        </property>
+        <property name="destinationProvider">
+            <bean class="org.jasig.schedassist.portlet.spring.FailSafeWsdl11DestinationProvider">
+                <property name="wsdl" value="${wsdl.address}" />
+            </bean>
+        </property>
+        <property name="interceptors">
+            <ref bean="securementInterceptor"/>
+        </property>
+    </bean>
+	<bean id="ajaxAvailableService" class="org.jasig.schedassist.portlet.PortletSchedulingAssistantServiceImpl">
+		<property name="webServiceTemplate" ref="ajaxWebServiceTemplate"/>
+		<qualifier value="ajax"/>
+	</bean>
+
+	<bean id="availableWebBaseUrl" class="java.lang.String">
+		<constructor-arg><value>${schedassist.web.baseAddress}</value></constructor-arg>
+	</bean>
+    
+</beans>

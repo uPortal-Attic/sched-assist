@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:security="http://www.springframework.org/schema/security"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+  		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+
+	<!-- 
+     |	All beans in this file are intentionally commented out to prevent them
+	 |  from automatically loading.
+	 |  This example shows how to configure Spring Security for use with Pubcookie.
+	 +-->
+	<!-- 
+	<security:http entry-point-ref="authenticationFilterEntryPoint" use-expressions="true" >
+		<security:intercept-url pattern="/register.html" access="hasRole('ROLE_REGISTER')" />
+		<security:intercept-url pattern="/owner/**" access="hasRole('ROLE_OWNER')" />
+
+		<security:intercept-url pattern="/delegate-login.html" access="hasRole('ROLE_DELEGATE_LOGIN')" />
+		<security:intercept-url pattern="/delegate-search.html" access="hasRole('ROLE_DELEGATE_LOGIN')" />
+		<security:intercept-url pattern="/delegate-switch.html" access="hasRole('ROLE_DELEGATE_LOGIN')" />
+		<security:intercept-url pattern="/delegate-register.html" access="hasRole('ROLE_DELEGATE_REGISTER')"  />
+		<security:intercept-url pattern="/delegate/**" access="hasRole('ROLE_DELEGATE_OWNER')" />
+
+		<security:intercept-url pattern="/visitor.html" access="hasRole('ROLE_VISITOR')" />
+		<security:intercept-url pattern="/schedule/**" access="hasRole('ROLE_VISITOR')" />
+		<security:intercept-url pattern="/admin/**" access="hasRole('ROLE_AVAILABLE_ADMINISTRATOR')" />
+		<security:logout invalidate-session="true" logout-url="/logout.html"
+			logout-success-url="/netid_logout" />
+		
+		<security:custom-filter ref="pubcookieFilter" position="PRE_AUTH_FILTER" />
+		<security:custom-filter ref="switchUserProcessingFilter" position="SWITCH_USER_FILTER" />
+		<security:anonymous enabled="false"/>
+		<security:access-denied-handler ref="accessDeniedHandler" />
+	</security:http>
+	
+	<security:authentication-manager alias="authenticationManager">
+    	<security:authentication-provider user-service-ref="userAccountDetailsService"/>
+  	</security:authentication-manager>
+
+	<bean id="accessDeniedHandler" class="org.springframework.security.web.access.AccessDeniedHandlerImpl">
+		<property name="errorPage" value="/authorization-failed.jsp"/>
+	</bean>
+	
+	<bean id="pubcookieFilter" class="org.jasig.schedassist.web.security.RemoteUserAuthenticationProcessingFilterImpl">
+		<property name="authenticationManager" ref="authenticationManager"/>
+		<property name="authenticationFailureHandler">
+			<bean class="org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler">
+				<property name="defaultFailureUrl" value="/authenticationFailed.html"/>
+				<property name="exceptionMappings">
+					<map>
+						<entry key="org.springframework.security.authentication.BadCredentialsException" value="/security_check"/>
+						<entry key="org.springframework.security.authentication.DisabledException" value="/authenticationFailed.html"/>
+						<entry key="org.springframework.security.authentication.AuthenticationServiceException" value="/serviceUnavailable.jsp"></entry>	
+					</map>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<bean id="authenticationFilterEntryPoint"
+		class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+		<property name="loginFormUrl">
+			<value>/security_check</value>
+		</property>
+	</bean>
+
+	<bean id="switchUserProcessingFilter" class="org.springframework.security.web.authentication.switchuser.SwitchUserFilter">
+		<property name="userDetailsService" ref="delegateAccountDetailsService" />
+		<property name="switchUserUrl" value="/delegate_switch_user" />
+		<property name="exitUserUrl" value="/delegate_switch_exit" />
+		<property name="successHandler">
+			<bean class="org.jasig.schedassist.web.security.DelegateAuthenticationSuccessHandler">
+				<property name="delegateOwnerTarget" value="/delegate/schedule.html"/>
+				<property name="delegateRegisterTarget" value="/delegate-register.html"/>
+				<property name="logoutTarget" value="/delegateLogout.html"/>
+			</bean>
+		</property>
+		<property name="switchFailureUrl" value="/delegateLoginFailed.html"/>
+	</bean>
+
+	<bean id="userAccountDetailsService"
+		class="org.jasig.schedassist.web.security.CalendarAccountUserDetailsServiceImpl">
+		<property name="administratorListProperty" value="${administrators.list}"/>
+	</bean>
+
+	<bean id="delegateAccountDetailsService"
+		class="org.jasig.schedassist.web.security.DelegateCalendarAccountUserDetailsServiceImpl" />
+
+	<bean id="authnLoggerListener"
+		class="org.springframework.security.authentication.event.LoggerListener" />
+
+	 -->
+</beans>

@@ -1,0 +1,23 @@
+====
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+====
+
+student1@wisc.edu;One,Test Student;0000000001;9010000001;Graduate;L&S;College of Letters and Science;4.000;1092;Fall 2008-2009;87.000;PHD 922L&S;;NWD;G922L;Sociology - LS;PHD 922L&S;Sociology PHD-L&S;Sociology;advisor1@wisc.edu;One,Advisor;1000000001;9020000001;ADVR;Academic
+student2@wisc.edu;Two,Test Student;0000000002;9010000002;Senior;NUR;School of Nursing;3.556;1094;Spring 2008-2009;128.000;NUR 712;;NWD;NUR;Nursing Undergraduate;NUR 712;Nursing NUR;Nursing;advisor2@wisc.edu;Two,Advisor;1000000002;9020000002;ADVR;Academic
+student3@wisc.edu;Three,Test Student;0000000003;9010000003;Junior;L&S;College of Letters and Science;2.446;1094;Spring 2008-2009;74.000;BA  805;;NWD;BA;General Course - BA Degree;BA  805;Political Science BA;Political Science;advisor3@wisc.edu;Three,Advisor;1000000003;9020000003;ADVR;Academic
+student3@wisc.edu;Three,Test Student;0000000003;9010000003;Junior;L&S;College of Letters and Science;2.446;1094;Spring 2008-2009;74.000;BA  608;;NWD;BA;General Course - BA Degree;BA  608;Legal Studies BA;Legal Studies;advisor4@wisc.edu;Four,Advisor;1000000004;9020000004;ADVR;Academic

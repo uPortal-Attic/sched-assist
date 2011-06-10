@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+<flow xmlns="http://www.springframework.org/schema/webflow"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow
+                          http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+	
+	<on-start>
+		<evaluate expression="flowHelper.isCurrentVisitorEligible()" result="flowScope.eligible"></evaluate>
+		<set name="flowScope.homeUrl" value="flowHelper.getAvailableWebBaseUrl()"/>
+		<set name="flowScope.advisorUrl" value="flowHelper.getAdvisorUrl()"/>
+		<set name="flowScope.searchUrl" value="flowHelper.getProfileSearchUrl()"/>
+	</on-start>
+	
+	<decision-state id="is-eligible">
+		<if test="flowScope.eligible" then="owner-select" else="ineligible"/>
+	</decision-state>
+	
+	<view-state id="owner-select" view="owner-select.jsp">
+		<on-entry>
+			<evaluate expression="flowHelper.setNormalWindowState(externalContext)"></evaluate>
+			<set name="flowScope.relationships" value="flowHelper.getRelationshipsForCurrentVisitor()"/>
+		</on-entry>
+		<transition on="viewSchedule" to="owner-determine-view">
+			<evaluate expression="flowHelper.identifyTargetOwner(requestParameters.ownerId)" result="flowScope.owner"/>
+		</transition>
+    </view-state>
+    
+    <action-state id="owner-determine-view">
+    	<set name="flowScope.ownerNoteboardSentences" value="flowHelper.getOwnerNoteboardSentences(flowScope.owner)"/>
+    	<set name="flowScope.ownerVisitorSamePerson" value="flowHelper.isOwnerSamePersonAsCurrentVisitor(flowScope.owner)"/>
+    	<evaluate expression="flowHelper.testExceededMeetingLimit(flowScope.owner)"/>
+    	<transition on="yes" to="already-attending"/>
+    	<transition on="no" to="view-schedule"/>
+    </action-state>
+    
+    <view-state id="already-attending" view="already-attending.jsp">
+    	<on-render>
+    		<evaluate expression="flowHelper.getVisibleSchedule(flowScope.owner, requestParameters.weekStart)" result="viewScope.visibleSchedule"></evaluate>
+    	</on-render>
+        <transition on="cancel" to="cancel-appointment"/>
+        <transition on="done" to="owner-select"/>
+    </view-state>
+    
+    <view-state id="view-schedule" view="visible-schedule.jsp">
+    	<on-render>
+    		<set name="flowScope.weekStart" value="requestParameters.weekStart"/>
+    		<evaluate expression="flowHelper.getVisibleScheduleRequestConstraints(flowScope.owner, requestParameters.weekStart)" result="viewScope.requestConstraints"/>
+    		<evaluate expression="flowHelper.getVisibleSchedule(flowScope.owner, requestParameters.weekStart)" result="viewScope.visibleSchedule"/>
+    	</on-render>
+    	<transition on="refresh" to="view-schedule"/>
+    	<transition on="create" to="create-appointment"/>
+        <transition on="cancel" to="cancel-appointment"/>
+        <transition on="done" to="owner-select"/>
+    </view-state>
+	
+	<subflow-state id="create-appointment" subflow="create-appointment">
+		<input name="targetOwner" value="flowScope.owner"/>
+		<input name="targetStartDateTime" value="flowHelper.convertDateTime(requestParameters.startTime)"/>
+		<input name="currentWeekStart" value="flowScope.weekStart"/>
+		<transition on="home" to="owner-select"/>
+		<transition on="schedule-return" to="owner-determine-view"/>
+	</subflow-state>
+	
+	<subflow-state id="cancel-appointment" subflow="cancel-appointment">
+		<input name="targetOwner" value="flowScope.owner"/>
+		<input name="targetAppointmentStartTime" value="flowHelper.convertDateTime(requestParameters.startTime)"/>
+		<input name="targetAppointmentEndTime" value="flowHelper.convertDateTime(requestParameters.endTime)"/>
+		<input name="currentWeekStart" value="flowScope.weekStart"/>
+		<transition on="home" to="owner-select"/>
+		<transition on="schedule-return" to="owner-determine-view"/>
+	</subflow-state>
+	
+	<end-state id="ineligible" view="wisccal-ineligible"/>
+	<end-state id="service-unavailable" view="service-unavailable"/>
+	
+	<global-transitions>
+		<transition on-exception="org.jasig.schedassist.portlet.ServiceUnavailableException" to="service-unavailable"/>
+		<transition on-exception="org.springframework.ws.client.WebServiceIOException" to="service-unavailable"/>
+		<transition on-exception="org.springframework.ws.client.WebServiceTransformerException" to="service-unavailable"/>
+	</global-transitions>
+</flow>

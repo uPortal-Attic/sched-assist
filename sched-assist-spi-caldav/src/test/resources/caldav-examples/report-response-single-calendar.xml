@@ -1,0 +1,60 @@
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+<D:multistatus xmlns:D="DAV:"
+              xmlns:C="urn:ietf:params:xml:ns:caldav">
+     <D:response>
+       <D:href>http://cal.example.com/bernard/work/abcd2.ics</D:href>
+       <D:propstat>
+         <D:prop>
+           <D:getetag>"fffff-abcd2"</D:getetag>
+           <C:calendar-data><![CDATA[BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//CalendarKey 2.0//iCal4j 1.0//EN
+BEGIN:VEVENT
+X-ORACLE-EVENTINSTANCE-GUID:I1+1421+20000+430+572718528
+X-ORACLE-EVENT-GUID:E1+1421+20000+572718528
+X-ORACLE-EVENTTYPE:APPOINTMENT
+UID:20090223T162848Z-58d-4e20-6b7e-Oracle
+TRANSP:OPAQUE
+SUMMARY:regular 10 am meeting
+STATUS:CONFIRMED
+SEQUENCE:0
+RECURRENCE-ID:20110502T150000Z
+PRIORITY:5
+ORGANIZER;X-ORACLE-GUID=200000118219869582153896;CN=NICHOLAS BLAIR:mailto:nblair@doit.wisc.edu
+LAST-MODIFIED:20090223T162923Z
+DESCRIPTION:some details.
+DTSTART:20110502T150000Z
+DTSTAMP:20110502T181421Z
+DTEND:20110502T160000Z
+CREATED:20090223T162848Z
+X-ORACLE-CLASS:NORMAL
+CLASS:PRIVATE
+ATTENDEE;X-ORACLE-ISTIMEOK=TRUE;X-ORACLE-PERSONAL-COMMENT-ISDIRTY=FALSE;X-ORACLE-SHOWASFREE=BUSY;X-ORACLE-GUID=200000118219869582153896;CUTYPE=INDIVIDUAL;RSVP=FALSE;CN=NICHOLAS BLAIR;PARTSTAT=ACCEPTED:mailto:nblair@doit.wisc.edu
+END:VEVENT
+END:VCALENDAR
+]]></C:calendar-data>
+         </D:prop>
+         <D:status>HTTP/1.1 200 OK</D:status>
+       </D:propstat>
+     </D:response>
+   </D:multistatus>

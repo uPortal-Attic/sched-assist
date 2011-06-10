@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+<xs:schema 	xmlns="https://source.jasig.org/schemas/sched-assist" 
+			xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+			elementFormDefault="qualified" 
+			targetNamespace="https://source.jasig.org/schemas/sched-assist">
+	
+	<xs:simpleType name="AvailableStatusType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="free"/>
+			<xs:enumeration value="busy"/>
+			<xs:enumeration value="attending"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="AvailableBlockElement">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="startTime" type="xs:dateTime"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="endTime" type="xs:dateTime"/>
+				<xs:element maxOccurs="1" minOccurs="0" name="visitorLimit" type="xs:int"/>
+				<xs:element maxOccurs="1" minOccurs="0" name="visitorsAttending" type="xs:int"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="status" type="AvailableStatusType"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="AvailableBlockList">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="0" maxOccurs="unbounded" ref="AvailableBlockElement"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:complexType name="PreferencesElement">
+		<xs:all>
+			<xs:element name="key" type="xs:string"/>
+			<xs:element name="value" type="xs:string"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:element name="PreferencesSet">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="0" maxOccurs="unbounded" name="preferencesElement" type="PreferencesElement"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="ScheduleOwnerElement">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="id" type="xs:long"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="fullName" type="xs:string"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="netid" type="xs:string"/>
+				<xs:element ref="PreferencesSet"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="RelationshipElement">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="1" maxOccurs="1" ref="ScheduleOwnerElement"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="description" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="RelationshipList">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="0" maxOccurs="unbounded" ref="RelationshipElement"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="IsEligibleRequest">
+		<xs:complexType>
+			<xs:all>
+				<xs:element name="visitorNetid" type="xs:string"/>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="IsEligibleResponse">
+		<xs:complexType>
+			<xs:all>
+				<xs:element name="eligible" type="xs:boolean"/>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="CancelAppointmentRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="startTime" type="xs:dateTime"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="endTime" type="xs:dateTime"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="visitorNetid" type="xs:string"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="ownerId" type="xs:long"/>
+				<xs:element maxOccurs="1" minOccurs="0" name="reason" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="CancelAppointmentResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="startTime" type="xs:dateTime"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="endTime" type="xs:dateTime"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="CreateAppointmentRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="startTime" type="xs:dateTime"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="visitorNetid" type="xs:string"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="ownerId" type="xs:long"/>
+				<xs:element maxOccurs="1" minOccurs="0" name="eventDescription" type="xs:string"/>
+				<xs:element maxOccurs="1" minOccurs="0" name="selectedDuration" type="xs:int"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="CreateAppointmentResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="startTime" type="xs:dateTime"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="endTime" type="xs:dateTime"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="eventTitle" type="xs:string"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="eventLocation" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="VisibleScheduleRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="visitorNetid" type="xs:string"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="ownerId" type="xs:long"/>
+				<xs:element maxOccurs="1" minOccurs="0" name="weekStart" type="xs:int"/>	
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="VisibleScheduleResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" ref="AvailableBlockList"/> 
+				<xs:element maxOccurs="1" minOccurs="1" name="ownerMeetingDurationsPreference" type="PreferencesElement"/> 
+				<xs:element maxOccurs="1" minOccurs="1" name="meetingLimitExceeded" type="xs:boolean"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="VisitorConflictsRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="visitorNetid" type="xs:string"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="ownerId" type="xs:long"/>
+				<xs:element maxOccurs="1" minOccurs="0" name="weekStart" type="xs:int"/>	
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="VisitorConflictsResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" ref="AvailableBlockList"/> 
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="GetRelationshipsRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="visitorNetid" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="GetRelationshipsResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" ref="RelationshipList"/> 
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="GetScheduleOwnerByIdRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="id" type="xs:long"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="GetScheduleOwnerByIdResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="1" maxOccurs="1" ref="ScheduleOwnerElement"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="GetTargetAvailableBlockRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="ownerId" type="xs:long"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="startTime" type="xs:dateTime"/>
+				<xs:element maxOccurs="1" minOccurs="1" name="doubleLength" type="xs:boolean"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="GetTargetAvailableBlockResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="0" ref="AvailableBlockElement"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

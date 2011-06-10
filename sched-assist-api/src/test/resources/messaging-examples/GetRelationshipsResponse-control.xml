@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+      <ns2:GetRelationshipsResponse xmlns:ns2="https://source.jasig.org/schemas/sched-assist">
+         <ns2:RelationshipList>
+            <ns2:RelationshipElement>
+               <ns2:ScheduleOwnerElement>
+                  <ns2:id>1</ns2:id>
+                  <ns2:fullName>Schwartz, Gary</ns2:fullName>
+                  <ns2:netid>schwag</ns2:netid>
+                  <ns2:PreferencesSet>
+                     <ns2:preferencesElement>
+                        <ns2:key>owner.LOCATION</ns2:key>
+                        <ns2:value>3233 Computer Science</ns2:value>
+                     </ns2:preferencesElement>
+                     <ns2:preferencesElement>
+                        <ns2:key>owner.MEETING_LIMIT</ns2:key>
+                        <ns2:value>-1</ns2:value>
+                     </ns2:preferencesElement>
+                     <ns2:preferencesElement>
+                        <ns2:key>owner.DEFAULT_VISITOR_LIMIT</ns2:key>
+                        <ns2:value>1</ns2:value>
+                     </ns2:preferencesElement>
+                     <ns2:preferencesElement>
+                        <ns2:key>owner.DURATION</ns2:key>
+                        <ns2:value>30</ns2:value>
+                     </ns2:preferencesElement>
+                     <ns2:preferencesElement>
+                        <ns2:key>owner.VISIBLE_WINDOW</ns2:key>
+                        <ns2:value>24,3</ns2:value>
+                     </ns2:preferencesElement>
+                     <ns2:preferencesElement>
+                        <ns2:key>owner.REFLECT_SCHEDULE</ns2:key>
+                        <ns2:value>false</ns2:value>
+                     </ns2:preferencesElement>
+                     <ns2:preferencesElement>
+                        <ns2:key>owner.PREFIX</ns2:key>
+                        <ns2:value>Appointment</ns2:value>
+                     </ns2:preferencesElement>
+                     <ns2:preferencesElement>
+                        <ns2:key>owner.NOTEBOARD</ns2:key>
+                        <ns2:value>Bedework rules!</ns2:value>
+                     </ns2:preferencesElement>
+                     <ns2:preferencesElement>
+                        <ns2:key>advisor.SHARE_WITH_STUDENTS</ns2:key>
+                        <ns2:value>false</ns2:value>
+                     </ns2:preferencesElement>
+                     <ns2:preferencesElement>
+                        <ns2:key>owner.EMAIL_REMINDERS</ns2:key>
+                        <ns2:value>false,false,24</ns2:value>
+                     </ns2:preferencesElement>
+                  </ns2:PreferencesSet>
+               </ns2:ScheduleOwnerElement>
+               <ns2:description>Bedework Development Team</ns2:description>
+            </ns2:RelationshipElement>
+         </ns2:RelationshipList>
+      </ns2:GetRelationshipsResponse>
