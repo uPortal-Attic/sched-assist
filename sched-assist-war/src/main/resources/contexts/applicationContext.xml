@@ -86,12 +86,6 @@
 	<tx:annotation-driven transaction-manager="txManager" />
 	<!-- end section 1: database -->
 
-	<!-- CSV Relationship DataSource -->
-	<bean id="csvRelationshipDataSource" class="org.jasig.schedassist.impl.relationship.CSVRelationshipDataSourceImpl">
-		<property name="dataSource" ref="dataSource"/>
-		<property name="csvResource" value="${csvrelationship.source}"/>
-	</bean>
-
 	<!-- begin caching -->
     <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
     	<property name="cacheManagerName" value="SchedulingAssistantEhCacheManager"/>
