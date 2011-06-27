@@ -59,7 +59,7 @@ jQuery(document).ready(function(){
 <%@ include file="/WEB-INF/jsp/owner-navigation.jsp" %>
 <div id="content" class="main col">
 <div id="noteboard" class="info">
-<span style="font-weight: bold;"><spring:message code="a.message.from" arguments="${owner.calendarAccount.displayName}"/>:</span><br/>
+<span style="font-weight: bold;"><spring:message code="a.message.from" arguments="${owner.calendarAccount.displayName}"/></span><br/>
 <c:forEach var="noteboardSentence" items="${noteboardSentences}" varStatus="itemCount">
 <span class="noteboardtext"><c:out value="${noteboardSentence}"/></span><br/>
 </c:forEach>
