@@ -23,7 +23,9 @@
 <c:set var="n"><portlet:namespace/></c:set>
 <rs:resourceURL var="infoIcon" value="/rs/famfamfam/silk/1.3/information.png"/>
 <link rel="stylesheet" type="text/css" href="<c:url value="/css/available-common.css"/>" media="all"/>
-
+<style type="text/css">
+.reason{width:auto;}
+</style>
 <c:choose>
 <c:when test="${cancelAppointmentFormBackingObject.multipleVisitors }">
 <spring:message code="leave" var="cancelorleave"/>
@@ -73,7 +75,7 @@
 <br/>
 <c:if test="${cancelAppointmentFormBackingObject.targetBlock.visitorLimit == 1 }">
 <label for="reason"><spring:message code="reason"/>:</label><br/>
-<form:textarea rows="3" cols="40" path="reason"/>
+<form:textarea rows="3" cols="40" path="reason" cssClass="reason"/>
 </c:if>
 <br/>
 <c:choose>

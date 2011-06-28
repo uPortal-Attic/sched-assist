@@ -22,6 +22,7 @@ package org.jasig.schedassist.web.register;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.StringUtils;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.MeetingDurations;
 import org.jasig.schedassist.model.Preferences;
@@ -150,6 +151,19 @@ public class Registration implements Serializable {
 	 */
 	public String getNoteboard() {
 		return noteboard;
+	}
+	/**
+	 * Get the noteboard as an array of sentences (noteboard split on newline characters).
+	 *
+	 * @return a possibly empty, but never null noteboard as an array of sentences
+	 */
+	public String [] getNoteboardSentences() {
+		if(StringUtils.isBlank(noteboard)) {
+			return new String[]{};
+		} else {
+			String [] noteboardSentences = noteboard.split("\n");
+			return noteboardSentences;
+		}
 	}
 	/**
 	 * @param noteboard the noteboard to set

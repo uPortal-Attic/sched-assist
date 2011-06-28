@@ -37,6 +37,10 @@ padding:1em;
 <script type="text/javascript">
 $(document).ready(function(){
 	$(':submit').lockSubmit();
+	$('.noteboardtext').each(function(i,element){	
+		existing = $(element).text();
+		$(element).html(linkify(existing));
+	});
 });
 </script>
 </head>
@@ -73,9 +77,11 @@ $(document).ready(function(){
 <li><spring:message code="schedule.owner.registration.confirm.reflect"/></li>
 </c:if>
 <li><spring:message code="noteboard.confirm"/>:&nbsp;<br/>
-<pre class="noteboard">
-<c:out value="${registration.noteboard}"/>
-</pre>
+<div class="noteboard">
+<c:forEach var="noteboardSentence" items="${registration.noteboardSentences}" varStatus="itemCount">
+<span class="noteboardtext"><c:out value="${noteboardSentence}"/></span><br/>
+</c:forEach>
+</div>
 </li>
 <c:if test="${registration.scheduleSet }">
 <li><spring:message code="schedule.days.of.week"/>:&nbsp;<i><c:out value="${registration.daysOfWeekPhrase }"/></i></li>

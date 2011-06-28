@@ -131,7 +131,7 @@ $(document).ready(function(){
 
 <label for="noteboard"><strong><spring:message code="noteboard"/></strong><br/>
 <spring:message code="noteboard.help"/></label>&nbsp;<br/>
-<form:textarea path="noteboard" rows="6" cols="40" id="noteboard"/>
+<form:textarea path="noteboard" rows="6" cols="60" id="noteboard"/>
 <br/><br/>
 
 <label for="meetingLength"><strong><spring:message code="meeting.duration"/></strong><br/>(<spring:message code="in.minutes"/>):</label>&nbsp;

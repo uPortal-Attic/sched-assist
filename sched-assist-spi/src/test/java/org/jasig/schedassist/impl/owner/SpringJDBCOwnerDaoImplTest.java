@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 import org.apache.commons.io.IOUtils;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
+import org.jasig.schedassist.model.MeetingDurations;
 import org.jasig.schedassist.model.Preferences;
 import org.junit.After;
 import org.junit.Assert;
@@ -159,11 +160,21 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 		Map<Preferences, String> ownerPrefs = owner1.getPreferences();
 		Assert.assertEquals(Preferences.getDefaultPreferences(), ownerPrefs);
 		
-		IScheduleOwner updated = ownerDao.updatePreference(owner1, Preferences.LOCATION, "My new office!");
-		Assert.assertEquals("My new office!", updated.getPreference(Preferences.LOCATION));
+		owner1 = ownerDao.updatePreference(owner1, Preferences.LOCATION, "My new office!");
+		Assert.assertEquals("My new office!", owner1.getPreference(Preferences.LOCATION));
 		
 		String storedValue = ownerDao.retreivePreference(owner1, Preferences.LOCATION);
 		Assert.assertEquals("My new office!", storedValue);
+		
+		MeetingDurations maxDurations = MeetingDurations.fromKey("240,480");
+		owner1 = ownerDao.updatePreference(owner1, Preferences.DURATIONS, maxDurations.getKey());
+		
+		Assert.assertEquals(480, owner1.getPreferredMeetingDurations().getMaxLength());
+		Assert.assertEquals(240, owner1.getPreferredMeetingDurations().getMinLength());
+		
+		owner1 = ownerDao.updatePreference(owner1, Preferences.DURATIONS, Preferences.DURATIONS.getDefaultValue());
+		Assert.assertEquals(30, owner1.getPreferredMeetingDurations().getMaxLength());
+		Assert.assertEquals(30, owner1.getPreferredMeetingDurations().getMinLength());
 	}
 	
 	/**

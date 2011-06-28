@@ -78,7 +78,7 @@ public class VisibleScheduleTag extends RequestContextAwareTag {
 	}
 	/**
 	 * 
-	 * @return the path to the silk icons directory (dependeny on {@link ServletContext} of the request)
+	 * @return the path to the silk icons directory (dependency on {@link ServletContext} of the request)
 	 */
 	protected String getSilkIconPrefix(ServletContext servletContext) {
 		final String silkPrefix = servletContext.getContextPath() + "/rs/famfamfam/silk/1.3/";

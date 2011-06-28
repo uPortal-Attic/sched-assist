@@ -48,8 +48,8 @@ public class AdvancedPreferencesFormBackingObjectValidator implements Validator 
 		if(fbo.isCreatePublicProfile()) {
 			if(StringUtils.isBlank(fbo.getPublicProfileDescription())) {
 				errors.rejectValue("publicProfileDescription", "publicProfileDescription.empty", "Description field is required if creating a public profile.");
-			} else if(fbo.getPublicProfileDescription().length() > 200) {
-				errors.rejectValue("publicProfileDescription", "publicProfileDescription.length", "Description field must be 200 characters or less.");
+			} else if(fbo.getPublicProfileDescription().length() > 400) {
+				errors.rejectValue("publicProfileDescription", "publicProfileDescription.length", "Description field must be 400 characters or less.");
 			}
 		}
 	}
