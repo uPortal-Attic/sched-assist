@@ -460,7 +460,6 @@
                 <configuration>
                     <excludes>
                         <exclude>bootstrap/local-hsqldb/*.*</exclude>
-                        <exclude>oracle-csdk-loader/**/*.ini</exclude>
                         <exclude>sched-assist-war/src/main/webapp/css/jquery.autocomplete.css</exclude>
                         <exclude>sched-assist-war/src/main/webapp/css/jquery.lightbox-0.5.css</exclude>
                         <exclude>sched-assist-war/src/main/webapp/js/jquery.autocomplete.min.js</exclude>
