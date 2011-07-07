@@ -336,9 +336,11 @@ public class SpringJDBCOwnerDaoImpl implements
 				throw new ScheduleOwnerUpdateFailureException("failed to persist calendarUniqueId update for " + calendarAccount);
 			}
 		} else if (!persisted.getUsername().equals(calendarAccount.getUsername()) && persisted.getCalendarUniqueId().equals(calendarAccount.getCalendarUniqueId())) {
-			LOG.warn("PersistedScheduleOwner(calendarUniqueId=" + persisted.getCalendarUniqueId() + ") has different username than calendarAccount; persisted: " + persisted.getUsername() + ", new value: " + calendarAccount.getUsername());
+			final String oldUsername = persisted.getUsername();
+			final String newUsername = calendarAccount.getUsername();
+			LOG.warn("PersistedScheduleOwner(calendarUniqueId=" + persisted.getCalendarUniqueId() + ") has different username than calendarAccount; persisted: " + oldUsername + ", new value: " + newUsername);
 			int rows = this.simpleJdbcTemplate.update("update owners set username=? where external_unique_id=?", 
-					calendarAccount.getUsername(),
+					newUsername,
 					calendarAccount.getCalendarUniqueId());
 			persisted.setUsername(calendarAccount.getUsername());
 			if(rows == 1) {
@@ -347,6 +349,13 @@ public class SpringJDBCOwnerDaoImpl implements
 				LOG.error("failed to persist username update for " + calendarAccount + ", rows " + rows);
 				throw new ScheduleOwnerUpdateFailureException("failed to persist username update for " + calendarAccount);
 			}
+			
+			rows = this.simpleJdbcTemplate.update("update owner_adhoc_authz set owner_username=? where owner_username=?",
+		 		newUsername,
+		 		oldUsername);
+		 	if(rows > 0) {
+		 		LOG.warn("updated " + rows + " rows in owner_adhoc_authz for " + persisted);
+		    }
 		}
 		
 		return persisted;
