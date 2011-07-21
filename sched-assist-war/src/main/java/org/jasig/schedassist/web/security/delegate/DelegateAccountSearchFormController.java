@@ -50,7 +50,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 public class DelegateAccountSearchFormController {
 
 	private IDelegateCalendarAccountDao delegateCalendarAccountDao;
-	
+
 	/**
 	 * @param delegateCalendarAccountDao the delegateCalendarAccountDao to set
 	 */
@@ -78,15 +78,16 @@ public class DelegateAccountSearchFormController {
 		CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount currentAccount = currentUser.getCalendarAccount();
 		model.addAttribute("searchText", qValue);
-		List<IDelegateCalendarAccount> results = new ArrayList<IDelegateCalendarAccount>();
+		List<IDelegateCalendarAccount> matches = new ArrayList<IDelegateCalendarAccount>();
 		if(null != qValue && qValue.length() > 2) {
 			final String searchText = StringUtils.replace(qValue, " ", "*");
-			results = this.delegateCalendarAccountDao.searchForDelegates(searchText, currentAccount);
+			matches = this.delegateCalendarAccountDao.searchForDelegates(searchText, currentAccount);
 		}
+		List<IDelegateCalendarAccount> results = filterForEligible(matches);
 		model.addAttribute("results", results);
 		return "security/delegate-search-results-ac";
 	}
-	
+
 	/**
 	 * 
 	 * @param fbo
@@ -98,12 +99,29 @@ public class DelegateAccountSearchFormController {
 		CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		ICalendarAccount currentAccount = currentUser.getCalendarAccount();
 		model.addAttribute("searchText", fbo.getSearchText());
-		List<IDelegateCalendarAccount> results = new ArrayList<IDelegateCalendarAccount>();
+		List<IDelegateCalendarAccount> matches = new ArrayList<IDelegateCalendarAccount>();
 		if(null != fbo.getSearchText() && fbo.getSearchText().length() > 2) {
 			final String searchText = StringUtils.replace(fbo.getSearchText(), " ", "*");
-			results = this.delegateCalendarAccountDao.searchForDelegates(searchText, currentAccount);
+			matches = this.delegateCalendarAccountDao.searchForDelegates(searchText, currentAccount);
 		}
+		List<IDelegateCalendarAccount> results = filterForEligible(matches);
 		model.addAttribute("results", results);
 		return "security/delegate-search-results";
+	}
+
+	/**
+	 * Filter out {@link IDelegateCalendarAccount} that return false for {@link IDelegateCalendarAccount#isEligible()}.
+	 *
+	 * @param matches
+	 * @return
+	 */
+	protected List<IDelegateCalendarAccount> filterForEligible(List<IDelegateCalendarAccount> matches) {
+		List<IDelegateCalendarAccount> results = new ArrayList<IDelegateCalendarAccount>();
+		for(IDelegateCalendarAccount a: matches) {
+			if(a.isEligible()) {
+				results.add(a);
+			}
+		}
+		return results;
 	}
 }

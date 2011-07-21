@@ -230,18 +230,23 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	 */
 	@Override
 	public void processPendingReminders() {
-		final List<IReminder> pending = getPendingReminders();
-		final int size = pending.size();
-		if(size == 0) {
-			return;
+		final String propertyValue = System.getProperty("org.jasig.schedassist.runScheduledTasks", "true");
+		if(Boolean.parseBoolean(propertyValue)) {
+			final List<IReminder> pending = getPendingReminders();
+			final int size = pending.size();
+			if(size == 0) {
+				return;
+			}
+
+			LOG.info("begin processing " + size + " pending reminders");
+			for(IReminder reminder : pending) {
+				sendEmail(reminder);
+				deleteEventReminder(reminder);
+			}
+			LOG.info("completed processing " + size + " reminders");
+		} else {
+			LOG.debug("ignoring processPendingReminders as 'org.jasig.schedassist.runScheduledTasks' set to false");
 		}
-		
-		LOG.info("begin processing " + size + " pending reminders");
-		for(IReminder reminder : pending) {
-			sendEmail(reminder);
-			deleteEventReminder(reminder);
-		}
-		LOG.info("completed processing " + size + " reminders");
 	}
 	
 	/**

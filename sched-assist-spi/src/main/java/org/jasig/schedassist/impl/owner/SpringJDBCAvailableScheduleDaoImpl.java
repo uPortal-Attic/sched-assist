@@ -304,12 +304,18 @@ implements AvailableScheduleDao {
 	@Transactional
 	@Override
 	public int purgeExpiredBlocks(final Integer daysPrior) {
-		Date priorTo = DateUtils.truncate(
+        final String propertyValue = System.getProperty("org.jasig.schedassist.runScheduledTasks", "true");
+        if(Boolean.parseBoolean(propertyValue)) {
+        	Date priorTo = DateUtils.truncate(
 				DateUtils.addDays(new Date(), -daysPrior),
 				Calendar.DATE);
-		int rowCount = this.simpleJdbcTemplate.update("delete from schedules where end_time < ?", priorTo);
-		LOG.warn("purged " + rowCount + " rows from schedules table with end_time values prior to: " + priorTo);
-		return rowCount;
+        	int rowCount = this.simpleJdbcTemplate.update("delete from schedules where end_time < ?", priorTo);
+        	LOG.warn("purged " + rowCount + " rows from schedules table with end_time values prior to: " + priorTo);
+        	return rowCount;
+        } else {
+        	LOG.debug("ignoring purgeExpiredBlocks as 'org.jasig.schedassist.runScheduledTasks' set to false");
+        	return 0;
+        }
 	}
 
 	/**

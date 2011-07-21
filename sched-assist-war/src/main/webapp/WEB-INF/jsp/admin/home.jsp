@@ -39,6 +39,7 @@
 <li><a href="<c:url value="schedule-debug.html"/>"><spring:message code="visible.schedule.debug"/></a></li>
 <li><a href="<c:url value="cache-manager.html"/>"><spring:message code="cache.manager"/></a></li>
 </ul>
+<p>Value of 'org.jasig.schedassist.runScheduledTasks' for this instance: ${runScheduledTasks}</p>
 </div> <!--  content -->
 
 <%@ include file="/WEB-INF/jsp/themes/jasig/body-end.jsp" %>

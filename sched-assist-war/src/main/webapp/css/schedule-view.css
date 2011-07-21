@@ -89,7 +89,8 @@ li {
 }
 .dateheadercolumn {
 	float: left;
-	width: 8.5em;
+	min-width: 9em;
+	width: 9em;
 	margin-right: 1px;
 	padding-left: 0px;
 	margin-top: 0px;
@@ -148,8 +149,8 @@ li {
 
 .weekday {
 	float: left;
-	width: 8.5em;
-	min-width: 8.5em;
+	width: 9em;
+	min-width: 9em;
 	height: 96em;
 	max-height: 96em;
 	margin: 0px 1px 0px 0px;

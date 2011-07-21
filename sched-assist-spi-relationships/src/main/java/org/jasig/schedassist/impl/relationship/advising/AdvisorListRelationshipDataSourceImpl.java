@@ -166,35 +166,40 @@ public class AdvisorListRelationshipDataSourceImpl implements RelationshipDataSo
 	 */
 	@Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
 	public synchronized void reloadData() {
-		String currentTerm = TermCalculator.getCurrentTerm();
-		if(isResourceUpdated(advisorListResource)) {
-			LOG.info("resource updated, reloading advisorList data");
-			List<StudentAdvisorAssignment> records = readResource(advisorListResource, currentTerm);
+		final String propertyValue = System.getProperty("org.jasig.schedassist.runScheduledTasks", "true");
+		if(Boolean.parseBoolean(propertyValue)) {
+			String currentTerm = TermCalculator.getCurrentTerm();
+			if(isResourceUpdated(advisorListResource)) {
+				LOG.info("resource updated, reloading advisorList data");
+				List<StudentAdvisorAssignment> records = readResource(advisorListResource, currentTerm);
 
-			LOG.info("deleting all existing records from advisorlist table");
-			StopWatch stopWatch = new StopWatch();
-			stopWatch.start();
-			this.getJdbcTemplate().execute("delete from advisorlist");
-			long deleteTime = stopWatch.getTime();
-			LOG.info("finished deleting existing (" + deleteTime + " msec), starting batch insert");
-			stopWatch.reset();
-			stopWatch.start();
-			SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(records.toArray());
-			this.getSimpleJdbcTemplate().batchUpdate(
-					"insert into advisorlist (advisor_emplid, advisor_relationship, student_emplid, term_description, term_number, advisor_type, committee_role) values (:advisorEmplid, :advisorRelationshipDescription, :studentEmplid, :termDescription, :termNumber, :advisorType, :committeeRole)",
-					batch);
-			long insertTime = stopWatch.getTime();
-			stopWatch.stop();
-			LOG.info("batch insert complete (" + insertTime + " msec)");
-			LOG.info("reloadData complete (total time: " + (insertTime + deleteTime) + " msec)");
-			this.lastReloadTimestamp = new Date();
-			try {
-				this.resourceLastModified = advisorListResource.lastModified();
-			} catch (IOException e) {
-				LOG.debug("ignoring IOException from accessing Resource.lastModified()");
+				LOG.info("deleting all existing records from advisorlist table");
+				StopWatch stopWatch = new StopWatch();
+				stopWatch.start();
+				this.getJdbcTemplate().execute("delete from advisorlist");
+				long deleteTime = stopWatch.getTime();
+				LOG.info("finished deleting existing (" + deleteTime + " msec), starting batch insert");
+				stopWatch.reset();
+				stopWatch.start();
+				SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(records.toArray());
+				this.getSimpleJdbcTemplate().batchUpdate(
+						"insert into advisorlist (advisor_emplid, advisor_relationship, student_emplid, term_description, term_number, advisor_type, committee_role) values (:advisorEmplid, :advisorRelationshipDescription, :studentEmplid, :termDescription, :termNumber, :advisorType, :committeeRole)",
+						batch);
+				long insertTime = stopWatch.getTime();
+				stopWatch.stop();
+				LOG.info("batch insert complete (" + insertTime + " msec)");
+				LOG.info("reloadData complete (total time: " + (insertTime + deleteTime) + " msec)");
+				this.lastReloadTimestamp = new Date();
+				try {
+					this.resourceLastModified = advisorListResource.lastModified();
+				} catch (IOException e) {
+					LOG.debug("ignoring IOException from accessing Resource.lastModified()");
+				}
+			} else {
+				LOG.info("resource not modified since last reload, skipping");
 			}
 		} else {
-			LOG.info("resource not modified since last reload, skipping");
+			LOG.debug("ignoring reloadData as 'org.jasig.schedassist.runScheduledTasks' set to false");
 		}
 	}
 

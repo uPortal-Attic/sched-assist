@@ -151,47 +151,51 @@ public class CSVRelationshipDataSourceImpl implements RelationshipDataSource, In
 	 */
 	@Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
 	public synchronized void reloadData() {
-		//String currentTerm = TermCalculator.getCurrentTerm();
-		if(isResourceUpdated(csvResource)) {
-			LOG.info("resource updated, reloading advisorList data");
-			//List<StudentAdvisorAssignment> records = readResource(advisorListResource, currentTerm);
-			List<CSVRelationship> records = new ArrayList<CSVRelationship>();
-			try {
-				records = readCSVResource(csvResource);
-			} catch (IOException e) {
-				LOG.error("caught IOException reading csv data source", e);
-				return;
-			}
-			
-			if(records.isEmpty()) {
-				LOG.warn("resource returned empty set, skipping reloadData");
-				return;
-			}
-			
-			LOG.info("deleting all existing records from csv_relationships table");
-			StopWatch stopWatch = new StopWatch();
-			stopWatch.start();
-			this.getJdbcTemplate().execute("delete from csv_relationships");
-			long deleteTime = stopWatch.getTime();
-			LOG.info("finished deleting existing (" + deleteTime + " msec), starting batch insert");
-			stopWatch.reset();
-			stopWatch.start();
-			SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(records.toArray());
-			this.getSimpleJdbcTemplate().batchUpdate(
-					"insert into csv_relationships (owner_id, visitor_id, rel_description) values (:ownerIdentifier, :visitorIdentifier, :relationshipDescription)",
-					batch);
-			long insertTime = stopWatch.getTime();
-			stopWatch.stop();
-			LOG.info("batch insert complete (" + insertTime + " msec)");
-			LOG.info("reloadData complete (total time: " + (insertTime + deleteTime) + " msec)");
-			this.lastReloadTimestamp = new Date();
-			try {
-				this.resourceLastModified = csvResource.lastModified();
-			} catch (IOException e) {
-				LOG.debug("ignoring IOException from accessing Resource.lastModified()");
+		final String propertyValue = System.getProperty("org.jasig.schedassist.runScheduledTasks", "true");
+		if(Boolean.parseBoolean(propertyValue)) {
+			if(isResourceUpdated(csvResource)) {
+				LOG.info("resource updated, reloading advisorList data");
+				//List<StudentAdvisorAssignment> records = readResource(advisorListResource, currentTerm);
+				List<CSVRelationship> records = new ArrayList<CSVRelationship>();
+				try {
+					records = readCSVResource(csvResource);
+				} catch (IOException e) {
+					LOG.error("caught IOException reading csv data source", e);
+					return;
+				}
+
+				if(records.isEmpty()) {
+					LOG.warn("resource returned empty set, skipping reloadData");
+					return;
+				}
+
+				LOG.info("deleting all existing records from csv_relationships table");
+				StopWatch stopWatch = new StopWatch();
+				stopWatch.start();
+				this.getJdbcTemplate().execute("delete from csv_relationships");
+				long deleteTime = stopWatch.getTime();
+				LOG.info("finished deleting existing (" + deleteTime + " msec), starting batch insert");
+				stopWatch.reset();
+				stopWatch.start();
+				SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(records.toArray());
+				this.getSimpleJdbcTemplate().batchUpdate(
+						"insert into csv_relationships (owner_id, visitor_id, rel_description) values (:ownerIdentifier, :visitorIdentifier, :relationshipDescription)",
+						batch);
+				long insertTime = stopWatch.getTime();
+				stopWatch.stop();
+				LOG.info("batch insert complete (" + insertTime + " msec)");
+				LOG.info("reloadData complete (total time: " + (insertTime + deleteTime) + " msec)");
+				this.lastReloadTimestamp = new Date();
+				try {
+					this.resourceLastModified = csvResource.lastModified();
+				} catch (IOException e) {
+					LOG.debug("ignoring IOException from accessing Resource.lastModified()");
+				}
+			} else {
+				LOG.info("resource not modified since last reload, skipping");
 			}
 		} else {
-			LOG.info("resource not modified since last reload, skipping");
+			LOG.debug("ignoring reloadData as 'org.jasig.schedassist.runScheduledTasks' set to false");
 		}
 	}
 

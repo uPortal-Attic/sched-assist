@@ -63,7 +63,7 @@ public class CalendarUserSearchFormController {
 	public void setCalendarAccountDao(ICalendarAccountDao calendarAccountDao) {
 		this.calendarAccountDao = calendarAccountDao;
 	}
-	
+
 	/**
 	 * If the qValue parameter is not blank, execute a search, and return
 	 * the autocomplete results view name.
@@ -81,12 +81,13 @@ public class CalendarUserSearchFormController {
 		}
 		// if qValue isn't blank, this should be considered a search request
 		model.addAttribute("searchText", qValue);
-		List<ICalendarAccount> results = new ArrayList<ICalendarAccount>();
+		List<ICalendarAccount> matches = new ArrayList<ICalendarAccount>();
 		if(null != qValue && qValue.length() > 2) {
 			// alter search text before submitting to calendarUserDao
 			final String searchText = StringUtils.replace(qValue, " ", "*");
-			results = calendarAccountDao.searchForCalendarAccounts(searchText);
+			matches = calendarAccountDao.searchForCalendarAccounts(searchText);
 		}
+		List<ICalendarAccount> results = filterForEligible(matches);
 		model.addAttribute("results", results);
 		return "owner-relationships/calendaruser-results-ac";
 	}
@@ -99,14 +100,30 @@ public class CalendarUserSearchFormController {
 	@RequestMapping(method=RequestMethod.POST)
 	protected String search(@ModelAttribute("command") CalendarUserSearchFormBackingObject fbo, final ModelMap model) {
 		model.addAttribute("searchText", fbo.getSearchText());
-		List<ICalendarAccount> results = new ArrayList<ICalendarAccount>();
+		List<ICalendarAccount> matches = new ArrayList<ICalendarAccount>();
 		if(fbo.getSearchText() != null && fbo.getSearchText().length() > 2) {
 			// alter search text before submitting to calendarUserDao
 			final String searchText = StringUtils.replace(fbo.getSearchText(), " ", "*");
-			results = calendarAccountDao.searchForCalendarAccounts(searchText);
+			matches = calendarAccountDao.searchForCalendarAccounts(searchText);
 		}
+		List<ICalendarAccount> results = filterForEligible(matches);
 		model.addAttribute("results", results);
 		return "owner-relationships/calendaruser-results";
 	}	
-	
+
+	/**
+	 * Filter out {@link ICalendarAccount} that return false for {@link ICalendarAccount#isEligible()}.
+	 *
+	 * @param matches
+	 * @return
+	 */
+	protected List<ICalendarAccount> filterForEligible(List<ICalendarAccount> matches) {
+		List<ICalendarAccount> results = new ArrayList<ICalendarAccount>();
+		for(ICalendarAccount a: matches) {
+			if(a.isEligible()) {
+				results.add(a);
+			}
+		}
+		return results;
+	}
 }

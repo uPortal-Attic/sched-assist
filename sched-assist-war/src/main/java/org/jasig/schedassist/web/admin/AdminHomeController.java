@@ -21,6 +21,7 @@
 package org.jasig.schedassist.web.admin;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -33,7 +34,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AdminHomeController {
 
 	@RequestMapping("/admin/index.html")
-	public String getAdminHome() {
+	public String getAdminHome(ModelMap model) {
+		model.addAttribute("runScheduledTasks", System.getProperty("org.jasig.schedassist.runScheduledTasks", "true"));
 		return "admin/home";
 	}
 }
