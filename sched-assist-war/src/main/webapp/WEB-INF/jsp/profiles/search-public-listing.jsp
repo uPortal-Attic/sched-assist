@@ -52,7 +52,8 @@
 </form>
 </div>
 <hr/>
-<a href="<c:url value="/public/browse.html"/>"><spring:message code="browse.public.listings"/>&raquo;</a>
+<a href="<c:url value="/public/browse.html"/>"><spring:message code="browse.public.listings"/>&raquo;</a>&nbsp;
+<a href="<c:url value="/public/advisors.html"/>"><spring:message code="browse.advisor.listings"/>&raquo;</a>
 </div> <!--  content -->
 
 <%@ include file="/WEB-INF/jsp/themes/jasig/body-end.jsp" %>
