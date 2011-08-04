@@ -205,7 +205,9 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		RequestEntity requestEntity = caldavDialect.generatePutAppointmentRequestEntity(event);
 		method.setRequestEntity(requestEntity);
 		
-
+		if(log.isDebugEnabled()) {
+			log.debug("createAppointment executing " + methodToString(method) + " for " + owner + ", " + visitor + ", " + block);
+		}
 		HttpMethod toExecute = this.methodInterceptor.doWithMethod(method, owner.getCalendarAccount());
 		
 		try {
@@ -221,8 +223,10 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 				throw new CaldavDataAccessException("createAppointment for " + visitor + ", " + owner + ", " + block + " failed with unexpected status code: " + statusCode);
 			}
 		} catch (HttpException e) {
+			log.error("an HttpException occurred in createAppointment for " + owner + ", " + visitor + ", " + block);
 			throw new CaldavDataAccessException(e);
 		} catch (IOException e) {
+			log.error("an IOException occurred in createAppointment for " + owner + ", " + visitor + ", " + block);
 			throw new CaldavDataAccessException(e);
 		} 
 	}
@@ -239,6 +243,9 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		if(null != calendar) {
 			URI uri = this.caldavDialect.resolveCalendarURI(calendar);
 			DeleteMethod method = new DeleteMethod(uri.toString());
+			if(log.isDebugEnabled()) {
+				log.debug("cancelAppointment executing " + methodToString(method) + " for " + owner + ", " + startTime);
+			}
 			HttpMethod toExecute = methodInterceptor.doWithMethod(method,owner.getCalendarAccount());
 			try {
 				int statusCode = this.httpClient.executeMethod(toExecute);
@@ -249,8 +256,10 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 					throw new CaldavDataAccessException("cancelAppointment for " + owner + ", " + startTime +  ", " + endTime +" failed with unexpected status code: " + statusCode);
 				}
 			} catch (HttpException e) {
+				log.error("an HttpException occurred in cancelAppointment for " + owner + ", " + startTime);
 				throw new CaldavDataAccessException(e);
 			} catch (IOException e) {
+				log.error("an IOException occurred in leaveAppointment for " + owner + ", " + startTime);
 				throw new CaldavDataAccessException(e);
 			} 
 		} else {
@@ -282,7 +291,9 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 			method.addRequestHeader(ICALENDAR_CONTENT_TYPE_HEADER);
 			RequestEntity requestEntity = caldavDialect.generatePutAppointmentRequestEntity(event);
 			method.setRequestEntity(requestEntity);
-			
+			if(log.isDebugEnabled()) {
+				log.debug("joinAppointment executing " + methodToString(method) + " for " + owner + ", " + visitor + ", " + startTime);
+			}
 			HttpMethod toExecute = methodInterceptor.doWithMethod(method, owner.getCalendarAccount());
 
 			try {
@@ -297,8 +308,10 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 					throw new CaldavDataAccessException("joinAppointment for " + visitor + ", " + owner + ", " + startTime + " failed with unexpected status code: " + statusCode);
 				}
 			} catch (HttpException e) {
+				log.error("an HttpException occurred in joinAppointment for " + owner + ", " + visitor + ", " + startTime);
 				throw new CaldavDataAccessException(e);
 			} catch (IOException e) {
+				log.error("an IOException occurred in joinAppointment for " + owner + ", " + visitor + ", " + startTime);
 				throw new CaldavDataAccessException(e);
 			} 
 		} else {
@@ -329,7 +342,9 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 			method.addRequestHeader(ICALENDAR_CONTENT_TYPE_HEADER);
 			RequestEntity requestEntity = caldavDialect.generatePutAppointmentRequestEntity(event);
 			method.setRequestEntity(requestEntity);
-			
+			if(log.isDebugEnabled()) {
+				log.debug("leaveAppointment executing " + methodToString(method) + " for " + owner + ", " + visitor + ", " + startTime);
+			}
 			HttpMethod toExecute = methodInterceptor.doWithMethod(method, owner.getCalendarAccount());
 
 			try {
@@ -344,8 +359,10 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 					throw new CaldavDataAccessException("leaveAppointment for " + visitor + ", " + owner + ", " + startTime + " failed with unexpected status code: " + statusCode);
 				}
 			} catch (HttpException e) {
+				log.error("an HttpException occurred in leaveAppointment for " + owner + ", " + visitor + ", " + startTime);
 				throw new CaldavDataAccessException(e);
 			} catch (IOException e) {
+				log.error("an IOException occurred in leaveAppointment for " + owner + ", " + visitor + ", " + startTime);
 				throw new CaldavDataAccessException(e);
 			} 
 		} else {
@@ -426,7 +443,9 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		method.setRequestEntity(requestEntity);
 		method.addRequestHeader(CONTENT_LENGTH_HEADER, Long.toString(requestEntity.getContentLength()));
 		method.addRequestHeader(DEPTH_HEADER);
-
+		if(log.isDebugEnabled()) {
+			log.debug("getCalendarsInternal executing " + methodToString(method) + " for " + calendarAccount + ", start " + startDate + ", end " + endDate);
+		}
 		HttpMethod toExecute = methodInterceptor.doWithMethod(method,calendarAccount);
 		try {
 			int statusCode = this.httpClient.executeMethod(toExecute);
@@ -440,8 +459,10 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 				throw new CaldavDataAccessException("unexpected status code: " + statusCode);
 			}
 		} catch (HttpException e) {
+			log.error("an HttpException occurred in getCalendarsInternal for " + calendarAccount + ", " + startDate + ", " + endDate);
 			throw new CaldavDataAccessException(e);
 		} catch (IOException e) {
+			log.error("an IOException occurred in getCalendarsInternal for " + calendarAccount + ", " + startDate + ", " + endDate);
 			throw new CaldavDataAccessException(e);
 		} 
 	}
@@ -545,5 +566,13 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		ComponentList events = calendar.getCalendar().getComponents(VEvent.VEVENT);
 		Validate.isTrue(events.size() == 1, "expecting calendar with single event");
 		return (VEvent) events.get(0);
+	}
+	
+	private String methodToString(HttpMethod method) {
+		StringBuilder result = new StringBuilder();
+		result.append(method.getName());
+		result.append(" ");
+		result.append(method.getPath());
+		return result.toString();
 	}
 }
