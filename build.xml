@@ -171,6 +171,10 @@
 		<antcall target="clean-webapp" />
 		<antcall target="deploy-war" />
 	</target>
+	
+	<target name="hot-deploy-log4j.properties">
+		<copy file="${basedir}/sched-assist-war/src/main/resources/log4j.properties" todir="${tomcat.home}/webapps/scheduling-assistant/WEB-INF/classes/"></copy>
+	</target>
 	<!--
 	<target name="audit-schedule-owners" description="Audits the ScheduleOwner database">
 		<java classname="org.jasig.schedassist.impl.owner.ScheduleOwnerAuditor" fork="true" dir="." jvm="${cli.jvm}">
