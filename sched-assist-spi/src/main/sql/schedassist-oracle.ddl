@@ -103,6 +103,12 @@ create table public_profiles (
 	constraint profile_key_unq unique (profile_key)
 );
 
+create table profile_tags (
+	profile_key varchar2 (8) constraint fk_profile_tag_key references public_profiles(profile_key) ON DELETE CASCADE not null,
+	tag varchar2 (80) not null,
+	tag_display varchar2 (80) not null
+);
+
 create table reflect_locks (
 	owner_id int constraint fk_owner_lock_id references owners (internal_id) ON DELETE CASCADE not null
 );

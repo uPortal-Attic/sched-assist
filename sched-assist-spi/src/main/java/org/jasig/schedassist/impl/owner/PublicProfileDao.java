@@ -20,10 +20,12 @@
 package org.jasig.schedassist.impl.owner;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.PublicProfile;
 import org.jasig.schedassist.model.PublicProfileId;
+import org.jasig.schedassist.model.PublicProfileTag;
 
 /**
  * Interface defining operations for creating/retrieving/updating/deleting {@link PublicProfile}s.
@@ -105,5 +107,37 @@ public interface PublicProfileDao {
 	 */
 	List<PublicProfileId> getAdvisorPublicProfileIds();
 	
+	/**
+	 * Return the {@link List} of {@link PublicProfileTag}s for the specified profile.
+	 * 
+	 * @param profileId
+	 * @return a possibly empty, but never null {@link List}
+	 */
+	List<PublicProfileTag> getProfileTags(PublicProfileId profileId);
 	
+	/**
+	 * Convenience method to return the {@link List}s of {@link PublicProfileTag}s for
+	 * multiple {@link PublicProfileId}s.
+	 * 
+	 * @param profileIds
+	 * @return a possibly empty, but never null {@link Map}
+	 */
+	Map<PublicProfileId, List<PublicProfileTag>> getProfileTagsBatch(List<PublicProfileId> profileIds);
+	/**
+	 * Set the {@link PublicProfileTag}s for the {@link PublicProfileId}. This method is
+	 * intended to replace any existing tags when called and store solely the argument.
+	 * 
+	 * @param tags
+	 * @param profileId
+	 * @return the new {@link List} of {@link PublicProfileTag}s for the profile; never null, but possibly empty (if the argument was empty)
+	 */
+	List<PublicProfileTag> setProfileTags(List<String> tags, PublicProfileId profileId);
+	
+	/**
+	 * Return a {@link List} of {@link PublicProfileId}s with the specified tag.
+	 * 
+	 * @param tag
+	 * @return a possibly empty, but never null {@link List}
+	 */
+	List<PublicProfileId> getPublicProfileIdsWithTag(String tag);
 }

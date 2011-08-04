@@ -20,8 +20,12 @@
 
 package org.jasig.schedassist.web.owner.preferences;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.validation.Valid;
 
+import org.apache.commons.lang.StringUtils;
 import org.jasig.schedassist.impl.owner.NotRegisteredException;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.impl.owner.PublicProfileAlreadyExistsException;
@@ -30,6 +34,7 @@ import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IdentityUtils;
 import org.jasig.schedassist.model.Preferences;
 import org.jasig.schedassist.model.PublicProfile;
+import org.jasig.schedassist.model.PublicProfileTag;
 import org.jasig.schedassist.web.security.CalendarAccountUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -99,13 +104,16 @@ public class AdvancedPreferencesFormController {
 		if(fbo.isCreatePublicProfile()) {
 			fbo.setPublicProfileDescription(existingProfile.getDescription());
 			fbo.setPublicProfileKey(existingProfile.getPublicProfileId().getProfileKey());
+			
+			List<PublicProfileTag> tags = publicProfileDao.getProfileTags(existingProfile.getPublicProfileId());
+			fbo.setPublicProfileTags(tagsAsString(tags));
 		}
 
-		//fbo.setEligibleForAdvisor(IdentityUtils.isAdvisor(owner.getCalendarAccount()));
-		//if(IdentityUtils.isAdvisor(owner.getCalendarAccount())) {
+		fbo.setEligibleForAdvisor(IdentityUtils.isAdvisor(owner.getCalendarAccount()));
+		if(IdentityUtils.isAdvisor(owner.getCalendarAccount())) {
 			String prefValue = owner.getPreference(Preferences.ADVISOR_SHARE_WITH_STUDENTS);
 			fbo.setAdvisorShareWithStudents(Boolean.parseBoolean(prefValue));
-		//}
+		}
 		model.addAttribute("command", fbo);
 		return "owner-preferences/advanced-preferences-form";
 	}
@@ -131,7 +139,7 @@ public class AdvancedPreferencesFormController {
 			return "owner-preferences/advanced-preferences-form";
 		}
 	
-		//if(IdentityUtils.isAdvisor(owner.getCalendarAccount())) {
+		if(IdentityUtils.isAdvisor(owner.getCalendarAccount())) {
 			owner = ownerDao.updatePreference(owner, Preferences.ADVISOR_SHARE_WITH_STUDENTS, String.valueOf(fbo.isAdvisorShareWithStudents()));
 			if(fbo.isAdvisorShareWithStudents()) {
 				model.addAttribute("advisorShareWithStudentsOn", true);
@@ -139,8 +147,7 @@ public class AdvancedPreferencesFormController {
 				model.addAttribute("advisorShareWithStudentsOff", true);
 			}
 
-		//}
-		//String storedSharePublicValue = owner.getPreference(Preferences.SHARE_PUBLIC);
+		}
 		PublicProfile existingProfile = this.publicProfileDao.locatePublicProfileByOwner(owner);
 		
 		// set public profile preference (only if owner previously was not sharing)
@@ -159,9 +166,52 @@ public class AdvancedPreferencesFormController {
 				this.publicProfileDao.updatePublicProfileDescription(existingProfile.getPublicProfileId(), fbo.getPublicProfileDescription());
 				model.addAttribute("updatedPublicProfile", true);
 			}
+			
+			// check if we need to update tags
+			List<PublicProfileTag> tags = this.publicProfileDao.getProfileTags(existingProfile.getPublicProfileId());
+			if(!tagsAsString(tags).equals(fbo.getPublicProfileTags())) {
+				// tags differ, persist
+				List<String> newTags = commaSeparatedToList(fbo.getPublicProfileTags());
+				this.publicProfileDao.setProfileTags(newTags, existingProfile.getPublicProfileId());
+				model.addAttribute("updatedPublicProfileTags", true);
+			}
 		}
 		currentUser.updateScheduleOwner(owner);
 		return "owner-preferences/advanced-preferences-success";
 	}
 	
+	/**
+	 * 
+	 * @param tags
+	 * @return
+	 */
+	protected String tagsAsString(List<PublicProfileTag> tags) {
+		StringBuilder tagsAsString = new StringBuilder();
+		for(int i = 0; i < tags.size(); i++) {
+			PublicProfileTag tag = tags.get(i);
+			tagsAsString.append(tag.getTagDisplay());
+			if(i < tags.size() - 1) {
+				tagsAsString.append(",");
+			}
+		}
+		return tagsAsString.toString();
+	}
+	
+	/**
+	 * 
+	 * @param tags
+	 * @return
+	 */
+	protected List<String> commaSeparatedToList(String tags) {
+		List<String> result = new ArrayList<String>();
+		if(StringUtils.isBlank(tags)) {
+			return result;
+		}
+		
+		String [] tokens = tags.split(",\\s*");
+		for(String token : tokens) {
+			result.add(token);
+		}
+		return result;
+	}
 }

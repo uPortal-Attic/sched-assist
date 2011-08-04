@@ -91,9 +91,9 @@ public class PublicProfilesIndexController {
 	protected String buildPageTitleSuffix(int startIndex, int endIndex) {
 		StringBuilder title = new StringBuilder();
 		title.append("Public Profiles ");
-		title.append(startIndex == 0 ? 1 : startIndex);
+		title.append(startIndex == 0 ? 1 : startIndex + 1);
 		title.append(" - ");
-		title.append(endIndex);
+		title.append(endIndex + 1);
 		return title.toString();
 	}
 	

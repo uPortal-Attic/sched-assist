@@ -19,6 +19,7 @@
 
 package org.jasig.schedassist.impl.owner;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -30,6 +31,7 @@ import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.Preferences;
 import org.jasig.schedassist.model.PublicProfile;
 import org.jasig.schedassist.model.PublicProfileId;
+import org.jasig.schedassist.model.PublicProfileTag;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -111,6 +113,71 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 		
 		PublicProfile retrieveByKey = this.publicProfileDao.locatePublicProfileByKey(profile.getPublicProfileId().getProfileKey());
 		Assert.assertEquals(profile, retrieveByKey);
+	}
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testCreatePublicProfileWithTags()  {
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		Assert.assertNotNull(user1);
+		IScheduleOwner owner1 = null;
+		try {
+			owner1 = ownerDao.register(user1);
+		} catch (IneligibleException e) {
+			Assert.fail("unexpected IneligibleException");
+		}
+		Assert.assertNotNull(owner1);
+		Assert.assertEquals(1, owner1.getId());
+		owner1 = ownerDao.updatePreference(owner1, Preferences.NOTEBOARD, "test noteboard");
+		
+		PublicProfile profile = null;
+		try {
+			profile = this.publicProfileDao.createPublicProfile(owner1, "test create public profile");
+		} catch (PublicProfileAlreadyExistsException e) {
+			Assert.fail("unexpected PublicProfileAlreadyExistsException");
+		}
+		Assert.assertNotNull(profile);
+		Assert.assertEquals(1, profile.getOwnerId());
+		Assert.assertEquals("test create public profile", profile.getDescription());
+		Assert.assertEquals(8, profile.getPublicProfileId().getProfileKey().length());
+		Assert.assertEquals(user1.getDisplayName(), profile.getPublicProfileId().getOwnerDisplayName());
+		Assert.assertEquals("test noteboard", profile.getOwnerNoteboard());
+		
+		PublicProfile retrieveByKey = this.publicProfileDao.locatePublicProfileByKey(profile.getPublicProfileId().getProfileKey());
+		Assert.assertEquals(profile, retrieveByKey);
+		
+		List<String> tags = Arrays.asList(new String[] { "math" });
+		PublicProfileId profileId = profile.getPublicProfileId();
+		List<PublicProfileTag> storedTags = this.publicProfileDao.setProfileTags(tags, profileId);
+		Assert.assertNotNull(storedTags);
+		Assert.assertEquals(1, storedTags.size());
+		Assert.assertEquals("math", storedTags.get(0).getTagDisplay());
+		Assert.assertEquals("MATH", storedTags.get(0).getTag());
+		
+		List<PublicProfileId> idSearchByTag = this.publicProfileDao.getPublicProfileIdsWithTag("math");
+		Assert.assertEquals(1, idSearchByTag.size());
+		Assert.assertEquals(profileId, idSearchByTag.get(0));
+		// check case insensitive
+		idSearchByTag = this.publicProfileDao.getPublicProfileIdsWithTag("mATh");
+		Assert.assertEquals(1, idSearchByTag.size());
+		Assert.assertEquals(profileId, idSearchByTag.get(0));
+		
+		tags = Arrays.asList(new String[] { "Computer Science", "DoIT" });
+		storedTags = this.publicProfileDao.setProfileTags(tags, profileId);
+		Assert.assertNotNull(storedTags);
+		Assert.assertEquals(2, storedTags.size());
+		Assert.assertEquals("Computer Science", storedTags.get(0).getTagDisplay());
+		Assert.assertEquals("COMPUTER SCIENCE", storedTags.get(0).getTag());
+		Assert.assertEquals("DoIT", storedTags.get(1).getTagDisplay());
+		Assert.assertEquals("DOIT", storedTags.get(1).getTag());
+		
+		tags = Arrays.asList(new String[] {  });
+		storedTags = this.publicProfileDao.setProfileTags(tags, profileId);
+		Assert.assertNotNull(storedTags);
+		Assert.assertEquals(0, storedTags.size());
 	}
 	
 	@Test
@@ -228,6 +295,57 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 		
 		PublicProfile afterRemove = this.publicProfileDao.locatePublicProfileByKey(key);
 		Assert.assertNull(afterRemove);
+	}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void testRemovePublicProfileWithTags() {
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		Assert.assertNotNull(user1);
+		IScheduleOwner owner1 = null;
+		try {
+			owner1 = ownerDao.register(user1);
+		} catch (IneligibleException e) {
+			Assert.fail("unexpected IneligibleException");
+		}
+		Assert.assertNotNull(owner1);
+		Assert.assertEquals(1, owner1.getId());
+		owner1 = ownerDao.updatePreference(owner1, Preferences.NOTEBOARD, "test noteboard");
+		
+		PublicProfile profile = null;
+		try {
+			profile = this.publicProfileDao.createPublicProfile(owner1, "test create public profile");
+		} catch (PublicProfileAlreadyExistsException e) {
+			Assert.fail("unexpected PublicProfileAlreadyExistsException");
+		}
+		Assert.assertNotNull(profile);
+		final String key = profile.getPublicProfileId().getProfileKey();
+		Assert.assertEquals(1, profile.getOwnerId());
+		Assert.assertEquals("test create public profile", profile.getDescription());
+		Assert.assertEquals(8, key.length());
+		Assert.assertEquals(user1.getDisplayName(), profile.getPublicProfileId().getOwnerDisplayName());
+		Assert.assertEquals("test noteboard", profile.getOwnerNoteboard());
+		
+		List<String> tags = Arrays.asList(new String[] { "math" });
+		this.publicProfileDao.setProfileTags(tags, profile.getPublicProfileId());
+		
+		List<PublicProfileId> idSearchByTag = this.publicProfileDao.getPublicProfileIdsWithTag("math");
+		Assert.assertEquals(1, idSearchByTag.size());
+		Assert.assertEquals(profile.getPublicProfileId(), idSearchByTag.get(0));
+		
+		PublicProfile retrieveByKey = this.publicProfileDao.locatePublicProfileByKey(key);
+		Assert.assertEquals(profile, retrieveByKey);
+		
+		this.publicProfileDao.removePublicProfile(profile.getPublicProfileId());
+		
+		PublicProfile afterRemove = this.publicProfileDao.locatePublicProfileByKey(key);
+		Assert.assertNull(afterRemove);
+		
+		List<PublicProfileTag> emptyTags = this.publicProfileDao.getProfileTags(profile.getPublicProfileId());
+		Assert.assertNotNull(emptyTags);
+		Assert.assertEquals(0, emptyTags.size());
 	}
 	
 	@Test

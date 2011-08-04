@@ -52,6 +52,9 @@
 <c:if test="${updatedPublicProfile}">
 <li><spring:message code="advanced.sharing.preferences.profile.updated"/></li>
 </c:if>
+<c:if test="${updatedPublicProfileTags}">
+<li><spring:message code="advanced.sharing.preferences.profile.tags.updated"/></li>
+</c:if>
 </ul>
 <a href="<c:url value="advanced.html"/>">&laquo;<spring:message code="return.to.advanced.sharing.preferences"/></a>, or <a href="<c:url value="schedule.html"/>">&laquo;<spring:message code="return.to.availability.schedule"/></a>
 </div>

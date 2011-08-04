@@ -17,35 +17,33 @@
  * under the License.
  */
 
-
 package org.jasig.schedassist.web.profiles;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.jasig.schedassist.impl.owner.PublicProfileDao;
-import org.jasig.schedassist.model.Preferences;
-import org.jasig.schedassist.model.PublicProfile;
 import org.jasig.schedassist.model.PublicProfileId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * {@link Controller} that looks up all of the {@link PublicProfile}s and
- * returns solely the objects that refer to UW Academic Advisors (@see {@link Preferences#ADVISOR_SHARE_WITH_STUDENTS}).
- *  
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: PublicProfilesAcademicAdvisorsController.java 2752 2010-10-05 15:36:26Z npblair $
+ * {@link Controller} that is backed by {@link PublicProfileDao#getPublicProfileIdsWithTag(String)}.
+ * The tag argument is a {@link PathVariable}.
+ * 
+ * @author Nicholas Blair
+ * @version $Id: TaggedPublicProfileController.java $
  */
 @Controller
-public class PublicProfilesAcademicAdvisorsController {
+public class TaggedPublicProfileController {
 
 	private PublicProfileDao publicProfileDao;
-	
+
 	/**
 	 * @param publicProfileDao the publicProfileDao to set
 	 */
@@ -53,44 +51,41 @@ public class PublicProfilesAcademicAdvisorsController {
 	public void setPublicProfileDao(PublicProfileDao publicProfileDao) {
 		this.publicProfileDao = publicProfileDao;
 	}
-
-	/**
-	 * 
-	 * @param model
-	 * @return the view name for the listing of advisors with {@link PublicProfile}s
-	 */
-	@RequestMapping(value="/public/advisors.html", method=RequestMethod.GET)
-	public String retrieveAdvisorProfiles(final ModelMap model, @RequestParam(value="startIndex",required=false,defaultValue="0") int startIndex) {
-		List<PublicProfileId> profileIds = publicProfileDao.getAdvisorPublicProfileIds();
+	
+	@RequestMapping(value="/public/tags/{tag}", method = RequestMethod.GET)
+	public String displayProfileIdsByTag(final ModelMap model, @PathVariable("tag") String tag, 
+			@RequestParam(value="startIndex",required=false,defaultValue="0") int startIndex) {
+		List<PublicProfileId> profileIds = this.publicProfileDao.getPublicProfileIdsWithTag(tag);
 		if(profileIds.isEmpty()) {
-			// short circuit for empty list
-			return "profiles/public-advisor-listing";
+			// short circuit
+			return "profiles/public-listing";
 		}
 		
 		Collections.sort(profileIds);
 		ProfilePageInformation pageInfo = new ProfilePageInformation(profileIds, startIndex);
-		
-		model.addAttribute("titleSuffix", buildPageTitleSuffix(pageInfo.getStartIndex(), pageInfo.getEndIndex()));
+		model.addAttribute("titleSuffix", buildPageTitleSuffix(tag, pageInfo.getStartIndex(), pageInfo.getEndIndex()));
 		model.addAttribute("profileIds", pageInfo.getSublist());
 		model.addAttribute("showPrev", pageInfo.isShowPrev());
 		model.addAttribute("showPrevIndex", pageInfo.getShowPrevIndex());
 		model.addAttribute("showNext", pageInfo.isShowNext());
 		model.addAttribute("showNextIndex", pageInfo.getShowNextIndex());
-		return "profiles/public-advisor-listing";
+		return "profiles/public-listing";
 	}
-
+	
 	/**
 	 * Create a string appended to the document title, e.g.:
 	 * 
-	 * "Academic Advisors 1 - 10".
+	 * "Public Profiles tagged with 'tag' - 1 - 10".
 	 * 
 	 * @param startIndex
 	 * @param endIndex
 	 * @return
 	 */
-	protected String buildPageTitleSuffix(int startIndex, int endIndex) {
+	protected String buildPageTitleSuffix(String tag, int startIndex, int endIndex) {
 		StringBuilder title = new StringBuilder();
-		title.append("Academic Advisors ");
+		title.append("Public Profiles tagged with '");
+		title.append(tag);
+		title.append("' - ");
 		title.append(startIndex == 0 ? 1 : startIndex + 1);
 		title.append(" - ");
 		title.append(endIndex + 1);

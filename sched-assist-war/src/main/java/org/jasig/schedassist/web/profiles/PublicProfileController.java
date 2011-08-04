@@ -20,8 +20,11 @@
 
 package org.jasig.schedassist.web.profiles;
 
+import java.util.List;
+
 import org.jasig.schedassist.impl.owner.PublicProfileDao;
 import org.jasig.schedassist.model.PublicProfile;
+import org.jasig.schedassist.model.PublicProfileTag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -61,6 +64,8 @@ public class PublicProfileController {
 		PublicProfile profile = publicProfileDao.locatePublicProfileByKey(profileKey);
 		if(null != profile) {
 			model.addAttribute("profile", profile);
+			List<PublicProfileTag> tags = publicProfileDao.getProfileTags(profile.getPublicProfileId());
+			model.addAttribute("profileTags", tags);
 			return "profiles/profile";
 		} else {
 			return "profiles/owner-notfound";

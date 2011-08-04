@@ -33,6 +33,7 @@ public class AdvancedPreferencesFormBackingObject {
 	private boolean createPublicProfile = false;
 	private String publicProfileDescription = "";
 	private String publicProfileKey;
+	private String publicProfileTags;
 	
 	/**
 	 * @return the eligibleForAdvisor
@@ -94,5 +95,31 @@ public class AdvancedPreferencesFormBackingObject {
 	public void setPublicProfileKey(String publicProfileKey) {
 		this.publicProfileKey = publicProfileKey;
 	}
+	/**
+	 * @return the publicProfileTags
+	 */
+	public String getPublicProfileTags() {
+		return publicProfileTags;
+	}
+	/**
+	 * @param publicProfileTags the publicProfileTags to set
+	 */
+	public void setPublicProfileTags(String publicProfileTags) {
+		this.publicProfileTags = publicProfileTags;
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "AdvancedPreferencesFormBackingObject [eligibleForAdvisor="
+				+ eligibleForAdvisor + ", advisorShareWithStudents="
+				+ advisorShareWithStudents + ", createPublicProfile="
+				+ createPublicProfile + ", publicProfileDescription="
+				+ publicProfileDescription + ", publicProfileKey="
+				+ publicProfileKey + ", publicProfileTags=" + publicProfileTags
+				+ "]";
+	}
+	
 	
 }

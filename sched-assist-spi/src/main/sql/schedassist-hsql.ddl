@@ -94,6 +94,13 @@ create table public_profiles (
 	CONSTRAINT fk_profile_owner FOREIGN KEY (owner_id) REFERENCES owners(internal_id) ON DELETE CASCADE
 );
 
+create table profile_tags (
+	profile_key varchar (8) not null,
+	tag varchar (80) not null,
+	tag_display varchar (80) not null,
+	CONSTRAINT fk_profile_tags FOREIGN KEY (profile_key) REFERENCES public_profiles(profile_key) ON DELETE CASCADE
+);
+
 create table reflect_locks(
 	owner_id integer not null,
 	constraint fk_owner_lock_id foreign key(owner_id) references owners(internal_id) on DELETE CASCADE
