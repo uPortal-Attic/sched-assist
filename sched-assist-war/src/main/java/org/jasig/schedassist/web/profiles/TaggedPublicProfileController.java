@@ -21,9 +21,11 @@ package org.jasig.schedassist.web.profiles;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.jasig.schedassist.impl.owner.PublicProfileDao;
 import org.jasig.schedassist.model.PublicProfileId;
+import org.jasig.schedassist.model.PublicProfileTag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -63,8 +65,11 @@ public class TaggedPublicProfileController {
 		
 		Collections.sort(profileIds);
 		ProfilePageInformation pageInfo = new ProfilePageInformation(profileIds, startIndex);
+		List<PublicProfileId> sublist = pageInfo.getSublist();
+		Map<PublicProfileId, List<PublicProfileTag>> profileMap = publicProfileDao.getProfileTagsBatch(sublist);
 		model.addAttribute("titleSuffix", buildPageTitleSuffix(tag, pageInfo.getStartIndex(), pageInfo.getEndIndex()));
-		model.addAttribute("profileIds", pageInfo.getSublist());
+		model.addAttribute("profileIds", sublist);
+		model.addAttribute("profileMap", profileMap);
 		model.addAttribute("showPrev", pageInfo.isShowPrev());
 		model.addAttribute("showPrevIndex", pageInfo.getShowPrevIndex());
 		model.addAttribute("showNext", pageInfo.isShowNext());
@@ -83,12 +88,12 @@ public class TaggedPublicProfileController {
 	 */
 	protected String buildPageTitleSuffix(String tag, int startIndex, int endIndex) {
 		StringBuilder title = new StringBuilder();
-		title.append("Public Profiles tagged with '");
+		title.append(" labeled with '");
 		title.append(tag);
 		title.append("' - ");
 		title.append(startIndex == 0 ? 1 : startIndex + 1);
 		title.append(" - ");
-		title.append(endIndex + 1);
+		title.append(endIndex);
 		return title.toString();
 	}
 }

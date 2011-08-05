@@ -65,16 +65,16 @@
         <load-on-startup>2</load-on-startup>
     </servlet>
     <servlet-mapping>
-		<servlet-name>schedassist</servlet-name>
-		<url-pattern>*.html</url-pattern>
-		<url-pattern>*.json</url-pattern>
-	</servlet-mapping>
-    <servlet-mapping>
         <servlet-name>schedassist-ws</servlet-name>
         <url-pattern>/remoting/*</url-pattern>
         <url-pattern>/sched-assist-remoting.wsdl</url-pattern>
-    </servlet-mapping>  
-	
+    </servlet-mapping>
+    <servlet-mapping>
+		<servlet-name>schedassist</servlet-name>
+		<url-pattern>*.html</url-pattern>
+		<url-pattern>*.json</url-pattern>
+		<url-pattern>/public/tags/*</url-pattern>
+	</servlet-mapping>
 
 	<filter>
 		<filter-name>springSecurityFilterChain</filter-name>

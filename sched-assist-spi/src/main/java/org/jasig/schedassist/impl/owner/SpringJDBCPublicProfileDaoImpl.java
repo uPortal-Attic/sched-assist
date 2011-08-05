@@ -245,28 +245,20 @@ public class SpringJDBCPublicProfileDaoImpl
 	@Override
 	public Map<PublicProfileId, List<PublicProfileTag>> getProfileTagsBatch(
 			List<PublicProfileId> profileIds) {
-		// map to name the parameters
-		Map<String, Object> paramMap = new HashMap<String, Object>();
 		// keep a map to quickly lookup profileId by key
 		final Map<String, PublicProfileId> idMap = new HashMap<String, PublicProfileId>();
 		
-		StringBuilder sql = new StringBuilder();
-		sql.append("select profile_key,tag,tag_display from profile tags where profile_key in (");	
-		int profileIdsLength = profileIds.size();
-		// for loop populates both maps and constructs sql
-		for(int i = 0; i < profileIdsLength; i++) {
-			PublicProfileId profileId = profileIds.get(i);
+		final String sql = "select profile_key,tag,tag_display from profile_tags where profile_key in (:key)";
+		
+		for(PublicProfileId profileId : profileIds) {
 			String key = profileId.getProfileKey();
+			// populate idMap with key->profileId
 			idMap.put(key, profileId);
-			String index = ":profileId" + i;
-			paramMap.put(index, key);
-			
-			sql.append(index);
-			if(i != profileIdsLength - 1 ) {
-				sql.append(",");
-			}
 		}
-		sql.append(")");
+		// map to name the parameters
+		Map<String, Object> paramMap = new HashMap<String, Object>();
+		List<String> keys = new ArrayList<String>(idMap.keySet());
+		paramMap.put("key", keys);
 		
 		Map<PublicProfileId, List<PublicProfileTag>> results = this.namedParameterJdbcTemplate.query(
 				sql.toString(),
@@ -309,7 +301,7 @@ public class SpringJDBCPublicProfileDaoImpl
 		this.simpleJdbcTemplate.batchUpdate("insert into profile_tags (profile_key,tag,tag_display) values (:profileKey,:tag,:tagDisplay)",
 				batch);
 		LOG.debug("inserted " + tags.size() + " tags for " + profileId);
-		return getProfileTags(profileId);	
+		return toStore;	
 	}
 	
 	/* (non-Javadoc)

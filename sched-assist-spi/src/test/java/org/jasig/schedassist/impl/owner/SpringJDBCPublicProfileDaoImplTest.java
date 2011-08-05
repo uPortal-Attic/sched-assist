@@ -21,6 +21,7 @@ package org.jasig.schedassist.impl.owner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -173,6 +174,10 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 		Assert.assertEquals("COMPUTER SCIENCE", storedTags.get(0).getTag());
 		Assert.assertEquals("DoIT", storedTags.get(1).getTagDisplay());
 		Assert.assertEquals("DOIT", storedTags.get(1).getTag());
+		
+		Map<PublicProfileId, List<PublicProfileTag>> map = this.publicProfileDao.getProfileTagsBatch(idSearchByTag);
+		Assert.assertNotNull(map);
+		Assert.assertEquals(storedTags, map.get(profileId));
 		
 		tags = Arrays.asList(new String[] {  });
 		storedTags = this.publicProfileDao.setProfileTags(tags, profileId);

@@ -31,6 +31,10 @@
 display:inline;
 padding-right:5px;
 }
+.tags {
+font-style: italic;
+padding-left: 1em;
+}
 </style>
 
 </head>
@@ -57,6 +61,15 @@ If you are looking for an Undergraduate Advisor, be sure to check the Undergradu
 <li>
 <div class="publicperson">
 <a href="<c:url value="/public/profiles/${profileId.profileKey }.html"/>"><c:out value="${profileId.ownerDisplayName}"/></a><br/>
+<c:set var="tags" value="${profileMap[profileId]}"></c:set>
+<c:if test="${not empty tags}">
+<div class="tags">
+<span>Labels:&nbsp;</span>
+<c:forEach var="tag" items="${tags}" varStatus="status">
+<a href="<c:url value="/public/tags/${tag.tagDisplay}"/>" title="View other Public Profiles labeled '${tag.tagDisplay}'">${tag.tagDisplay}</a><c:if test="${not status.last}">,&nbsp;</c:if>
+</c:forEach>
+</div>
+</c:if>
 </div>
 </li>
 </c:forEach>

@@ -27,7 +27,6 @@ public class PublicProfileTag {
 
 	private String profileKey;
 	private String tagDisplay;
-	private String tag;
 	/**
 	 * @return the profileKey
 	 */
@@ -66,7 +65,44 @@ public class PublicProfileTag {
 	@Override
 	public String toString() {
 		return "PublicProfileTag [profileKey=" + profileKey + ", tagDisplay="
-				+ tagDisplay + ", tag=" + tag + "]";
+				+ tagDisplay + "]";
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((profileKey == null) ? 0 : profileKey.hashCode());
+		result = prime * result
+				+ ((tagDisplay == null) ? 0 : tagDisplay.hashCode());
+		return result;
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PublicProfileTag other = (PublicProfileTag) obj;
+		if (profileKey == null) {
+			if (other.profileKey != null)
+				return false;
+		} else if (!profileKey.equals(other.profileKey))
+			return false;
+		if (tagDisplay == null) {
+			if (other.tagDisplay != null)
+				return false;
+		} else if (!tagDisplay.equals(other.tagDisplay))
+			return false;
+		return true;
 	}
 	
 	

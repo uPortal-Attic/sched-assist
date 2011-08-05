@@ -35,6 +35,14 @@
     
 	<context:component-scan base-package="org.jasig.schedassist.web"/>
 	
+	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+		<property name="alwaysUseFullPath" value="true"/>
+	</bean>
+	
+	<bean id="handlerAdapter" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="alwaysUseFullPath" value="true"/>
+	</bean>
+	
 	<!-- BEGIN spring webflow configuration -->
 	<webflow:flow-registry id="flowRegistry">
 		<webflow:flow-location path="/WEB-INF/flows/register/register.xml" />
