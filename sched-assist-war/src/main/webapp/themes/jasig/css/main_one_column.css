@@ -62,7 +62,6 @@ strong { font-weight: bold; }
 em { font-style: italic; }
 li > h3, li > p, li > a { font-size: 1em; }
 ol li {list-style: decimal;}
-ul li {list-style: disc;}
 .no_bullet {list-style: none;}
 
 html {
