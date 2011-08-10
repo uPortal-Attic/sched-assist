@@ -277,6 +277,44 @@ public class PreferencesFormBackingObject {
 	public void setEmailReminderHours(int emailReminderHours) {
 		this.emailReminderHours = emailReminderHours;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("PreferencesFormBackingObject [location=");
+		builder.append(location);
+		builder.append(", titlePrefix=");
+		builder.append(titlePrefix);
+		builder.append(", meetingLength=");
+		builder.append(meetingLength);
+		builder.append(", noteboard=");
+		builder.append(noteboard);
+		builder.append(", allowDoubleLength=");
+		builder.append(allowDoubleLength);
+		builder.append(", windowHoursStart=");
+		builder.append(windowHoursStart);
+		builder.append(", windowWeeksEnd=");
+		builder.append(windowWeeksEnd);
+		builder.append(", defaultVisitorsPerAppointment=");
+		builder.append(defaultVisitorsPerAppointment);
+		builder.append(", enableMeetingLimit=");
+		builder.append(enableMeetingLimit);
+		builder.append(", meetingLimitValue=");
+		builder.append(meetingLimitValue);
+		builder.append(", reflectSchedule=");
+		builder.append(reflectSchedule);
+		builder.append(", enableEmailReminders=");
+		builder.append(enableEmailReminders);
+		builder.append(", emailReminderIncludeOwner=");
+		builder.append(emailReminderIncludeOwner);
+		builder.append(", emailReminderHours=");
+		builder.append(emailReminderHours);
+		builder.append("]");
+		return builder.toString();
+	}
 	
 	
 }

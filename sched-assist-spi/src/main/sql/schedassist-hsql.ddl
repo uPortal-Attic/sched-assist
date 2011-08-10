@@ -38,6 +38,7 @@ create table schedules (
 	start_time timestamp not null,
 	end_time timestamp not null,
 	visitor_limit integer not null,
+	meeting_location varchar (128),
 	CONSTRAINT fk_sched_owner FOREIGN KEY (owner_id) REFERENCES owners(internal_id) ON DELETE CASCADE
 );
 

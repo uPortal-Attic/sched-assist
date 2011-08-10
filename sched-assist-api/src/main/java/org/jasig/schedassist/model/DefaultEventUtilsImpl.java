@@ -173,10 +173,16 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			// add class (normal)
 			event.getProperties().add(Clazz.PRIVATE);
 
-			// set owner's preferred location (if set)
-			final String preferredLocation = owner.getPreferredLocation();
-			if(StringUtils.isNotBlank(preferredLocation)) {
-				event.getProperties().add(new Location(preferredLocation));
+			// check if block overrides meeting location
+			final String blockMeetingLocationOverride = block.getMeetingLocation();
+			if(StringUtils.isNotBlank(blockMeetingLocationOverride)) {
+				event.getProperties().add(new Location(blockMeetingLocationOverride));
+			} else {
+				// fall back to owner's preferred location (if set)
+				final String preferredLocation = owner.getPreferredLocation();
+				if(StringUtils.isNotBlank(preferredLocation)) {
+					event.getProperties().add(new Location(preferredLocation));
+				}
 			}
 			
 			// add CONFIRMED status

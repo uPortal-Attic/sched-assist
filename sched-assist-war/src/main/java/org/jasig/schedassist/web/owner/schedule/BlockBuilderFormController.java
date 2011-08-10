@@ -84,6 +84,7 @@ public class BlockBuilderFormController {
 		int defaultVisitorLimit = Integer.parseInt(owner.getPreference(Preferences.DEFAULT_VISITOR_LIMIT));
 		BlockBuilderFormBackingObject fbo = new BlockBuilderFormBackingObject();
 		fbo.setVisitorsPerAppointment(defaultVisitorLimit);
+		fbo.setMeetingLocation(owner.getPreferredLocation());
 		model.addAttribute("command", fbo);
 		return "owner-schedule/builder-form";
 	}
@@ -105,12 +106,17 @@ public class BlockBuilderFormController {
 			return "owner-schedule/builder-form";
 		}
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+		String meetingLocation = owner.getPreferredLocation();
+		if(meetingLocation.equals(fbo.getMeetingLocation())) {
+			meetingLocation = null;
+		}
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.createBlocks(fbo.getStartTimePhrase(), 
 				fbo.getEndTimePhrase(),
 				fbo.getDaysOfWeekPhrase(),
 				dateFormat.parse(fbo.getStartDatePhrase()),
 				dateFormat.parse(fbo.getEndDatePhrase()),
-				fbo.getVisitorsPerAppointment());
+				fbo.getVisitorsPerAppointment(),
+				fbo.getMeetingLocation());
 		
 		availableScheduleDao.addToSchedule(owner, blocks);
 		

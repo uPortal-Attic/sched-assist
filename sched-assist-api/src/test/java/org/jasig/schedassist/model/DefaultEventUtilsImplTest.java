@@ -266,6 +266,58 @@ public class DefaultEventUtilsImplTest {
 	 * @throws Exception
 	 */
 	@Test
+	public void testConstructAvailableAppointmentBlockOverridesPreferredLocation() throws Exception {
+		// construct visitor
+		MockCalendarAccount person = new MockCalendarAccount();
+		person.setEmailAddress("somevisitor@wisc.edu");
+		person.setDisplayName("Some Visitor");
+		MockScheduleVisitor visitor = new MockScheduleVisitor(person);
+		
+		// construct owner
+		MockCalendarAccount person2 = new MockCalendarAccount();
+		person2.setEmailAddress("someowner@wisc.edu");
+		person2.setDisplayName("Some Owner");
+		MockScheduleOwner owner = new MockScheduleOwner(person2, 1);
+		owner.setPreference(Preferences.LOCATION, "Owner's office");
+		
+		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
+				AvailableBlockBuilder.createBlock("20091006-1300", "20091006-1330", 1, "alternate location"),
+				owner, 
+				visitor, 
+				"test event description");
+		
+		Assert.assertEquals("Appointment with Some Visitor", availableAppointment.getSummary().getValue());
+		Assert.assertEquals("test event description", availableAppointment.getDescription().getValue());
+		Assert.assertEquals("alternate location", availableAppointment.getLocation().getValue());
+		Assert.assertEquals(makeDateTime("20091006-1300"), availableAppointment.getStartDate().getDate());
+		Assert.assertEquals(makeDateTime("20091006-1330"), availableAppointment.getEndDate().getDate());
+		Assert.assertEquals("TRUE", availableAppointment.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT).getValue());
+		Assert.assertEquals("1", availableAppointment.getProperty(VisitorLimit.VISITOR_LIMIT).getValue());
+		Assert.assertEquals(Status.VEVENT_CONFIRMED, availableAppointment.getProperty(Status.STATUS));
+		PropertyList attendeePropertyList = availableAppointment.getProperties(Attendee.ATTENDEE);
+		for(Object o : attendeePropertyList) {
+			Property attendee = (Property) o;
+			Assert.assertEquals(PartStat.ACCEPTED, attendee.getParameter(PartStat.PARTSTAT));
+			Assert.assertEquals(CuType.INDIVIDUAL, attendee.getParameter(CuType.CUTYPE));
+			Assert.assertEquals(Rsvp.FALSE, attendee.getParameter(Rsvp.RSVP));
+			Parameter appointmentRole = attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
+			if("VISITOR".equals(appointmentRole.getValue())) {
+				Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
+				Assert.assertEquals("Some Visitor", attendee.getParameter("CN").getValue());
+			} else if ("OWNER".equals(appointmentRole.getValue())) {
+				Assert.assertEquals("mailto:someowner@wisc.edu", attendee.getValue());
+				Assert.assertEquals("Some Owner", attendee.getParameter("CN").getValue());
+			} else {
+				Assert.fail("unexpected value for appointment role: " + appointmentRole.getValue());
+			}
+			
+		}
+	}
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@Test
 	public void testConstructAvailableAppointmentVisitorIsStudentOwnerNotAdvisor() throws Exception {
 		// construct visitor
 		MockCalendarAccount person = new MockCalendarAccount();

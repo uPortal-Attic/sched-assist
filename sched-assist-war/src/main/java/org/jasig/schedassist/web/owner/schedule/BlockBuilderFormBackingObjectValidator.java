@@ -162,6 +162,14 @@ public class BlockBuilderFormBackingObjectValidator implements Validator {
 			errors.rejectValue("visitorsPerAppointment", "visitors.toosmall", "Maximum allowed value for visitors per appointment is 99.");
 		}
 		
+		if(StringUtils.isBlank(fbo.getMeetingLocation())) {
+			// forcibly set to null to guarantee proper storage
+			fbo.setMeetingLocation(null);
+		} else {
+			if(fbo.getMeetingLocation().length() > 100) {
+				errors.rejectValue("location", "location.toolong", "Location field is too long (" + fbo.getMeetingLocation().length() + "); maximum length is 100 characters.");
+			}
+		}
 		if(!errors.hasErrors()) {
 			// try to run the block builder and report any inputformatexceptions
 			try {

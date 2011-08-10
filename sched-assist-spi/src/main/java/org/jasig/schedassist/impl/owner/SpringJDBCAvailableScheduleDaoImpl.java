@@ -66,14 +66,14 @@ implements AvailableScheduleDao {
 	/**
 	 * @param dataSource the dataSource to set
 	 */
-	@Autowired(required=true)
+	@Autowired
 	public void setDataSource(DataSource dataSource) {
 		this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
 	}
 	/**
 	 * @param applicationEventPublisher the applicationEventPublisher to set
 	 */
-	@Autowired(required=true)
+	@Autowired
 	public void setApplicationEventPublisher(
 			ApplicationEventPublisher applicationEventPublisher) {
 		this.applicationEventPublisher = applicationEventPublisher;
@@ -233,7 +233,7 @@ implements AvailableScheduleDao {
 				endOfDay);
 		SortedSet<AvailableBlock> availableBlocks = new TreeSet<AvailableBlock>();
 		for(PersistenceAvailableBlock row : scheduleRows) {
-			availableBlocks.add(AvailableBlockBuilder.createBlock(row.getStartTime(), row.getEndTime(), row.getVisitorLimit()));
+			availableBlocks.add(AvailableBlockBuilder.createBlock(row.getStartTime(), row.getEndTime(), row.getVisitorLimit(), row.getMeetingLocation()));
 		}
 
 		int ownerPreferredMinDuration = owner.getPreferredMeetingDurations().getMinLength();
@@ -260,7 +260,6 @@ implements AvailableScheduleDao {
 			Date startDate) {
 		// truncate startDate to the second
 		final Date truncatedStart = DateUtils.truncate(startDate, Calendar.MINUTE);
-		//final Date truncatedEnd = DateUtils.truncate(endDate, Calendar.MINUTE);
 
 		// retrieve all blocks for the day.
 		Date startOfDay = DateUtils.truncate(startDate, Calendar.DATE);
@@ -273,7 +272,7 @@ implements AvailableScheduleDao {
 				endOfDay);
 		SortedSet<AvailableBlock> availableBlocks = new TreeSet<AvailableBlock>();
 		for(PersistenceAvailableBlock row : scheduleRows) {
-			availableBlocks.add(AvailableBlockBuilder.createBlock(row.getStartTime(), row.getEndTime(), row.getVisitorLimit()));
+			availableBlocks.add(AvailableBlockBuilder.createBlock(row.getStartTime(), row.getEndTime(), row.getVisitorLimit(), row.getMeetingLocation()));
 		}
 
 		int ownerPreferredMinDuration = owner.getPreferredMeetingDurations().getMinLength();
@@ -285,7 +284,7 @@ implements AvailableScheduleDao {
 					if(owner.getPreferredMeetingDurations().isDoubleLength() && expandedIterator.hasNext()) {
 						// combine the block with the next
 						AvailableBlock nextBlock = expandedIterator.next();
-						AvailableBlock combined = AvailableBlockBuilder.createBlock(block.getStartTime(), nextBlock.getEndTime(), block.getVisitorLimit());
+						AvailableBlock combined = AvailableBlockBuilder.createBlock(block.getStartTime(), nextBlock.getEndTime(), block.getVisitorLimit(), block.getMeetingLocation());
 						return combined;
 					} 
 				} 
@@ -327,11 +326,12 @@ implements AvailableScheduleDao {
 	protected int internalStoreBlock(final PersistenceAvailableBlock scheduleBlock) {
 		try {
 			return this.simpleJdbcTemplate.update(
-					"insert into schedules (owner_id, start_time, end_time, visitor_limit) values (?, ?, ?, ?)", 
+					"insert into schedules (owner_id, start_time, end_time, visitor_limit, meeting_location) values (?, ?, ?, ?, ?)", 
 					scheduleBlock.getOwnerId(), 
 					scheduleBlock.getStartTime(), 
 					scheduleBlock.getEndTime(),
-					scheduleBlock.getVisitorLimit());
+					scheduleBlock.getVisitorLimit(),
+					scheduleBlock.getMeetingLocation());
 		} catch (DataIntegrityViolationException e) {
 			LOG.warn("ignoring attempt to insert duplicate row", e);
 			return 0;
@@ -347,7 +347,7 @@ implements AvailableScheduleDao {
 	protected void internalStoreBlocks(final Set<PersistenceAvailableBlock> blocks) {
 		SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(blocks.toArray());
 		this.simpleJdbcTemplate.batchUpdate(
-				"insert into schedules (owner_id, start_time, end_time, visitor_limit) values (:ownerId, :startTime, :endTime, :visitorLimit)",
+				"insert into schedules (owner_id, start_time, end_time, visitor_limit, meeting_location) values (:ownerId, :startTime, :endTime, :visitorLimit, :meetingLocation)",
 				batch);
 	}
 	/**
@@ -366,7 +366,7 @@ implements AvailableScheduleDao {
 
 		SortedSet<AvailableBlock> availableBlocks = new TreeSet<AvailableBlock>();
 		for(PersistenceAvailableBlock row : scheduleRows) {
-			availableBlocks.add(AvailableBlockBuilder.createBlock(row.getStartTime(), row.getEndTime(), row.getVisitorLimit()));
+			availableBlocks.add(AvailableBlockBuilder.createBlock(row.getStartTime(), row.getEndTime(), row.getVisitorLimit(), row.getMeetingLocation()));
 		}
 
 		return availableBlocks;
@@ -418,7 +418,6 @@ implements AvailableScheduleDao {
 		Set<PersistenceAvailableBlock> persistenceBlocks = new HashSet<PersistenceAvailableBlock>();
 		for(AvailableBlock newBlock: combined) {
 			PersistenceAvailableBlock p = new PersistenceAvailableBlock(newBlock, owner.getId());
-			//internalStoreBlock(p);
 			persistenceBlocks.add(p);
 		}
 		internalStoreBlocks(persistenceBlocks);

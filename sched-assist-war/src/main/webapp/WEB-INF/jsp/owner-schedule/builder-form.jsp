@@ -70,6 +70,9 @@ $(function() {
 <label for="visitorsPerAppointment"><spring:message code="visitor.limit"/>:</label>&nbsp;<form:input path="visitorsPerAppointment" cssStyle="width: 2em;"/>
 <br/>
 <br/>
+<label for="meetingLocation"><spring:message code="meeting.location"/>:</label>&nbsp;<form:input path="meetingLocation"/>
+<br/>
+<br/>
 <input type="submit" value="<spring:message code="create"/>"/>
 </fieldset>
 </form:form>

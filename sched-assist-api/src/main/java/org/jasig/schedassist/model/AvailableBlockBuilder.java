@@ -111,6 +111,23 @@ public final class AvailableBlockBuilder {
 	 */
 	public static SortedSet<AvailableBlock> createBlocks(final String startTimePhrase, final String endTimePhrase, 
 			final String daysOfWeekPhrase, final Date startDate, final Date endDate, final int visitorLimit) throws InputFormatException {
+		return createBlocks(startTimePhrase, endTimePhrase, daysOfWeekPhrase, startDate, endDate, visitorLimit, null);
+	}
+	
+	/**
+	 * 
+	 * @param startTimePhrase
+	 * @param endTimePhrase
+	 * @param daysOfWeekPhrase
+	 * @param startDate
+	 * @param endDate
+	 * @param visitorLimit
+	 * @param meetingLocation
+	 * @return
+	 * @throws InputFormatException
+	 */
+	public static SortedSet<AvailableBlock> createBlocks(final String startTimePhrase, final String endTimePhrase, 
+			final String daysOfWeekPhrase, final Date startDate, final Date endDate, final int visitorLimit, final String meetingLocation) throws InputFormatException {
 		SortedSet<AvailableBlock> blocks = new TreeSet<AvailableBlock>();
 		// set time of startDate to 00:00:00
 		Date realStartDate = DateUtils.truncate(startDate, Calendar.DATE);
@@ -137,7 +154,7 @@ public final class AvailableBlockBuilder {
 				throw new InputFormatException("Start time must occur before end time");
 			}
 			if(CommonDateOperations.equalsOrAfter(blockStartTime, realStartDate) && CommonDateOperations.equalsOrBefore(blockEndTime, realEndDate)) {
-				AvailableBlock block = new AvailableBlock(blockStartTime, blockEndTime, visitorLimit);
+				AvailableBlock block = new AvailableBlock(blockStartTime, blockEndTime, visitorLimit, meetingLocation);
 				blocks.add(block);
 			}
 			
@@ -165,7 +182,20 @@ public final class AvailableBlockBuilder {
 	 * @return the new block
 	 */
 	public static AvailableBlock createBlock(final Date startDate, final Date endDate, final int visitorLimit) {
-		return new AvailableBlock(startDate, endDate, visitorLimit);
+		return createBlock(startDate, endDate, visitorLimit, null);
+	}
+	
+	/**
+	 * Create a single {@link AvailableBlock}.
+	 * 
+	 * @param startDate
+	 * @param endDate
+	 * @param visitorLimit
+	 * @param meetingLocation
+	 * @return the new block
+	 */
+	public static AvailableBlock createBlock(final Date startDate, final Date endDate, final int visitorLimit, final String meetingLocation) {
+		return new AvailableBlock(startDate, endDate, visitorLimit, meetingLocation);
 	}
 	
 	/**
@@ -193,9 +223,23 @@ public final class AvailableBlockBuilder {
 	 * @throws InputFormatException
 	 */
 	public static AvailableBlock createBlock(final String startTimePhrase, final String endTimePhrase, final int visitorLimit) throws InputFormatException {
+		return createBlock(startTimePhrase, endTimePhrase, visitorLimit, null);
+	}
+	
+	/**
+	 * Create a single {@link AvailableBlock} using this applications common time format ("yyyyMMdd-HHmm").
+	 * 
+	 * @see CommonDateOperations#parseDateTimePhrase(String)
+	 * @param startTimePhrase
+	 * @param endTimePhrase
+	 * @param visitorLimit
+	 * @return the new block
+	 * @throws InputFormatException
+	 */
+	public static AvailableBlock createBlock(final String startTimePhrase, final String endTimePhrase, final int visitorLimit, final String meetingLocation) throws InputFormatException {
 		Date startTime = CommonDateOperations.parseDateTimePhrase(startTimePhrase);
 		Date endTime = CommonDateOperations.parseDateTimePhrase(endTimePhrase);
-		return createBlock(startTime, endTime, visitorLimit);
+		return createBlock(startTime, endTime, visitorLimit, meetingLocation);
 	}
 	
 	/**
@@ -323,7 +367,7 @@ public final class AvailableBlockBuilder {
 		Date currentStart = largeBlock.getStartTime();
 		while(largeBlock.getEndTime().getTime() - currentStart.getTime() >= meetingLengthInMsec) {
 			Date newEndTime = new Date(currentStart.getTime() + meetingLengthInMsec);
-			AvailableBlock smallBlock = createBlock(currentStart, newEndTime, largeBlock.getVisitorLimit());
+			AvailableBlock smallBlock = createBlock(currentStart, newEndTime, largeBlock.getVisitorLimit(), largeBlock.getMeetingLocation());
 			smallBlock.setVisitorsAttending(largeBlock.getVisitorsAttending());
 			smallBlocks.add(smallBlock);
 			currentStart = newEndTime;
@@ -361,11 +405,11 @@ public final class AvailableBlockBuilder {
 			AvailableBlock current = smallBlockIterator.next();
 			while(smallBlockIterator.hasNext()) {
 				AvailableBlock next = smallBlockIterator.next();
-				if(current.getEndTime().equals(next.getStartTime()) && current.getVisitorLimit() == next.getVisitorLimit()) {
-					// current and next are adjacent AND have the same visitorLimit
+				if(combinable(current, next)) {
+					// current and next are adjacent AND have the same visitorLimit AND have same meetinglocation
 					// update current to have current.startTime and next.endTime
 					try {
-						current = new AvailableBlock(current.getStartTime(), next.getEndTime(), current.getVisitorLimit());
+						current = new AvailableBlock(current.getStartTime(), next.getEndTime(), current.getVisitorLimit(), current.getMeetingLocation());
 					} catch (IllegalArgumentException e) {
 						// could not create a block, what to do?
 						LOG.error("failed to create an AvailableBlock from " + current.getStartTime() + " and " + next.getEndTime(), e);
@@ -385,7 +429,48 @@ public final class AvailableBlockBuilder {
 		return largeBlocks;
 	}
 	
-	
+	/**
+	 * 2 blocks are combinable if and onlyl if:
+	 * <ol>
+	 * <li>the end time of the left equals the start time of the right</li>
+	 * <li>the visitor limits are equivalent</li>
+	 * <li>the meeting locations are equivalent</li>
+	 * </ol>
+	 * 
+	 * @see #safeMeetingLocationEquals(AvailableBlock, AvailableBlock)
+	 * @param left
+	 * @param right
+	 * @return true if the 2 blocks can be combined
+	 */
+	static boolean combinable(AvailableBlock left, AvailableBlock right) {
+		if(left == null || right == null) {
+			return false;
+		}
+		return left.getEndTime().equals(right.getStartTime()) && 
+			left.getVisitorLimit() == right.getVisitorLimit() &&
+			safeMeetingLocationEquals(left, right);
+	}
+	/**
+	 * Null safe equality test for {@link AvailableBlock#getMeetingLocation()
+	 * @param left
+	 * @param right
+	 * @return true if the meetingLocation fields are equivalent
+	 */
+	static boolean safeMeetingLocationEquals(AvailableBlock left, AvailableBlock right) {
+		final String leftLocation = left.getMeetingLocation();
+		final String rightLocation = right.getMeetingLocation();
+		if(leftLocation == null && rightLocation == null) {
+			return true;
+		}
+		if(leftLocation != null) {
+			return leftLocation.equals(rightLocation);
+		}
+		if(rightLocation != null) {
+			return rightLocation.equals(leftLocation);
+		}
+		// not reachable?
+		return false;
+	}
 	
 	/**
 	 * Returns a {@link List} of {@link Date} objects that fall between startDate and endDate and

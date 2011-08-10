@@ -46,7 +46,8 @@ create table schedules (
 	owner_id int constraint fk_owner_id references owners (internal_id) ON DELETE CASCADE not null,
 	start_time date not null,
 	end_time date not null,
-	visitor_limit int not null
+	visitor_limit int not null,
+	meeting_location varchar2(128)
 );
 
 create table preferences (

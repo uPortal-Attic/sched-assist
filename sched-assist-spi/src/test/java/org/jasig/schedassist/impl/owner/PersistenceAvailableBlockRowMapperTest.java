@@ -24,6 +24,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -53,6 +54,7 @@ public class PersistenceAvailableBlockRowMapperTest {
 		expect(mock.getTimestamp("start_time")).andReturn(new Timestamp(testBlock.getStartTime().getTime()));
 		expect(mock.getTimestamp("end_time")).andReturn(new Timestamp(testBlock.getEndTime().getTime()));
 		expect(mock.getInt("visitor_limit")).andReturn(1);
+		expect(mock.getString("meeting_location")).andReturn(null);
 		replay(mock);
 		
 		PersistenceAvailableBlockRowMapper mapper = new PersistenceAvailableBlockRowMapper();
@@ -62,7 +64,7 @@ public class PersistenceAvailableBlockRowMapperTest {
 		assertEquals(testBlock.getEndTime(), block.getEndTime());
 		assertEquals(testBlock.getVisitorLimit(), block.getVisitorLimit());
 		assertEquals(45L, block.getOwnerId());
-		
+		assertNull(block.getMeetingLocation());
 		verify(mock);
 	}
 	
@@ -79,6 +81,7 @@ public class PersistenceAvailableBlockRowMapperTest {
 		expect(mock.getTimestamp("start_time")).andReturn(new Timestamp(testBlock.getStartTime().getTime()));
 		expect(mock.getTimestamp("end_time")).andReturn(new Timestamp(testBlock.getEndTime().getTime()));
 		expect(mock.getInt("visitor_limit")).andReturn(10);
+		expect(mock.getString("meeting_location")).andReturn(null);
 		replay(mock);
 		
 		PersistenceAvailableBlockRowMapper mapper = new PersistenceAvailableBlockRowMapper();
@@ -88,6 +91,7 @@ public class PersistenceAvailableBlockRowMapperTest {
 		assertEquals(testBlock.getEndTime(), block.getEndTime());
 		assertEquals(testBlock.getVisitorLimit(), block.getVisitorLimit());
 		assertEquals(45L, block.getOwnerId());
+		assertNull(block.getMeetingLocation());
 		
 		verify(mock);
 	}
@@ -106,6 +110,7 @@ public class PersistenceAvailableBlockRowMapperTest {
 		expect(mock.getTimestamp("start_time")).andReturn(new Timestamp(testBlock.getStartTime().getTime()));
 		expect(mock.getTimestamp("end_time")).andReturn(new Timestamp(testBlock.getEndTime().getTime()));
 		expect(mock.getInt("visitor_limit")).andReturn(0);
+		expect(mock.getString("meeting_location")).andReturn(null);
 		replay(mock);
 		
 		PersistenceAvailableBlockRowMapper mapper = new PersistenceAvailableBlockRowMapper();
@@ -115,7 +120,34 @@ public class PersistenceAvailableBlockRowMapperTest {
 		assertEquals(testBlock.getEndTime(), block.getEndTime());
 		assertEquals(testBlock.getVisitorLimit(), block.getVisitorLimit());
 		assertEquals(45L, block.getOwnerId());
+		assertNull(block.getMeetingLocation());
+		verify(mock);
+	}
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testMeetingLocation() throws Exception {
+		AvailableBlock testBlock = AvailableBlockBuilder.createBlock("20091007-1600", "20091007-1700", 1);
 		
+		ResultSet mock = createMock(ResultSet.class);
+		expect(mock.getLong("owner_id")).andReturn(45L);
+		expect(mock.getTimestamp("start_time")).andReturn(new Timestamp(testBlock.getStartTime().getTime()));
+		expect(mock.getTimestamp("end_time")).andReturn(new Timestamp(testBlock.getEndTime().getTime()));
+		expect(mock.getInt("visitor_limit")).andReturn(1);
+		expect(mock.getString("meeting_location")).andReturn("some office");
+		replay(mock);
+		
+		PersistenceAvailableBlockRowMapper mapper = new PersistenceAvailableBlockRowMapper();
+		PersistenceAvailableBlock block = mapper.mapRow(mock, 1);
+		
+		assertEquals(testBlock.getStartTime(), block.getStartTime());
+		assertEquals(testBlock.getEndTime(), block.getEndTime());
+		assertEquals(testBlock.getVisitorLimit(), block.getVisitorLimit());
+		assertEquals(45L, block.getOwnerId());
+		assertEquals("some office", block.getMeetingLocation());
 		verify(mock);
 	}
 }

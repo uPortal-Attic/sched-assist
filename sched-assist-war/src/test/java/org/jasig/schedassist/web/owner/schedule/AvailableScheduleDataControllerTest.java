@@ -22,6 +22,8 @@ package org.jasig.schedassist.web.owner.schedule;
 
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
+import org.jasig.schedassist.model.InputFormatException;
+import org.jasig.schedassist.web.owner.schedule.AvailableScheduleDataController.AvailableBlockJsonRepresentation;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,10 +41,14 @@ public class AvailableScheduleDataControllerTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testConvertBlockControl() throws Exception {
+	public void testJsonRepresentationControl() throws Exception {
 		AvailableBlock block = AvailableBlockBuilder.createBlock("20090408-0800", "20090408-0815");
-		String blockFormatted = AvailableScheduleDataController.convertBlock(block);
-		Assert.assertEquals("Wed0800 x 1 x 1", blockFormatted);
+		AvailableBlockJsonRepresentation jsonBlock = new AvailableBlockJsonRepresentation(block);
+		
+		Assert.assertEquals("Wed0800", jsonBlock.getStartTime());
+		Assert.assertEquals(1, jsonBlock.getDurationIn15Mins());
+		Assert.assertEquals(1, jsonBlock.getVisitorLimit());
+		Assert.assertNull(jsonBlock.getMeetingLocation());
 	}
 	/**
 	 * Test a 15 minute block.
@@ -50,10 +56,14 @@ public class AvailableScheduleDataControllerTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testConvertBlockControlVisitorLimit() throws Exception {
+	public void testJsonRepresentationVisitorLimit() throws Exception {
 		AvailableBlock block = AvailableBlockBuilder.createBlock("20090408-0800", "20090408-0815", 10);
-		String blockFormatted = AvailableScheduleDataController.convertBlock(block);
-		Assert.assertEquals("Wed0800 x 1 x 10", blockFormatted);
+		AvailableBlockJsonRepresentation jsonBlock = new AvailableBlockJsonRepresentation(block);
+		
+		Assert.assertEquals("Wed0800", jsonBlock.getStartTime());
+		Assert.assertEquals(1, jsonBlock.getDurationIn15Mins());
+		Assert.assertEquals(10, jsonBlock.getVisitorLimit());
+		Assert.assertNull(jsonBlock.getMeetingLocation());
 	}
 	
 	/**
@@ -64,20 +74,12 @@ public class AvailableScheduleDataControllerTest {
 	@Test
 	public void test4HourBlock() throws Exception {
 		AvailableBlock block = AvailableBlockBuilder.createBlock("20090408-0900", "20090408-1300");
-		String blockFormatted = AvailableScheduleDataController.convertBlock(block);
-		Assert.assertEquals("Wed0900 x 16 x 1", blockFormatted);
-	}
-	
-	/**
-	 * Test a 4 hour long block.
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void test4HourBlockVisitorLimit() throws Exception {
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20090408-0900", "20090408-1300", 10);
-		String blockFormatted = AvailableScheduleDataController.convertBlock(block);
-		Assert.assertEquals("Wed0900 x 16 x 10", blockFormatted);
+		AvailableBlockJsonRepresentation jsonBlock = new AvailableBlockJsonRepresentation(block);
+		
+		Assert.assertEquals("Wed0900", jsonBlock.getStartTime());
+		Assert.assertEquals(16, jsonBlock.getDurationIn15Mins());
+		Assert.assertEquals(1, jsonBlock.getVisitorLimit());
+		Assert.assertNull(jsonBlock.getMeetingLocation());
 	}
 	
 	/**
@@ -88,33 +90,40 @@ public class AvailableScheduleDataControllerTest {
 	@Test
 	public void test18HourBlock() throws Exception {
 		AvailableBlock block = AvailableBlockBuilder.createBlock("20090408-0500", "20090408-2300");
-		String blockFormatted = AvailableScheduleDataController.convertBlock(block);
-		Assert.assertEquals("Wed0500 x 72 x 1", blockFormatted);
+		AvailableBlockJsonRepresentation jsonBlock = new AvailableBlockJsonRepresentation(block);
+		
+		Assert.assertEquals("Wed0500", jsonBlock.getStartTime());
+		Assert.assertEquals(72, jsonBlock.getDurationIn15Mins());
+		Assert.assertEquals(1, jsonBlock.getVisitorLimit());
+		Assert.assertNull(jsonBlock.getMeetingLocation());
 	}
 	
-	/**
-	 * Test an 18 hour long block.
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void test18HourBlockVisitorLimit() throws Exception {
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20090408-0500", "20090408-2300", 5);
-		String blockFormatted = AvailableScheduleDataController.convertBlock(block);
-		Assert.assertEquals("Wed0500 x 72 x 5", blockFormatted);
-	}
 	
 	/**
 	 * Test a block that doesn't start on a multiple of 15.
-	 * See https://jira.doit.wisc.edu/jira/browse/AVAIL-106
 	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testBlockStartsOffThe15s() throws Exception {
 		AvailableBlock block = AvailableBlockBuilder.createBlock("20100830-1320", "20100830-1600", 1);
-		String blockFormatted = AvailableScheduleDataController.convertBlock(block);
-		Assert.assertEquals("Mon1315 x 11 x 1", blockFormatted);
+		AvailableBlockJsonRepresentation jsonBlock = new AvailableBlockJsonRepresentation(block);
+		
+		Assert.assertEquals("Mon1315", jsonBlock.getStartTime());
+		Assert.assertEquals(11, jsonBlock.getDurationIn15Mins());
+		Assert.assertEquals(1, jsonBlock.getVisitorLimit());
+		Assert.assertNull(jsonBlock.getMeetingLocation());
+	}
+	
+	@Test
+	public void testMeetingLocation() throws InputFormatException {
+		AvailableBlock block = AvailableBlockBuilder.createBlock("20090408-0800", "20090408-0815", 1, "alternate location");
+		AvailableBlockJsonRepresentation jsonBlock = new AvailableBlockJsonRepresentation(block);
+		
+		Assert.assertEquals("Wed0800", jsonBlock.getStartTime());
+		Assert.assertEquals(1, jsonBlock.getDurationIn15Mins());
+		Assert.assertEquals(1, jsonBlock.getVisitorLimit());
+		Assert.assertEquals("alternate location", jsonBlock.getMeetingLocation());
 	}
 	
 }

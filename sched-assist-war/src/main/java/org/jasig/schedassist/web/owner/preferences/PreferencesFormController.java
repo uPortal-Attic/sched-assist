@@ -123,7 +123,7 @@ public class PreferencesFormController {
 		fbo.setEnableEmailReminders(emailReminders.isEnabled());
 		fbo.setEmailReminderIncludeOwner(emailReminders.isIncludeOwner());
 		fbo.setEmailReminderHours(emailReminders.getHours());
-		
+
 		model.addAttribute("command", fbo);
 		return "owner-preferences/preferences-form";
 	}

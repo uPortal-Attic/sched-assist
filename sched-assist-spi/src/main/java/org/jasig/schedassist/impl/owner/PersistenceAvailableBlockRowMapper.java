@@ -47,6 +47,7 @@ class PersistenceAvailableBlockRowMapper implements
 			visitorLimit = 1;
 		}
 		schedule.setVisitorLimit(visitorLimit);
+		schedule.setMeetingLocation(rs.getString("meeting_location"));
 		return schedule;
 	}
 

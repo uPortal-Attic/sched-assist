@@ -25,15 +25,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.impl.owner.AvailableScheduleDao;
@@ -51,7 +50,6 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
 
 /**
  * {@link Controller} implementation that returns the {@link IScheduleOwner}'s
@@ -67,8 +65,6 @@ public class AvailableScheduleDataController {
 	private Log LOG = LogFactory.getLog(this.getClass());
 	
 	private AvailableScheduleDao availableScheduleDao;
-	
-	private static final String BLOCK_DELIM = " x ";
 
 	/**
 	 * @param availableScheduleDao the availableScheduleDao to set
@@ -107,83 +103,27 @@ public class AvailableScheduleDataController {
 		model.addAttribute("weekEnd", formatDate(weekEnd));
 		
 		AvailableSchedule schedule = availableScheduleDao.retrieveWeeklySchedule(owner, weekStart);
-		List<String> formattedScheduleBlocks = formatSchedule(schedule);
-		model.addAttribute("scheduleBlocks", formattedScheduleBlocks);
-		
+		model.addAttribute("scheduleBlocks", formatJson(schedule));
+		model.addAttribute("defaultMeetingLocation", owner.getPreferredLocation());
 		response.setHeader("Cache-Control", "max-age=0,no-cache,no-store,post-check=0,pre-check=0");
 		response.setHeader("Expires", "Fri, 31 Jan 1997 05:00:00 GMT");
 		return "jsonView";
 	}
 	
 	/**
-	 * Convert the {@link AvailableBlock}s from an {@link AvailableSchedule} 
-	 * into a {@link List} of {@link String}s that are formatted as the 
-	 * Javascript for the schedule view expects.
-	 * 
-	 * An example of the format for each string is:
-	 <pre>
-	 Mon0900 x 24 x Mon1500
-	 </pre>
-	 * This string starts at 9:00 AM Monday and ends at 3:00 PM Monday, and is made
-	 * up of 24 15 minute blocks.
-	 * The "x" characters are used as delimiters.
 	 * 
 	 * @param schedule
 	 * @return
 	 */
-	public static List<String> formatSchedule(final AvailableSchedule schedule) {
-		List<String> results = new ArrayList<String>();
-		
+	public static List<AvailableBlockJsonRepresentation> formatJson(final AvailableSchedule schedule) {
+		List<AvailableBlockJsonRepresentation> results = new ArrayList<AvailableScheduleDataController.AvailableBlockJsonRepresentation>();
 		// insure that the blocks are combined
 		Set<AvailableBlock> combined = AvailableBlockBuilder.combine(schedule.getAvailableBlocks());
 		for(AvailableBlock block : combined) {
-			String blockString = convertBlock(block);
-			results.add(blockString.toString());
+			results.add(new AvailableBlockJsonRepresentation(block));
 		}
+		
 		return results;
-	}
-
-	/**
-	 * Convert an {@link AvailableBlock} to a formatted String, like:
-	 <pre>
-	 Mon0900 x 24 x 1
-	 </pre>
-	 *
-	 * The view currently only displays blocks from 7:00 AM until 5:00 PM (last id is 1645).
-	 * The last number represents the visitor limit (only 1 guest in this example).
-	 * 
-	 * The max number of displayed 15 minute increments is 40.
-	 * 
-	 * @param block
-	 * @return
-	 */
-	public static String convertBlock(final AvailableBlock block) {
-		SimpleDateFormat blockPrintFormat = new SimpleDateFormat("EEEHHmm");
-		// expand the block to 15 minute chunks and get the size
-		Set<AvailableBlock> expanded = AvailableBlockBuilder.expand(block, 15);
-		int blockSize = expanded.size();
-		
-		StringBuilder blockString = new StringBuilder();
-		Date rounded = roundDownToNearest15(block.getStartTime());
-		if(!block.getStartTime().equals(rounded)) {
-			// start time was rounded
-			// since we're showing an earlier start time, we have to add a block to get the right end date
-			blockSize++;
-		}
-		
-		// put it all together
-		// "Mon0900"
-		blockString.append(blockPrintFormat.format(rounded));
-		// " x "
-		blockString.append(BLOCK_DELIM);
-		// "24"
-		blockString.append(blockSize);
-		// " x "
-		blockString.append(BLOCK_DELIM);
-		// "1"
-		blockString.append(block.getVisitorLimit());
-		
-		return blockString.toString();
 	}
 	
 	/**
@@ -214,5 +154,68 @@ public class AvailableScheduleDataController {
 	private String formatDate(Date date) {
 		SimpleDateFormat df = new SimpleDateFormat("MMM d, yyyy");
 		return df.format(date);
+	}
+	
+	/**
+	 * Simpler representation of an {@link AvailableBlock} tailored for JSON.
+	 * 
+	 * @author Nicholas Blair, npblair@wisc.edu
+	 *
+	 */
+	public static class AvailableBlockJsonRepresentation {
+		
+		public static final String DATETIME_FORMAT = "EEEHHmm";
+		static final FastDateFormat dateFormat = FastDateFormat.getInstance(DATETIME_FORMAT);
+		private final AvailableBlock block;
+		private final Date startTimeRounded;
+
+		/**
+		 * @param block
+		 */
+		public AvailableBlockJsonRepresentation(AvailableBlock block) {
+			this.block = block;
+			this.startTimeRounded = roundDownToNearest15(block.getStartTime());
+		}
+		
+		/**
+		 * 
+		 * @return the formatted start time of the block
+		 */
+		public String getStartTime() {
+			return dateFormat.format(startTimeRounded);
+		}
+		
+		/**
+		 * 
+		 * @return the duration of the block in 15 minute segments (e.g. ~block duration / 15)
+		 */
+		public int getDurationIn15Mins() {
+			Set<AvailableBlock> expanded = AvailableBlockBuilder.expand(block, 15);
+			int blockSize = expanded.size();
+			
+			if(!block.getStartTime().equals(startTimeRounded)) {
+				// start time was rounded
+				// since we're showing an earlier start time, we have to add a block to get the right end date
+				blockSize++;
+			}
+			
+			return blockSize;
+		}
+		
+		/**
+		 * 
+		 * @return the block's visitorLimit
+		 */
+		public int getVisitorLimit() {
+			return block.getVisitorLimit();
+		}
+		
+		/**
+		 * 
+		 * @return the block's meetingLocation
+		 */
+		public String getMeetingLocation() {
+			return block.getMeetingLocation();
+		}
 	}
 }

@@ -30,7 +30,6 @@
 <rs:resourceURL var="jquerySmoothnessStyle" value="/rs/jqueryui/1.7.2/theme/smoothness/jquery-ui-1.7.2-smoothness.min.css"/>
 <link rel="stylesheet" type="text/css" href="${jquerySmoothnessStyle }" media="all"/>
 <rs:resourceURL var="crossIcon" value="/rs/famfamfam/silk/1.3/cross.png"/>
-
 <rs:resourceURL var="jqueryUiPath" value="/rs/jqueryui/1.7.2/jquery-ui-1.7.2.min.js"/>
 <script type="text/javascript" src="${jqueryUiPath}"></script>
 <script type="text/javascript" src="<c:url value="/js/owner-schedule-utils.js"/>"></script>
@@ -96,7 +95,8 @@ var currentWeekEnd;
 
 function draw(statusBoxReset) {
 	$(".storedblock").each(function(i,element){	
-		$(element).removeClass('storedblock');
+		$(element).removeClass('storedblock alternatelocation');
+		$(element).attr('title', '');
 		$(element).empty();
 	});
 	retrieveAndRender(currentWeekStart);
@@ -152,7 +152,7 @@ function retrieveAndRender(date) {
 						blockIds = getBlockIds(block);
 						jQuery.each(blockIds, function(j, blockId) {
 							// build visitor limit text
-							visitorLimit = getBlockVisitorLimit(block);
+							visitorLimit = block.visitorLimit;
 							visitorLimitText = '';
 							if(visitorLimit == 1) {
 								visitorLimitText += '<spring:message code="only.one.guest"/>';
@@ -161,7 +161,7 @@ function retrieveAndRender(date) {
 							}
 							// locate first cell
 							cell = $('#' + blockId);
-							if(blockIds.length == 1) {
+							if(block.durationIn15Mins == 1) {
 								cell.append(jQuery('<span class="vlimit">' + visitorLimitText + '</span>'));
 								blockEnd = add15(blockId);
 								destroyHandle = 'destroyHandle-' + blockId + '-' + blockEnd;
@@ -169,7 +169,6 @@ function retrieveAndRender(date) {
 								cell.append(jQuery('<a class="destroyHandle" href="#" title="' + destroyHandleTitle + '" id="' + destroyHandle + '"><img src="<c:out value="${crossIcon}"/>"/></a>'));
 								$("#" + destroyHandle).click(function () {
 									myId = $(this).attr("id");
-									//alert("clicked destroyhandle: " + myId);
 									idTokens = myId.split("-");
 
 									startTime = convertElementIdToDate(idTokens[1], currentWeekStart);
@@ -184,7 +183,6 @@ function retrieveAndRender(date) {
 								cell.append(jQuery('<a class="destroyHandle" "href="#" title="' + destroyHandleTitle + '" id="' + destroyHandle + '"><img src="<c:out value="${crossIcon}"/>"/></a>'));
 								$("#" + destroyHandle).click(function () {
 									myId = $(this).attr("id");
-									//alert("clicked destroyhandle: " + myId);
 									idTokens = myId.split("-");
 
 									startTime = convertElementIdToDate(idTokens[1], currentWeekStart);
@@ -194,6 +192,10 @@ function retrieveAndRender(date) {
 							} 
 							cell.append(jQuery('<div class="clearFloats"></div>'));
 							cell.addClass('storedblock');
+							if(block.meetingLocation != null && block.meetingLocation != data.defaultMeetingLocation) {
+								cell.addClass('alternatelocation');
+								cell.attr('title','Meetings have alternate location: ' + block.meetingLocation);
+							}
 						});
 					});
 				} else {
@@ -260,6 +262,9 @@ clear:both;
 .noscriptlink {
 float:right;
 padding-right:2em;
+}
+.alternatelocation {
+background: #478867;
 }
 </style>
 </head>

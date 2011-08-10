@@ -207,24 +207,23 @@ function mult15(blockToken, iterations) {
 	}
 	return startTimeCopy;
 }
+
 /**
  * Function to return an Array of element IDs that corresponds to
  * an element from the "scheduleBlocks" array in the schedule JSON data.
  * 
- * For example, passing in a blockString of 'Thu1300 x 8 x 1'
+ * For example, passing in a block with startTime of 'Thu1300' and a durationIn15Mins value of '8' 
  * will return an 8 element array:
  * [ 'Thu1300','Thu1315','Thu1330','Thu1345','Thu1400','Thu1415','Thu1430','Thu1445' ]
  * 
- * @param blockString
- * @return
+ * @param block JSON object
+ * @return array of strings with affected element ids
  */
-function getBlockIds(blockString) {
+function getBlockIds(block) {
 	var blockIds = new Array();
-	tokens = blockString.split(" x ");
-	
-	numberBlocks = tokens[1];
+	numberBlocks = block.durationIn15Mins;
 	for(i = 0; i < numberBlocks; i++) {
-		blockIds[i] = mult15(tokens[0], i);
+		blockIds[i] = mult15(block.startTime, i);
 	}
 	return blockIds;
 }

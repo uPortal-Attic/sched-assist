@@ -130,6 +130,20 @@ public class SpringJDBCAvailableScheduleDaoImplTest extends
 		Assert.assertTrue(stored.contains(single));
 	}
 	
+	@Test
+	public void testAddToScheduleOverrideMeetingLocation() throws Exception {
+		AvailableBlock single = AvailableBlockBuilder.createBlock("20091102-1330", "20091102-1400", 1, "alternate location");
+		AvailableSchedule schedule = availableScheduleDao.addToSchedule(sampleOwners[0], single);
+		SortedSet<AvailableBlock> stored = schedule.getAvailableBlocks();
+		Assert.assertTrue(stored.contains(single));
+		
+		schedule = availableScheduleDao.retrieve(sampleOwners[0]);
+		stored = schedule.getAvailableBlocks();
+		Assert.assertTrue(stored.contains(single));
+		Assert.assertEquals(1, stored.size());
+		Assert.assertEquals("alternate location", stored.first().getMeetingLocation());
+	}
+	
 	/**
 	 * 
 	 * @throws Exception

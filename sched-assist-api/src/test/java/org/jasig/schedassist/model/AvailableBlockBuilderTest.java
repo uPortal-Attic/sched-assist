@@ -822,4 +822,61 @@ public class AvailableBlockBuilderTest {
 	
 	}
 	
+	@Test
+	public void testMeetingLocationEffectHashCodeEquals() throws InputFormatException {
+		AvailableBlock blockNoLocation = AvailableBlockBuilder.createBlock("20110810-0900", "20110810-0930");
+		AvailableBlock blockWithLocation = AvailableBlockBuilder.createBlock("20110810-0900", "20110810-0930", 1, "different location");
+	
+		Assert.assertEquals(blockNoLocation, blockWithLocation);
+		Assert.assertEquals(blockNoLocation.hashCode(), blockWithLocation.hashCode());
+	}
+	
+	@Test
+	public void textExpandPreserveLocation() throws InputFormatException, ParseException {
+		SortedSet<AvailableBlock> blocks = AvailableBlockBuilder.createBlocks("9:00 AM", "12:00 PM", "MWF", 
+				CommonDateOperations.getDateFormat().parse("20110801"),
+				CommonDateOperations.getDateFormat().parse("20110831"), 
+				1,
+				"alternate location");
+		
+		for(AvailableBlock block: blocks) {
+			Assert.assertEquals("alternate location", block.getMeetingLocation());
+		}
+	}
+	
+	/**
+	 * Create adjacent available blocks but set different meeting locations.
+	 * Confirm blocks not combined by combine method.
+	 * @throws InputFormatException 
+	 * 
+	 */
+	@Test
+	public void testDifferentMeetingLocationNotCombined() throws InputFormatException {
+		AvailableBlock blockNoLocation = AvailableBlockBuilder.createBlock("20110810-0900", "20110810-0930", 1, "some location");
+		AvailableBlock blockWithLocation = AvailableBlockBuilder.createBlock("20110810-0930", "20110810-1000", 1, "different location");
+	
+		SortedSet<AvailableBlock> smallBlocks = new TreeSet<AvailableBlock>();
+		smallBlocks.add(blockNoLocation);
+		smallBlocks.add(blockWithLocation);
+		
+		SortedSet<AvailableBlock> combined = AvailableBlockBuilder.combine(smallBlocks);
+		Assert.assertEquals(2, combined.size());
+		Assert.assertEquals(blockNoLocation, combined.first());
+		Assert.assertEquals(blockWithLocation, combined.last());
+	}
+	
+	/**
+	 * 
+	 * @throws InputFormatException
+	 */
+	@Test
+	public void testSafeMeetingLocationEquals() throws InputFormatException {
+		AvailableBlock blockNoLocation = AvailableBlockBuilder.createBlock("20110810-0900", "20110810-0930", 1);
+		AvailableBlock blockNoLocation2 = AvailableBlockBuilder.createBlock("20110810-0900", "20110810-0930", 1);
+		Assert.assertTrue(AvailableBlockBuilder.safeMeetingLocationEquals(blockNoLocation, blockNoLocation2));
+		AvailableBlock blockWithLocation = AvailableBlockBuilder.createBlock("20110810-0930", "20110810-1000", 1, "different location");
+		Assert.assertFalse(AvailableBlockBuilder.safeMeetingLocationEquals(blockNoLocation, blockWithLocation));
+		AvailableBlock blockWithLocation2 = AvailableBlockBuilder.createBlock("20110810-0930", "20110810-1000", 1, "different location");
+		Assert.assertTrue(AvailableBlockBuilder.safeMeetingLocationEquals(blockWithLocation, blockWithLocation2));
+	}
 }

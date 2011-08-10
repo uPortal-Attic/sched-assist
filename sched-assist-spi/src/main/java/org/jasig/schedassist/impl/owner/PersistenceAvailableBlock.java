@@ -38,6 +38,7 @@ class PersistenceAvailableBlock {
 	private Date startTime;
 	private Date endTime;
 	private int visitorLimit;
+	private String meetingLocation;
 
 	/**
 	 * Default constructor.
@@ -54,6 +55,7 @@ class PersistenceAvailableBlock {
 		this.startTime = block.getStartTime();
 		this.endTime = block.getEndTime();
 		this.visitorLimit = block.getVisitorLimit();
+		this.meetingLocation = block.getMeetingLocation();
 	}
 	
 	
@@ -106,5 +108,19 @@ class PersistenceAvailableBlock {
 	 */
 	public void setVisitorLimit(int visitorLimit) {
 		this.visitorLimit = visitorLimit;
+	}
+
+	/**
+	 * @return the meetingLocation
+	 */
+	public String getMeetingLocation() {
+		return meetingLocation;
+	}
+
+	/**
+	 * @param meetingLocation the meetingLocation to set
+	 */
+	public void setMeetingLocation(String meetingLocation) {
+		this.meetingLocation = meetingLocation;
 	}
 }

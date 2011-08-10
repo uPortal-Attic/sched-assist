@@ -34,6 +34,7 @@ public class BlockBuilderFormBackingObject {
 	private String startDatePhrase;
 	private String endDatePhrase;
 	private int visitorsPerAppointment;
+	private String meetingLocation;
 	
 	/**
 	 * @return the daysOfWeekPhrase
@@ -106,6 +107,41 @@ public class BlockBuilderFormBackingObject {
 	 */
 	public void setVisitorsPerAppointment(int visitorsPerAppointment) {
 		this.visitorsPerAppointment = visitorsPerAppointment;
+	}
+	/**
+	 * @return the meetingLocation
+	 */
+	public String getMeetingLocation() {
+		return meetingLocation;
+	}
+	/**
+	 * @param meetingLocation the meetingLocation to set
+	 */
+	public void setMeetingLocation(String meetingLocation) {
+		this.meetingLocation = meetingLocation;
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("BlockBuilderFormBackingObject [startTimePhrase=");
+		builder.append(startTimePhrase);
+		builder.append(", endTimePhrase=");
+		builder.append(endTimePhrase);
+		builder.append(", daysOfWeekPhrase=");
+		builder.append(daysOfWeekPhrase);
+		builder.append(", startDatePhrase=");
+		builder.append(startDatePhrase);
+		builder.append(", endDatePhrase=");
+		builder.append(endDatePhrase);
+		builder.append(", visitorsPerAppointment=");
+		builder.append(visitorsPerAppointment);
+		builder.append(", meetingLocation=");
+		builder.append(meetingLocation);
+		builder.append("]");
+		return builder.toString();
 	}
 	
 }

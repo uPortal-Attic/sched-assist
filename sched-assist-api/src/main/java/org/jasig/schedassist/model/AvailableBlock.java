@@ -49,6 +49,7 @@ public final class AvailableBlock implements Comparable<AvailableBlock>, Seriali
 	private final Date startTime;
 	private final Date endTime;
 	private final int visitorLimit;
+	private final String meetingLocation;
 	
 	private int visitorsAttending = 0;
 	
@@ -68,6 +69,17 @@ public final class AvailableBlock implements Comparable<AvailableBlock>, Seriali
 	 * @throws IllegalArgumentException if startTime/endTime are null, or if endTime is before or equal to startTime, or if visitorLimit is less than 1 
 	 */
 	AvailableBlock(final Date startTime, final Date endTime, final int visitorLimit) {
+		this(startTime, endTime, visitorLimit, null);
+	}
+	/**
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @param visitorLimit
+	 * @param meetingLocation
+	 * @throws IllegalArgumentException if startTime/endTime are null, or if endTime is before or equal to startTime, or if visitorLimit is less than 1 
+	 */
+	AvailableBlock(final Date startTime, final Date endTime, final int visitorLimit, String meetingLocation) {
 		Validate.notNull(startTime, "startTime cannot be null");
 		Validate.notNull(endTime, "endTime cannot be null");
 		if(endTime.before(startTime) || endTime.equals(startTime)) {
@@ -79,6 +91,7 @@ public final class AvailableBlock implements Comparable<AvailableBlock>, Seriali
 		this.startTime = DateUtils.truncate(startTime, Calendar.MINUTE);
 		this.endTime = DateUtils.truncate(endTime, Calendar.MINUTE);
 		this.visitorLimit = visitorLimit;
+		this.meetingLocation = meetingLocation;
 	}
 	/**
 	 * 
@@ -88,6 +101,7 @@ public final class AvailableBlock implements Comparable<AvailableBlock>, Seriali
 		this.startTime = sourceBlock.startTime;
 		this.endTime = sourceBlock.endTime;
 		this.visitorLimit = sourceBlock.visitorLimit;
+		this.meetingLocation = sourceBlock.meetingLocation;
 	}
 	
 	/**
@@ -109,6 +123,14 @@ public final class AvailableBlock implements Comparable<AvailableBlock>, Seriali
 		return visitorLimit;
 	}
 	
+	/**
+	 * Get the meetingLocation specified for this block. This may return null; in that case
+	 * consumers should use the schedule owner's default meetingLocation (via preferences).
+	 * @return the meetingLocation
+	 */
+	public String getMeetingLocation() {
+		return meetingLocation;
+	}
 	/**
 	 * 
 	 * @return the duration of this block in minutes
@@ -142,7 +164,7 @@ public final class AvailableBlock implements Comparable<AvailableBlock>, Seriali
 	 * <li>endTime</li>
 	 * </ol>
 	 * 
-	 * The visitorLimit field is immaterial to comparison.
+	 * The visitorLimit and meetingLocation fields are immaterial to comparison.
 	 * 
 	 * @see java.lang.Comparable#compareTo(Object)
 	 */
@@ -163,7 +185,6 @@ public final class AvailableBlock implements Comparable<AvailableBlock>, Seriali
 		return new EqualsBuilder()
 			.append(this.startTime, rhs.startTime)
 			.append(this.endTime, rhs.endTime)
-			//.append(this.visitorLimit, rhs.visitorLimit)
 			.isEquals();
 	}
 	/**
@@ -175,6 +196,7 @@ public final class AvailableBlock implements Comparable<AvailableBlock>, Seriali
 			.append("startTime", this.startTime)
 			.append("visitorLimit", this.visitorLimit)
 			.append("visitorsAttending", this.visitorsAttending)
+			.append("meetingLocation", this.meetingLocation)
 			.toString();
 	}
 	/**
@@ -184,7 +206,6 @@ public final class AvailableBlock implements Comparable<AvailableBlock>, Seriali
 		return new HashCodeBuilder(-1720909897, 187194383)
 			.append(this.startTime)
 			.append(this.endTime)
-			//.append(this.visitorLimit)
 			.toHashCode();
 	}
 }
