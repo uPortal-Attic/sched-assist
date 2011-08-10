@@ -45,9 +45,7 @@ padding-left: 1em;
 <c:choose>
 <c:when test="${empty profileIds}">
 <div class="info">
-<spring:message code="public.profiles.advisors.none"/><br/>
-If you are a UW Student looking for an Undergraduate Advisor, be sure to check the Undergraduate Advisor Toolkit at:<br/>
-<a class="toolkitlink" title="Undergraduate Advisor Toolkit link" href="http://www.learning.wisc.edu/advising/advisors.asp">http://www.learning.wisc.edu/advising/advisors.asp</a>
+<p><spring:message code="public.profiles.advisors.none"/></p>
 </div>
 </c:when>
 <c:otherwise>
