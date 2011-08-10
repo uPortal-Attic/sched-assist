@@ -98,8 +98,8 @@ background: transparent url(${crossIcon}) no-repeat center right;
 </c:url>
 <fmt:formatDate value="${block.startTime}" type="time" pattern="EEE MMM dd, h:mm a" var="formattedBlockStartTime"/>
 <fmt:formatDate value="${block.endTime}" type="time" pattern="h:mm a" var="formattedBlockEndTime"/>
-${ formattedBlockStartTime } to ${ formattedBlockEndTime }&nbsp;
-<a href="${removeBlockUrl}" title="<spring:message code="remove.availability.block.for" arguments="${formattedBlockStartTime},${formattedBlockEndTime}"/>">
+${ formattedBlockStartTime } to ${ formattedBlockEndTime }<c:if test="${model.defaultMeetingLocation ne block.meetingLocation}">, alternate location: ${block.meetingLocation}</c:if>
+&nbsp;<a href="${removeBlockUrl}" title="<spring:message code="remove.availability.block.for" arguments="${formattedBlockStartTime},${formattedBlockEndTime}"/>">
 <img src="${crossIcon}" alt="<spring:message code="remove.availability.block.for" arguments="${formattedBlockStartTime},${formattedBlockEndTime}"/>"/>
 </a>
 </li>

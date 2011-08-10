@@ -104,7 +104,7 @@ public class AlternateScheduleViewController {
 		model.put("prevWeekStart", prevWeekStart);
 		Date nextWeekStart = DateUtils.addDays(weekEnd, 1);
 		model.put("nextWeekStart", nextWeekStart);
-		
+		model.put("defaultMeetingLocation", owner.getPreferredLocation());
 		AvailableSchedule schedule = availableScheduleDao.retrieveWeeklySchedule(owner, weekStart);
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.combine(schedule.getAvailableBlocks());
 		model.put("scheduleBlocks", blocks);
