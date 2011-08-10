@@ -37,10 +37,18 @@
 	
 	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
 		<property name="alwaysUseFullPath" value="true"/>
+		<property name="order" value="1"/>
+	</bean>
+	<bean id="flowHandlerMapping" class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping">
+	   <property name="flowRegistry" ref="flowRegistry"/>
+	   <property name="order" value="2"/>
 	</bean>
 	
 	<bean id="handlerAdapter" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
 		<property name="alwaysUseFullPath" value="true"/>
+	</bean>
+	<bean id="flowHandlerAdapter" class="org.springframework.webflow.mvc.servlet.FlowHandlerAdapter">
+	   <property name="flowExecutor" ref="flowExecutor"/>
 	</bean>
 	
 	<!-- BEGIN spring webflow configuration -->
