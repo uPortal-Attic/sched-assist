@@ -21,6 +21,7 @@ package org.jasig.schedassist.impl.owner;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
 import java.util.SortedSet;
@@ -130,6 +131,10 @@ public class SpringJDBCAvailableScheduleDaoImplTest extends
 		Assert.assertTrue(stored.contains(single));
 	}
 	
+	/**
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void testAddToScheduleOverrideMeetingLocation() throws Exception {
 		AvailableBlock single = AvailableBlockBuilder.createBlock("20091102-1330", "20091102-1400", 1, "alternate location");
@@ -144,6 +149,68 @@ public class SpringJDBCAvailableScheduleDaoImplTest extends
 		Assert.assertEquals("alternate location", stored.first().getMeetingLocation());
 	}
 	
+	/**
+	 * 
+	 * @throws InputFormatException
+	 * @throws ParseException
+	 */
+	@Test
+	public void testAddAdjacentBlocksCombined() throws InputFormatException, ParseException {
+		Date start = CommonDateOperations.getDateFormat().parse("20110807");
+		Date end =  CommonDateOperations.getDateFormat().parse("20110813");
+		SortedSet<AvailableBlock> set1 = AvailableBlockBuilder.createBlocks("9:00 AM", "10:00 AM", "MWF", 
+				start, end);
+		
+		availableScheduleDao.addToSchedule(sampleOwners[0], set1);
+		
+		SortedSet<AvailableBlock> set2 = AvailableBlockBuilder.createBlocks("10:00 AM", "11:00 AM", "MWF", 
+				start, end);
+		
+		availableScheduleDao.addToSchedule(sampleOwners[0], set2);
+		
+		AvailableSchedule schedule = availableScheduleDao.retrieve(sampleOwners[0], start, end);
+		Assert.assertEquals(3, schedule.getAvailableBlocks().size());
+		for(AvailableBlock block : schedule.getAvailableBlocks()) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(block.getStartTime());
+			Assert.assertEquals(9, cal.get(Calendar.HOUR_OF_DAY));
+			
+			cal.setTime(block.getEndTime());
+			Assert.assertEquals(11, cal.get(Calendar.HOUR_OF_DAY));
+		}
+	}
+	@Test
+	public void testAddAdjacentBlocksDifferentLocationNotCombined() throws InputFormatException, ParseException {
+		Date start = CommonDateOperations.getDateFormat().parse("20110807");
+		Date end =  CommonDateOperations.getDateFormat().parse("20110813");
+		SortedSet<AvailableBlock> set1 = AvailableBlockBuilder.createBlocks("9:00 AM", "10:00 AM", "MWF", 
+				start, end);
+		
+		availableScheduleDao.addToSchedule(sampleOwners[0], set1);
+		
+		SortedSet<AvailableBlock> set2 = AvailableBlockBuilder.createBlocks("10:00 AM", "11:00 AM", "MWF", 
+				start, end, 1, "alternate location");
+		
+		availableScheduleDao.addToSchedule(sampleOwners[0], set2);
+		
+		AvailableSchedule schedule = availableScheduleDao.retrieve(sampleOwners[0], start, end);
+		Assert.assertEquals(6, schedule.getAvailableBlocks().size());
+		for(AvailableBlock block : schedule.getAvailableBlocks()) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(block.getStartTime());
+			if(block.getMeetingLocation() == null) {
+				cal.setTime(block.getStartTime());
+				Assert.assertEquals(9, cal.get(Calendar.HOUR_OF_DAY));
+				cal.setTime(block.getEndTime());
+				Assert.assertEquals(10, cal.get(Calendar.HOUR_OF_DAY));
+			} else {
+				cal.setTime(block.getStartTime());
+				Assert.assertEquals(10, cal.get(Calendar.HOUR_OF_DAY));
+				cal.setTime(block.getEndTime());
+				Assert.assertEquals(11, cal.get(Calendar.HOUR_OF_DAY));
+			}
+		}
+	}
 	/**
 	 * 
 	 * @throws Exception
