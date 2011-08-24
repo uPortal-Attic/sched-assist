@@ -211,6 +211,39 @@ public class SpringJDBCAvailableScheduleDaoImplTest extends
 			}
 		}
 	}
+	
+	@Test
+	public void testStoreBlocksWithLocationOverwriteExisting() throws InputFormatException, ParseException  {
+		Date start = CommonDateOperations.getDateFormat().parse("20110807");
+		Date end =  CommonDateOperations.getDateFormat().parse("20110813");
+		SortedSet<AvailableBlock> set1 = AvailableBlockBuilder.createBlocks("9:00 AM", "4:00 PM", "MWF", 
+				start, end);
+		
+		availableScheduleDao.addToSchedule(sampleOwners[0], set1);
+		
+		SortedSet<AvailableBlock> set2 = AvailableBlockBuilder.createBlocks("12:00 PM", "4:00 PM", "MWF", 
+				start, end, 1, "alternate location");
+		
+		availableScheduleDao.addToSchedule(sampleOwners[0], set2);
+		
+		AvailableSchedule schedule = availableScheduleDao.retrieve(sampleOwners[0], start, end);
+		Assert.assertEquals(6, schedule.getAvailableBlocks().size());
+		for(AvailableBlock block : schedule.getAvailableBlocks()) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(block.getStartTime());
+			if(block.getMeetingLocation() == null) {
+				cal.setTime(block.getStartTime());
+				Assert.assertEquals(9, cal.get(Calendar.HOUR_OF_DAY));
+				cal.setTime(block.getEndTime());
+				Assert.assertEquals(12, cal.get(Calendar.HOUR_OF_DAY));
+			} else {
+				cal.setTime(block.getStartTime());
+				Assert.assertEquals(12, cal.get(Calendar.HOUR_OF_DAY));
+				cal.setTime(block.getEndTime());
+				Assert.assertEquals(16, cal.get(Calendar.HOUR_OF_DAY));
+			}
+		}
+	}
 	/**
 	 * 
 	 * @throws Exception

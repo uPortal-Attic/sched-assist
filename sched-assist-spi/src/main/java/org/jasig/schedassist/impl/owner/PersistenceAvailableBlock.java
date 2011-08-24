@@ -123,4 +123,15 @@ class PersistenceAvailableBlock {
 	public void setMeetingLocation(String meetingLocation) {
 		this.meetingLocation = meetingLocation;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "PersistenceAvailableBlock [ownerId=" + ownerId + ", startTime="
+				+ startTime + ", endTime=" + endTime + ", visitorLimit="
+				+ visitorLimit + ", meetingLocation=" + meetingLocation + "]";
+	}
+	
 }

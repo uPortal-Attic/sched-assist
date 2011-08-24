@@ -695,6 +695,24 @@ public class AvailableBlockBuilderTest {
 	}
 	
 	/**
+	 * Create 2 adjacent blocks with different meeting locations.
+	 * Pass them into combine, assert they come out as 2 separate blocks.
+	 * @throws Exception
+	 */
+	@Test
+	public void testCombineMismatchedMeetingLocation() throws Exception {
+		AvailableBlock block1 = AvailableBlockBuilder.createBlock("20091007-1200", "20091007-1230", 1, "alternate location");
+		AvailableBlock block2 = AvailableBlockBuilder.createBlock("20091007-1230", "20091007-1300", 1, null);
+		SortedSet<AvailableBlock> smallBlocks = new TreeSet<AvailableBlock>();
+		smallBlocks.add(block1);
+		smallBlocks.add(block2);
+		SortedSet<AvailableBlock> resultCombined = AvailableBlockBuilder.combine(smallBlocks);
+		assertEquals(resultCombined.size(), 2);
+		assertTrue(resultCombined.contains(block1));
+		assertTrue(resultCombined.contains(block2));
+	}
+	
+	/**
 	 * Test the overloaded createSmallestAllowedBlock methods.
 	 * 
 	 * @throws Exception

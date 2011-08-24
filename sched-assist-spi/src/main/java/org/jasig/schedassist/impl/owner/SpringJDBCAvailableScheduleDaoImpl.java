@@ -107,6 +107,9 @@ implements AvailableScheduleDao {
 		// expand the argument to minimum possible size blocks
 		SortedSet<AvailableBlock> blocksExpanded = AvailableBlockBuilder.expand(blocks, 1);
 
+		// since AvailableBlock equals and hashCode ignore location, call remove first to get
+		// rid of any blocks that have matching times
+		storedExpanded.removeAll(blocksExpanded);
 		// add the new blocks to the expanded set
 		boolean modified = storedExpanded.addAll(blocksExpanded);
 		if(modified) {
