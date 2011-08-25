@@ -51,6 +51,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.googlecode.ehcache.annotations.Cacheable;
+import com.googlecode.ehcache.annotations.TriggersRemove;
 
 
 /**
@@ -82,6 +83,7 @@ public class SpringJDBCPublicProfileDaoImpl
 	 */
 	@Transactional
 	@Override
+	@TriggersRemove(cacheName="publicProfileCache", removeAll=true)
 	public PublicProfile createPublicProfile(IScheduleOwner owner,
 			String profileDescription) throws PublicProfileAlreadyExistsException {
 		if(null != locatePublicProfileByOwner(owner)) {
@@ -203,7 +205,7 @@ public class SpringJDBCPublicProfileDaoImpl
 	 */
 	@Transactional
 	@Override
-	//@TriggersRemove(cacheName="publicProfileCache")
+	@TriggersRemove(cacheName="publicProfileCache", removeAll=true)
 	public void removePublicProfile(PublicProfileId profileId) {
 		this.simpleJdbcTemplate.update("delete from public_profiles where profile_key = ?", profileId.getProfileKey());
 		LOG.info("removed public profile " + profileId);
@@ -215,7 +217,7 @@ public class SpringJDBCPublicProfileDaoImpl
 	 */
 	@Transactional
 	@Override
-	//@TriggersRemove(cacheName="publicProfileCache")
+	@TriggersRemove(cacheName="publicProfileCache", removeAll=true)
 	public PublicProfile updatePublicProfileDescription(
 			PublicProfileId profileId, String profileDescription) {
 		this.simpleJdbcTemplate.update("update public_profiles set profile_description = ? where profile_key = ?", 
