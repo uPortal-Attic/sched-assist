@@ -33,7 +33,7 @@
 <div id="content" class="main col">
 
 <div class="success">
-<p><spring:message code="log.out.resource.success"/></p>
+<p><spring:message code="log.out.delegate.success"/></p>
 <br/>
 <a href="<c:url value="/delegate-login.html"/>"><spring:message code="log.in.again.as.resource"/></a>, <a href="<c:url value="/"/>"><spring:message code="return.to.home"/></a>, or <a href="<c:url value="/logout.html"/>"><spring:message code="log.out"/>&raquo;</a>
 </div>
