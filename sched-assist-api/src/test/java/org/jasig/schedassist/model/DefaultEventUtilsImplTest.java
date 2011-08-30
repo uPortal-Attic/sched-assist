@@ -19,6 +19,10 @@
 
 package org.jasig.schedassist.model;
 
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -38,6 +42,9 @@ import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Status;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.easymock.EasyMock;
+import org.jasig.schedassist.IAffiliationSource;
+import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -49,7 +56,7 @@ import org.junit.Test;
  */
 public class DefaultEventUtilsImplTest {
 
-	private DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl();
+	private DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 	/**
 	 * 
 	 * @throws Exception
@@ -372,6 +379,7 @@ public class DefaultEventUtilsImplTest {
 	 */
 	@Test
 	public void testConstructAvailableAppointmentVisitorIsStudentOwnerIsAdvisor() throws Exception {
+		
 		// construct visitor
 		MockCalendarAccount person = new MockCalendarAccount();
 		person.setEmailAddress("somevisitor@wisc.edu");
@@ -387,7 +395,13 @@ public class DefaultEventUtilsImplTest {
 		MockScheduleOwner owner = new MockScheduleOwner(person2, 1);
 		owner.setPreference(Preferences.LOCATION, "Owner's office");
 		
-		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
+		// need to construct an AffiliationSource that will mock the "advisor" scenario
+		IAffiliationSource affiliationSource = EasyMock.createMock(IAffiliationSource.class);
+		expect(affiliationSource.doesAccountHaveAffiliation(person2, "advisor")).andReturn(true);
+		replay(affiliationSource);
+		DefaultEventUtilsImpl alternate = new DefaultEventUtilsImpl(affiliationSource);
+		
+		VEvent availableAppointment = alternate.constructAvailableAppointment(
 				AvailableBlockBuilder.createBlock("20091006-1300", "20091006-1330"),
 				owner, 
 				visitor, 
@@ -418,6 +432,8 @@ public class DefaultEventUtilsImplTest {
 				Assert.fail("unexpected value for appointment role: " + appointmentRole.getValue());
 			}
 		}
+		
+		verify(affiliationSource);
 	}
 	
 	/**

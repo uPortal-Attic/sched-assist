@@ -28,6 +28,7 @@ import net.fortuna.ical4j.model.property.Attendee;
 
 import org.easymock.EasyMock;
 import org.jasig.schedassist.ICalendarDataDao;
+import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.jasig.schedassist.SchedulingException;
 import org.jasig.schedassist.impl.owner.AvailableScheduleDao;
 import org.jasig.schedassist.impl.owner.DefaultScheduleOwnerImpl;
@@ -215,7 +216,7 @@ public class SchedulingAssistantServiceImplTest {
 		// construct target availableblock for appointment
 		AvailableBlock targetBlock = AvailableBlockBuilder.createBlock("20091111-1330", "20091111-1400", 2);
 		
-		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl();
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		// construct expected VEvent
 		VEvent expectedEvent = eventUtils.constructAvailableAppointment(targetBlock, owner, visitor, "description");
 		expectedEvent.getProperties().add(eventUtils.constructAvailableAttendee(visitor2.getCalendarAccount(), AppointmentRole.VISITOR));
@@ -231,7 +232,7 @@ public class SchedulingAssistantServiceImplTest {
 		SchedulingAssistantServiceImpl serviceImpl = new SchedulingAssistantServiceImpl();
 		serviceImpl.setAvailableScheduleDao(mockScheduleDao);
 		serviceImpl.setCalendarDataDao(mockCalendarDao);
-		serviceImpl.setEventUtils(new DefaultEventUtilsImpl());
+		serviceImpl.setEventUtils(new DefaultEventUtilsImpl(new NullAffiliationSourceImpl()));
 		
 		// construct 3rd visitor
 		MockCalendarAccount visitor3Account = new MockCalendarAccount();
@@ -367,7 +368,7 @@ public class SchedulingAssistantServiceImplTest {
 		// construct target availableblock for appointment
 		AvailableBlock targetBlock = AvailableBlockBuilder.createBlock("20091111-1330", "20091111-1400", 2);
 		
-		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl();
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		// construct existing VEvent
 		VEvent existingEvent = eventUtils.constructAvailableAppointment(targetBlock, owner, alreadyAcceptedVisitor, null);
 		
@@ -396,7 +397,7 @@ public class SchedulingAssistantServiceImplTest {
 		SchedulingAssistantServiceImpl serviceImpl = new SchedulingAssistantServiceImpl();
 		serviceImpl.setAvailableScheduleDao(mockScheduleDao);
 		serviceImpl.setCalendarDataDao(mockCalendarDao);
-		serviceImpl.setEventUtils(new DefaultEventUtilsImpl());
+		serviceImpl.setEventUtils(new DefaultEventUtilsImpl(new NullAffiliationSourceImpl()));
 		
 		VEvent event = serviceImpl.scheduleAppointment(newVisitor, owner, targetBlock, null);
 		Assert.assertEquals(expectedEvent, event);
@@ -446,7 +447,7 @@ public class SchedulingAssistantServiceImplTest {
 		// construct target availableblock for appointment
 		AvailableBlock targetBlock = AvailableBlockBuilder.createBlock("20091111-1330", "20091111-1400", 2);
 		
-		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl();
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		// construct existing VEvent
 		VEvent existingEvent = eventUtils.constructAvailableAppointment(targetBlock, owner, visitor, "event description");		
 		Attendee newAttendee = eventUtils.constructAvailableAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
@@ -467,7 +468,7 @@ public class SchedulingAssistantServiceImplTest {
 		SchedulingAssistantServiceImpl serviceImpl = new SchedulingAssistantServiceImpl();
 		//serviceImpl.setAvailableScheduleDao(mockScheduleDao);
 		serviceImpl.setCalendarDataDao(mockCalendarDao);
-		serviceImpl.setEventUtils(new DefaultEventUtilsImpl());
+		serviceImpl.setEventUtils(new DefaultEventUtilsImpl(new NullAffiliationSourceImpl()));
 		
 		serviceImpl.cancelAppointment(visitor, owner, existingEvent, targetBlock, "cancel reason");
 		
@@ -497,7 +498,7 @@ public class SchedulingAssistantServiceImplTest {
 		// construct target availableblock for appointment
 		AvailableBlock targetBlock = AvailableBlockBuilder.createBlock("20091111-1330", "20091111-1400", 1);
 		
-		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl();
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		// construct successfull VEvent
 		VEvent expectedEvent = eventUtils.constructAvailableAppointment(targetBlock, owner, visitor, "description");
 		
@@ -510,7 +511,7 @@ public class SchedulingAssistantServiceImplTest {
 		
 		SchedulingAssistantServiceImpl serviceImpl = new SchedulingAssistantServiceImpl();
 		serviceImpl.setCalendarDataDao(mockCalendarDao);
-		serviceImpl.setEventUtils(new DefaultEventUtilsImpl());
+		serviceImpl.setEventUtils(new DefaultEventUtilsImpl(new NullAffiliationSourceImpl()));
 		
 		serviceImpl.cancelAppointment(visitor, owner, expectedEvent, targetBlock, "cancel reason");
 		

@@ -33,6 +33,7 @@ import net.fortuna.ical4j.model.property.Transp;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.XProperty;
 
+import org.jasig.schedassist.IAffiliationSource;
 import org.jasig.schedassist.model.AppointmentRole;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.DefaultEventUtilsImpl;
@@ -50,6 +51,14 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl {
+
+	/**
+	 * 
+	 * @param affiliationSource
+	 */
+	public CaldavEventUtilsImpl(IAffiliationSource affiliationSource) {
+		super(affiliationSource);
+	}
 
 	/**
 	 * Calls the super implementation, and adds an {@link Organizer} and an {@link Uid}.

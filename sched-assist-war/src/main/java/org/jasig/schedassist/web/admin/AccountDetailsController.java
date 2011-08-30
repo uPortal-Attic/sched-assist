@@ -21,6 +21,7 @@
 package org.jasig.schedassist.web.admin;
 
 import org.apache.commons.lang.StringUtils;
+import org.jasig.schedassist.IAffiliationSource;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.impl.owner.PublicProfileDao;
@@ -29,7 +30,6 @@ import org.jasig.schedassist.impl.visitor.VisitorDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IDelegateCalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
-import org.jasig.schedassist.model.IdentityUtils;
 import org.jasig.schedassist.model.PublicProfile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,6 +53,7 @@ public class AccountDetailsController {
 	private VisitorDao visitorDao;
 	private OwnerDao ownerDao;
 	private PublicProfileDao publicProfileDao;
+	private IAffiliationSource affiliationSource;
 	/**
 	 * @param calendarAccountDao the calendarAccountDao to set
 	 */
@@ -81,7 +82,13 @@ public class AccountDetailsController {
 	public void setPublicProfileDao(PublicProfileDao publicProfileDao) {
 		this.publicProfileDao = publicProfileDao;
 	}
-
+	/**
+	 * @param affiliationSource the affiliationSource to set
+	 */
+	@Autowired
+	public void setAffiliationSource(IAffiliationSource affiliationSource) {
+		this.affiliationSource = affiliationSource;
+	}
 	/**
 	 * 
 	 * @param ctcalxitemid
@@ -96,7 +103,7 @@ public class AccountDetailsController {
 			if(null != account) {
 				model.addAttribute("isDelegate", account instanceof IDelegateCalendarAccount);
 				model.addAttribute("calendarAccount", account);
-				model.addAttribute("isAdvisor", IdentityUtils.isAdvisor(account));
+				model.addAttribute("isAdvisor", affiliationSource.doesAccountHaveAffiliation(account, "advisor"));
 				model.addAttribute("calendarAccountAttributes", account.getAttributes().entrySet());
 				
 				// try to look up visitor

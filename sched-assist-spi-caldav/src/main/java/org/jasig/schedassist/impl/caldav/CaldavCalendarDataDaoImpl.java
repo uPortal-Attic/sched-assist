@@ -52,6 +52,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ConflictExistsException;
 import org.jasig.schedassist.ICalendarDataDao;
+import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.jasig.schedassist.SchedulingException;
 import org.jasig.schedassist.impl.caldav.xml.ReportResponseHandlerImpl;
 import org.jasig.schedassist.model.AppointmentRole;
@@ -99,7 +100,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	private HttpClient httpClient;
 	private Credentials caldavAdminCredentials;
 	private AuthScope caldavAdminAuthScope;
-	private IEventUtils eventUtils = new CaldavEventUtilsImpl();
+	private IEventUtils eventUtils = new CaldavEventUtilsImpl(new NullAffiliationSourceImpl());
 	private CaldavDialect caldavDialect;
 	private HttpMethodInterceptor methodInterceptor = new NoopHttpMethodInterceptorImpl();
 	

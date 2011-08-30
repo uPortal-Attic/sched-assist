@@ -49,6 +49,7 @@ import net.fortuna.ical4j.model.property.Attendee;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
@@ -62,7 +63,7 @@ public class VisibleScheduleBuilderTest {
 
 	private Log LOG = LogFactory.getLog(this.getClass());
 
-	private DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl();
+	private DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 	private VisibleScheduleBuilder builder = new VisibleScheduleBuilder(eventUtils);
 
 	/**

@@ -32,6 +32,7 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.Cn;
 import net.fortuna.ical4j.model.property.Organizer;
 
+import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.jasig.schedassist.model.AppointmentRole;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
@@ -56,7 +57,7 @@ public class CaldavEventUtilsImplTest {
 
 	@Test
 	public void testConstructOrganizer() throws URISyntaxException  {
-		CaldavEventUtilsImpl eventUtils = new CaldavEventUtilsImpl();
+		CaldavEventUtilsImpl eventUtils = new CaldavEventUtilsImpl(new NullAffiliationSourceImpl());
 		MockCalendarAccount calendarAccount = new MockCalendarAccount();
 		calendarAccount.setDisplayName("DISPLAY NAME");
 		calendarAccount.setEmailAddress("someone@wherever.org");
@@ -79,7 +80,7 @@ public class CaldavEventUtilsImplTest {
 	 */
 	@Test
 	public void testConstructIndividualAppointment() throws InputFormatException, IOException, ParserException {
-		CaldavEventUtilsImpl eventUtils = new CaldavEventUtilsImpl();
+		CaldavEventUtilsImpl eventUtils = new CaldavEventUtilsImpl(new NullAffiliationSourceImpl());
 		
 		AvailableBlock block = AvailableBlockBuilder.createBlock("20110503-0800", "20110503-0900");
 		MockCalendarAccount ownerAccount = new MockCalendarAccount();
@@ -125,7 +126,7 @@ public class CaldavEventUtilsImplTest {
 	 */
 	@Test
 	public void testConstructGroupAppointment() throws InputFormatException, IOException, ParserException {
-		CaldavEventUtilsImpl eventUtils = new CaldavEventUtilsImpl();
+		CaldavEventUtilsImpl eventUtils = new CaldavEventUtilsImpl(new NullAffiliationSourceImpl());
 		
 		AvailableBlock block = AvailableBlockBuilder.createBlock("20110503-0800", "20110503-0900", 5);
 		MockCalendarAccount ownerAccount = new MockCalendarAccount();

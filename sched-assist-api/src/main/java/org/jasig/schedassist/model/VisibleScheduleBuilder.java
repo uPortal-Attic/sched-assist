@@ -31,6 +31,7 @@ import net.fortuna.ical4j.model.component.VEvent;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jasig.schedassist.NullAffiliationSourceImpl;
 
 
 /**
@@ -48,7 +49,7 @@ public class VisibleScheduleBuilder implements IVisibleScheduleBuilder {
 	public static final String BUSY = "busy";
 	public static final String ATTENDING = "attending";
 
-	private IEventUtils eventUtils = new DefaultEventUtilsImpl();
+	private IEventUtils eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 	
 	/**
 	 * Default Constructor, will set the eventUtils field to {@link DefaultEventUtilsImpl}.

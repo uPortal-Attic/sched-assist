@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Set;
 
+import org.jasig.schedassist.IAffiliationSource;
 import org.jasig.schedassist.impl.AvailableScheduleReflectionService;
 import org.jasig.schedassist.impl.owner.AvailableScheduleDao;
 import org.jasig.schedassist.impl.owner.IneligibleException;
@@ -32,7 +33,6 @@ import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
-import org.jasig.schedassist.model.IdentityUtils;
 import org.jasig.schedassist.model.InputFormatException;
 import org.jasig.schedassist.model.Preferences;
 import org.jasig.schedassist.web.security.CalendarAccountUserDetailsImpl;
@@ -54,6 +54,7 @@ public class RegistrationFlowHelper {
 	private OwnerDao ownerDao;
 	private AvailableScheduleDao availableScheduleDao;
 	private AvailableScheduleReflectionService reflectionService;
+	private IAffiliationSource affiliationSource;
 	/**
 	 * @param ownerDao the ownerDao to set
 	 */
@@ -75,6 +76,13 @@ public class RegistrationFlowHelper {
 	public void setReflectionService(
 			AvailableScheduleReflectionService reflectionService) {
 		this.reflectionService = reflectionService;
+	}
+	/**
+	 * @param affiliationSource the affiliationSource to set
+	 */
+	@Autowired
+	public void setAffiliationSource(IAffiliationSource affiliationSource) {
+		this.affiliationSource = affiliationSource;
 	}
 	/**
 	 * Invoke methods on the {@link OwnerDao} and {@link AvailableScheduleDao} to complete
@@ -100,7 +108,7 @@ public class RegistrationFlowHelper {
 		owner = ownerDao.updatePreference(owner, Preferences.REFLECT_SCHEDULE, Boolean.toString(registration.isReflectSchedule()));
 		owner = ownerDao.updatePreference(owner, Preferences.REMINDERS, registration.emailReminderPreferenceKey());
 		
-		if(IdentityUtils.isAdvisor(owner.getCalendarAccount())) {
+		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), "advisor")) {
 			// set ADVISOR_SHARE_WITH_STUDENTS by default for all academic advisors
 			owner = ownerDao.updatePreference(owner, Preferences.ADVISOR_SHARE_WITH_STUDENTS, "true");
 		}
@@ -136,7 +144,7 @@ public class RegistrationFlowHelper {
 		} else {
 			CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			ICalendarAccount calendarAccount = currentUser.getCalendarAccount();
-			return IdentityUtils.isAdvisor(calendarAccount);
+			return affiliationSource.doesAccountHaveAffiliation(calendarAccount, "advisor");
 		}
 	}
 }

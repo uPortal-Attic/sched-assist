@@ -62,6 +62,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jasig.schedassist.IAffiliationSource;
 
 /**
  * Default {@link IEventUtils} implementation.
@@ -84,6 +85,22 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			TimeZone.getTimeZone("UTC"));
 	
 	protected final Log LOG = LogFactory.getLog(this.getClass());
+	
+	private final IAffiliationSource affiliationSource;
+	
+	/**
+	 * @param affiliationSource
+	 */
+	public DefaultEventUtilsImpl(IAffiliationSource affiliationSource) {
+		this.affiliationSource = affiliationSource;
+	}
+	/**
+	 * @return the affiliationSource
+	 */
+	public IAffiliationSource getAffiliationSource() {
+		return affiliationSource;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.model.IEventUtils#attendeeMatchesPerson(net.fortuna.ical4j.model.Property, org.jasig.schedassist.model.ICalendarAccount)
@@ -154,7 +171,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 				StringBuilder descriptionBuilder = new StringBuilder();
 				descriptionBuilder.append(eventDescription);
 				// if the owner is an advisor
-				if(IdentityUtils.isAdvisor(owner.getCalendarAccount())) {
+				if(getAffiliationSource().doesAccountHaveAffiliation(owner.getCalendarAccount(), "advisor")) {
 					// and the visitor is a student
 					String studentEmplid = visitor.getCalendarAccount().getAttributeValue("wiscedustudentid");
 					if(null != studentEmplid) {

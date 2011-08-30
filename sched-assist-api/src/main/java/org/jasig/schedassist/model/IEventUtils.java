@@ -52,8 +52,7 @@ public interface IEventUtils {
 	 * 
 	 * The eventDescription argument will be added to the DESCRIPTION of the event. If the owner is detected as an academic advisor, and 
 	 * the visitor is a student, the student's "wiscedustudentid" value will be appended to the DESCRIPTION.
-	 * 
-	 * @see IdentityUtils#isAdvisor(ICalendarAccount)
+	 *
 	 * @param block the selected {@link AvailableBlock} 
 	 * @param owner the owner of the appointment
 	 * @param visitor the visitor to the appointment
