@@ -29,6 +29,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.Location;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -309,9 +310,13 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 		messageBody.append(tf.format(event.getStartDate().getDate()));
 		messageBody.append(" to ");
 		messageBody.append(tf.format(event.getEndDate(true).getDate()));
-		messageBody.append(NEWLINE);
-		messageBody.append("Location: ");
-		messageBody.append(event.getLocation().getValue());
+		
+		Location location = event.getLocation();
+		if(location != null) {
+			messageBody.append(NEWLINE);
+			messageBody.append("Location: ");
+			messageBody.append(event.getLocation().getValue());
+		}
 		messageBody.append(NEWLINE);
 		messageBody.append(NEWLINE);
 		messageBody.append("This appointment was scheduled via the WiscCal Scheduling Assistant - https://tools.wisccal.wisc.edu/available/");
