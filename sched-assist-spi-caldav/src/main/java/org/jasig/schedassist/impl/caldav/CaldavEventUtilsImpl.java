@@ -40,7 +40,6 @@ import org.jasig.schedassist.model.DefaultEventUtilsImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
-import org.springframework.stereotype.Component;
 
 /**
  * Subclass of {@link DefaultEventUtilsImpl} specific for 
@@ -49,7 +48,6 @@ import org.springframework.stereotype.Component;
  * @author Nicholas Blair, npblair@wisc.edu
  * @version $Id: CaldavEventUtilsImpl.java 51 2011-05-06 14:35:33Z nblair $
  */
-@Component
 public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl {
 
 	/**

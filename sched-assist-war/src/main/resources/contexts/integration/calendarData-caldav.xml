@@ -63,7 +63,10 @@
         </property>
     </bean> 
 	
-	<bean id="eventUtils" class="org.jasig.schedassist.impl.caldav.CaldavEventUtilsImpl"/>
+	<bean id="affiliationSource" class="org.jasig.schedassist.NullAffiliationSourceImpl"/>
+	<bean id="eventUtils" class="org.jasig.schedassist.impl.caldav.CaldavEventUtilsImpl">
+		<constructor-arg ref="affiliationSource"/>
+	</bean>
 	<bean id="visibleScheduleBuilder" class="org.jasig.schedassist.model.VisibleScheduleBuilder">
 		<property name="eventUtils" ref="eventUtils"/>
 	</bean>	
