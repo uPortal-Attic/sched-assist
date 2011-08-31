@@ -171,7 +171,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 				StringBuilder descriptionBuilder = new StringBuilder();
 				descriptionBuilder.append(eventDescription);
 				// if the owner is an advisor
-				if(getAffiliationSource().doesAccountHaveAffiliation(owner.getCalendarAccount(), "advisor")) {
+				if(getAffiliationSource().doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.ADVISOR )) {
 					// and the visitor is a student
 					String studentEmplid = visitor.getCalendarAccount().getAttributeValue("wiscedustudentid");
 					if(null != studentEmplid) {

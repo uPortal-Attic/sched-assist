@@ -3,6 +3,7 @@
  */
 package org.jasig.schedassist;
 
+import org.jasig.schedassist.model.IAffiliation;
 import org.jasig.schedassist.model.ICalendarAccount;
 
 /**
@@ -15,12 +16,12 @@ public class NullAffiliationSourceImpl implements IAffiliationSource {
 
 	/**
 	 * Always returns false.
-	 *  (non-Javadoc)
-	 * @see org.jasig.schedassist.IAffiliationSource#doesAccountHaveAffiliation(org.jasig.schedassist.model.ICalendarAccount, java.lang.String)
+	 * (non-Javadoc)
+	 * @see org.jasig.schedassist.IAffiliationSource#doesAccountHaveAffiliation(org.jasig.schedassist.model.ICalendarAccount, org.jasig.schedassist.model.IAffiliation)
 	 */
 	@Override
 	public boolean doesAccountHaveAffiliation(ICalendarAccount calendarAccount,
-			String affiliation) {
+			IAffiliation affiliation) {
 		return false;
 	}
 

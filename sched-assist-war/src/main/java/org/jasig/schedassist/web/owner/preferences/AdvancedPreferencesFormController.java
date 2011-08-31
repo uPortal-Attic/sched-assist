@@ -31,6 +31,7 @@ import org.jasig.schedassist.impl.owner.NotRegisteredException;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.impl.owner.PublicProfileAlreadyExistsException;
 import org.jasig.schedassist.impl.owner.PublicProfileDao;
+import org.jasig.schedassist.model.AffiliationImpl;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.Preferences;
 import org.jasig.schedassist.model.PublicProfile;
@@ -117,8 +118,9 @@ public class AdvancedPreferencesFormController {
 			fbo.setPublicProfileTags(tagsAsString(tags));
 		}
 
-		fbo.setEligibleForAdvisor(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), "advisor"));
-		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), "advisor")) {
+		boolean isAdvisor = affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.ADVISOR);
+		fbo.setEligibleForAdvisor(isAdvisor);
+		if(isAdvisor) {
 			String prefValue = owner.getPreference(Preferences.ADVISOR_SHARE_WITH_STUDENTS);
 			fbo.setAdvisorShareWithStudents(Boolean.parseBoolean(prefValue));
 		}
@@ -147,7 +149,7 @@ public class AdvancedPreferencesFormController {
 			return "owner-preferences/advanced-preferences-form";
 		}
 	
-		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), "advisor")) {
+		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.ADVISOR)) {
 			owner = ownerDao.updatePreference(owner, Preferences.ADVISOR_SHARE_WITH_STUDENTS, String.valueOf(fbo.isAdvisorShareWithStudents()));
 			if(fbo.isAdvisorShareWithStudents()) {
 				model.addAttribute("advisorShareWithStudentsOn", true);

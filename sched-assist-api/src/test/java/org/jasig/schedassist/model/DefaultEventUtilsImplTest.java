@@ -397,7 +397,7 @@ public class DefaultEventUtilsImplTest {
 		
 		// need to construct an AffiliationSource that will mock the "advisor" scenario
 		IAffiliationSource affiliationSource = EasyMock.createMock(IAffiliationSource.class);
-		expect(affiliationSource.doesAccountHaveAffiliation(person2, "advisor")).andReturn(true);
+		expect(affiliationSource.doesAccountHaveAffiliation(person2, AffiliationImpl.ADVISOR)).andReturn(true);
 		replay(affiliationSource);
 		DefaultEventUtilsImpl alternate = new DefaultEventUtilsImpl(affiliationSource);
 		

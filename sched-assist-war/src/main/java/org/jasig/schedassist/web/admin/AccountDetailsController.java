@@ -27,6 +27,7 @@ import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.impl.owner.PublicProfileDao;
 import org.jasig.schedassist.impl.visitor.NotAVisitorException;
 import org.jasig.schedassist.impl.visitor.VisitorDao;
+import org.jasig.schedassist.model.AffiliationImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IDelegateCalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
@@ -103,7 +104,7 @@ public class AccountDetailsController {
 			if(null != account) {
 				model.addAttribute("isDelegate", account instanceof IDelegateCalendarAccount);
 				model.addAttribute("calendarAccount", account);
-				model.addAttribute("isAdvisor", affiliationSource.doesAccountHaveAffiliation(account, "advisor"));
+				model.addAttribute("isAdvisor", affiliationSource.doesAccountHaveAffiliation(account, AffiliationImpl.ADVISOR));
 				model.addAttribute("calendarAccountAttributes", account.getAttributes().entrySet());
 				
 				// try to look up visitor

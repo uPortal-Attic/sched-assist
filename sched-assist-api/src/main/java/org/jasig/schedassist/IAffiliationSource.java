@@ -3,6 +3,7 @@
  */
 package org.jasig.schedassist;
 
+import org.jasig.schedassist.model.IAffiliation;
 import org.jasig.schedassist.model.ICalendarAccount;
 
 /**
@@ -19,5 +20,5 @@ public interface IAffiliationSource {
 	 * @param affiliation
 	 * @return true if the account has the specified affiliation
 	 */
-	boolean doesAccountHaveAffiliation(ICalendarAccount calendarAccount, String affiliation);
+	boolean doesAccountHaveAffiliation(ICalendarAccount calendarAccount, IAffiliation affiliation);
 }
