@@ -29,7 +29,8 @@
 	
 	<on-start>
 		<set name="flowScope.registration" value="new org.jasig.schedassist.web.register.Registration()"></set>
-		<set name="flowScope.academicAdvisor" value="registrationFlowHelper.isCurrentAuthenticatedCalendarUserAcademicAdvisor()"/>
+		<set name="flowScope.academicAdvisor" value="registrationFlowHelper.isCurrentAuthenticatedCalendarUserAdvisor()"/>
+		<set name="flowScope.instructor" value="registrationFlowHelper.isCurrentAuthenticatedCalendarUserInstructor()"/>
 	</on-start>
 	
 	<view-state id="setPreferences" model="registration">

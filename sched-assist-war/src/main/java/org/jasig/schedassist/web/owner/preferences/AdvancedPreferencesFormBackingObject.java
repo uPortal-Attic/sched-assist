@@ -29,7 +29,9 @@ package org.jasig.schedassist.web.owner.preferences;
 public class AdvancedPreferencesFormBackingObject {
 
 	private boolean eligibleForAdvisor = false;
+	private boolean eligibleForInstructor = false;
 	private boolean advisorShareWithStudents = false;
+	private boolean instructorShareWithStudents = false;
 	private boolean createPublicProfile = false;
 	private String publicProfileDescription = "";
 	private String publicProfileKey;
@@ -107,14 +109,41 @@ public class AdvancedPreferencesFormBackingObject {
 	public void setPublicProfileTags(String publicProfileTags) {
 		this.publicProfileTags = publicProfileTags;
 	}
+	
+	/**
+	 * @return the eligibleForInstructor
+	 */
+	public boolean isEligibleForInstructor() {
+		return eligibleForInstructor;
+	}
+	/**
+	 * @param eligibleForInstructor the eligibleForInstructor to set
+	 */
+	public void setEligibleForInstructor(boolean eligibleForInstructor) {
+		this.eligibleForInstructor = eligibleForInstructor;
+	}
+	/**
+	 * @return the instructorShareWithStudents
+	 */
+	public boolean isInstructorShareWithStudents() {
+		return instructorShareWithStudents;
+	}
+	/**
+	 * @param instructorShareWithStudents the instructorShareWithStudents to set
+	 */
+	public void setInstructorShareWithStudents(boolean instructorShareWithStudents) {
+		this.instructorShareWithStudents = instructorShareWithStudents;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		return "AdvancedPreferencesFormBackingObject [eligibleForAdvisor="
-				+ eligibleForAdvisor + ", advisorShareWithStudents="
-				+ advisorShareWithStudents + ", createPublicProfile="
+				+ eligibleForAdvisor + ", eligibleForInstructor="
+				+ eligibleForInstructor + ", advisorShareWithStudents="
+				+ advisorShareWithStudents + ", instructorShareWithStudents="
+				+ instructorShareWithStudents + ", createPublicProfile="
 				+ createPublicProfile + ", publicProfileDescription="
 				+ publicProfileDescription + ", publicProfileKey="
 				+ publicProfileKey + ", publicProfileTags=" + publicProfileTags

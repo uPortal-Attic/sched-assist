@@ -42,6 +42,12 @@
 <c:if test="${advisorShareWithStudentsOff}">
 <li><spring:message code="advisor.share.with.students.disabled"/></li>
 </c:if>
+<c:if test="${instructorShareWithStudentsOn}">
+<li><spring:message code="instructor.share.with.students.enabled"/></li>
+</c:if>
+<c:if test="${instructorShareWithStudentsOff}">
+<li><spring:message code="instructor.share.with.students.disabled"/></li>
+</c:if>
 <c:if test="${createdPublicProfile}">
 <li><spring:message code="advanced.sharing.preferences.profile.created"/>:&nbsp;<a href="<c:url value="/public/profiles/${publicProfileKey}.html"/>"><c:url value="/public/profiles/${publicProfileKey}.html"/></a>.
 <spring:message code="advanced.sharing.preferences.profile.search.disclaimer"/></li>

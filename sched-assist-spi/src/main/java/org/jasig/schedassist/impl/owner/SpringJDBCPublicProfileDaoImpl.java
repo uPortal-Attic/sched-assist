@@ -168,6 +168,20 @@ public class SpringJDBCPublicProfileDaoImpl
 				new PublicProfileIdRowMapper());
 		return profileIds;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.jasig.schedassist.impl.owner.PublicProfileDao#getInstructorPublicProfileIds()
+	 */
+	@Override
+	public List<PublicProfileId> getInstructorPublicProfileIds() {
+		List<PublicProfileId> profileIds = this.simpleJdbcTemplate.query(
+				"select prof.profile_key, prof.owner_display_name from public_profiles prof, preferences pref where pref.preference_key = '" 
+				+ Preferences.INSTRUCTOR_SHARE_WITH_STUDENTS.getKey() + 
+				"' and pref.preference_value='true' and prof.owner_id = pref.owner_id", 
+				new PublicProfileIdRowMapper());
+		return profileIds;
+	}
 
 	/*
 	 * (non-Javadoc)

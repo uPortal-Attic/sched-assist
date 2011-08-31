@@ -40,7 +40,8 @@ public enum Preferences {
 	DEFAULT_VISITOR_LIMIT("Default number of visitors per available block", "owner.DEFAULT_VISITOR_LIMIT", "1"),
 	MEETING_LIMIT("Maximum number of meetings a visitor may have within window", "owner.MEETING_LIMIT", "-1"),
 	REFLECT_SCHEDULE("Reflect Availability Schedule back to WiscCal as Daily Notes", "owner.REFLECT_SCHEDULE", "false"),
-	REMINDERS("Send Reminders to visitors in advance of their appointments", "owner.EMAIL_REMINDERS", "false,false,24");
+	REMINDERS("Send Reminders to visitors in advance of their appointments", "owner.EMAIL_REMINDERS", "false,false,24"),
+	INSTRUCTOR_SHARE_WITH_STUDENTS("Instructor: Share with enrolled students", "instructor.SHARE_WITH_STUDENTS", "false");
 	
 	private String displayName;
 	private String key;

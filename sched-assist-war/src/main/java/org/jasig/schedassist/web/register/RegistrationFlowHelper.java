@@ -113,6 +113,10 @@ public class RegistrationFlowHelper {
 			// set ADVISOR_SHARE_WITH_STUDENTS by default for all academic advisors
 			owner = ownerDao.updatePreference(owner, Preferences.ADVISOR_SHARE_WITH_STUDENTS, "true");
 		}
+		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.INSTRUCTOR)) {
+			// set INSTRUCTOR_SHARE_WITH_STUDENTS by default for all academic advisors
+			owner = ownerDao.updatePreference(owner, Preferences.INSTRUCTOR_SHARE_WITH_STUDENTS, "true");
+		}
 		if(registration.isScheduleSet()) {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
 			Set<AvailableBlock> blocks = AvailableBlockBuilder.createBlocks(registration.getStartTimePhrase(), 
@@ -133,11 +137,11 @@ public class RegistrationFlowHelper {
 	}
 	
 	/**
-	 * Return true if the current authenticated {@link ICalendarAccount} is an academic advisor.
+	 * Return true if the current authenticated {@link ICalendarAccount} is an advisor.
 	 * 
 	 * @return
 	 */
-	public boolean isCurrentAuthenticatedCalendarUserAcademicAdvisor() {
+	public boolean isCurrentAuthenticatedCalendarUserAdvisor() {
 		if ((SecurityContextHolder.getContext() == null)
                 || !(SecurityContextHolder.getContext() instanceof SecurityContext)
                 || (SecurityContextHolder.getContext().getAuthentication() == null)) {
@@ -146,6 +150,23 @@ public class RegistrationFlowHelper {
 			CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			ICalendarAccount calendarAccount = currentUser.getCalendarAccount();
 			return affiliationSource.doesAccountHaveAffiliation(calendarAccount, AffiliationImpl.ADVISOR);
+		}
+	}
+	
+	/**
+	 * Return true if the current authenticated {@link ICalendarAccount} is an instructor.
+	 * 
+	 * @return
+	 */
+	public boolean isCurrentAuthenticatedCalendarUserInstructor() {
+		if ((SecurityContextHolder.getContext() == null)
+                || !(SecurityContextHolder.getContext() instanceof SecurityContext)
+                || (SecurityContextHolder.getContext().getAuthentication() == null)) {
+			return false;
+		} else {
+			CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			ICalendarAccount calendarAccount = currentUser.getCalendarAccount();
+			return affiliationSource.doesAccountHaveAffiliation(calendarAccount, AffiliationImpl.INSTRUCTOR);
 		}
 	}
 }

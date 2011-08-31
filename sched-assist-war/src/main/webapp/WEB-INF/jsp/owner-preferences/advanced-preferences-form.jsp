@@ -82,6 +82,14 @@ $(document).ready(function(){
 <form:checkbox path="advisorShareWithStudents"/>
 <br/>
 </c:if>
+<c:if test="${command.eligibleForInstructor}">
+<div class="info">
+<p><spring:message code="instructor.share.with.students.help"/></p>
+</div>
+<label for="instructorShareWithStudents"><spring:message code="instructor.share.with.students.confirm"/>:&nbsp;</label>
+<form:checkbox path="instructorShareWithStudents"/>
+<br/>
+</c:if>
 <br/>
 <input type="submit" value="<spring:message code="save"/>"/>
 </fieldset>

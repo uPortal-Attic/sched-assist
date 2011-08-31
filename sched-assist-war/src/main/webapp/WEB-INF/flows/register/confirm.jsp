@@ -91,7 +91,10 @@ $(document).ready(function(){
 <li><spring:message code="schedule.end.date"/>:&nbsp;<i><c:out value="${registration.endDatePhrase }"/></i></li>
 </c:if>
 <c:if test="${academicAdvisor}">
-<li><spring:message code="schedule.owner.registration.confirm.advisor"/></li>
+<li><spring:message code="schedule.owner.registration.confirm.advisor" htmlEscape="false"/></li>
+</c:if>
+<c:if test="${instructor}">
+<li><spring:message code="schedule.owner.registration.confirm.instructor" htmlEscape="false"/></li>
 </c:if>
 </ul>
 <form:form commandName="registration">

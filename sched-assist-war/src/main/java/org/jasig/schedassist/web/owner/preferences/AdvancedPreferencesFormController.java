@@ -124,6 +124,12 @@ public class AdvancedPreferencesFormController {
 			String prefValue = owner.getPreference(Preferences.ADVISOR_SHARE_WITH_STUDENTS);
 			fbo.setAdvisorShareWithStudents(Boolean.parseBoolean(prefValue));
 		}
+		boolean isInstructor = affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.INSTRUCTOR);
+		fbo.setEligibleForInstructor(isInstructor);
+		if(isInstructor) {
+			String prefValue = owner.getPreference(Preferences.INSTRUCTOR_SHARE_WITH_STUDENTS);
+			fbo.setInstructorShareWithStudents(Boolean.parseBoolean(prefValue));
+		}
 		model.addAttribute("command", fbo);
 		return "owner-preferences/advanced-preferences-form";
 	}
@@ -156,8 +162,16 @@ public class AdvancedPreferencesFormController {
 			} else {
 				model.addAttribute("advisorShareWithStudentsOff", true);
 			}
-
 		}
+		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.INSTRUCTOR)) {
+			owner = ownerDao.updatePreference(owner, Preferences.INSTRUCTOR_SHARE_WITH_STUDENTS, String.valueOf(fbo.isInstructorShareWithStudents()));
+			if(fbo.isInstructorShareWithStudents()) {
+				model.addAttribute("instructorShareWithStudentsOn", true);
+			} else {
+				model.addAttribute("instructorShareWithStudentsOff", true);
+			}
+		}
+		
 		PublicProfile existingProfile = this.publicProfileDao.locatePublicProfileByOwner(owner);
 		
 		// set public profile preference (only if owner previously was not sharing)

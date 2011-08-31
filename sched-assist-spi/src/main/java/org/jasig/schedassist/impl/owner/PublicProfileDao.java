@@ -140,4 +140,12 @@ public interface PublicProfileDao {
 	 * @return a possibly empty, but never null {@link List}
 	 */
 	List<PublicProfileId> getPublicProfileIdsWithTag(String tag);
+
+	/**
+	 * Return a subset of {@link PublicProfileId}s for Instructors.
+	 * Implementation will order {@link PublicProfileId}s by the owner display name.
+	 * 
+	 * @return a possibly empty, but never null {@link List}
+	 */
+	List<PublicProfileId> getInstructorPublicProfileIds();
 }
