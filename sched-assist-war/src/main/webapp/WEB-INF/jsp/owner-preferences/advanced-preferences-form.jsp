@@ -74,23 +74,32 @@ $(document).ready(function(){
 </p>
 </c:if>
 
+<c:if test="${command.eligibleForAdvisor || command.eligibleForInstructor}">
+<hr/>
+<h4><spring:message code="automatic.relationships"/></h4>
+
 <c:if test="${command.eligibleForAdvisor}">
 <div class="info">
 <p><spring:message code="academic.advisor.share.with.students.help"/></p>
 </div>
+<div class="profileformcomponent">
 <label for="advisorShareWithStudents"><spring:message code="academic.advisor.share.with.students.confirm"/>:&nbsp;</label>
 <form:checkbox path="advisorShareWithStudents"/>
-<br/>
+</div>
 </c:if>
+
 <c:if test="${command.eligibleForInstructor}">
 <div class="info">
 <p><spring:message code="instructor.share.with.students.help"/></p>
 </div>
+<div class="profileformcomponent">
 <label for="instructorShareWithStudents"><spring:message code="instructor.share.with.students.confirm"/>:&nbsp;</label>
 <form:checkbox path="instructorShareWithStudents"/>
-<br/>
+</div>
 </c:if>
-<br/>
+
+</c:if>
+
 <input type="submit" value="<spring:message code="save"/>"/>
 </fieldset>
 </form:form>
