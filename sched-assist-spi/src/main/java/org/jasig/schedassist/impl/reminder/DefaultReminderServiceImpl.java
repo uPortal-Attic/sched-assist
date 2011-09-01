@@ -30,6 +30,7 @@ import javax.sql.DataSource;
 
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.Location;
+import net.fortuna.ical4j.model.property.Summary;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +45,7 @@ import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.Reminders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.MessageSource;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
@@ -71,6 +73,7 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	private OwnerDao ownerDao;
 	private SchedulingAssistantService schedulingAssistantService;
 	private ICalendarAccountDao calendarAccountDao;
+	private MessageSource messageSource;
 	private String noReplyFromAddress = "no.reply.wisccal@doit.wisc.edu";
 	private final Log LOG = LogFactory.getLog(this.getClass());
 	/**
@@ -117,6 +120,13 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	@Autowired
 	public void setCalendarAccountDao(@Qualifier("composite") ICalendarAccountDao calendarAccountDao) {
 		this.calendarAccountDao = calendarAccountDao;
+	}
+	/**
+	 * @param messageSource the messageSource to set
+	 */
+	@Autowired
+	public void setMessageSource(MessageSource messageSource) {
+		this.messageSource = messageSource;
 	}
 	/**
 	 * @param noReplyFromAddress the noReplyFromAddress to set
@@ -277,7 +287,7 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 			}
 			
 			message.setSubject("Reminder: " + event.getSummary().getValue());
-			final String messageBody = createMessageBody(event);
+			final String messageBody = createMessageBody(event, owner);
 			message.setText(messageBody);
 			
 			LOG.debug("sending message: " + message.toString());
@@ -292,34 +302,35 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	 * Construct the body of the email reminder message from the specified {@link VEvent}.
 	 * 
 	 * @param event
+	 * @param owner
 	 * @return
 	 */
-	protected static String createMessageBody(final VEvent event) {
+	protected String createMessageBody(final VEvent event, IScheduleOwner owner) {
 		StringBuilder messageBody = new StringBuilder();
-		messageBody.append("This is a reminder for your upcoming appointment:");
+		messageBody.append(this.messageSource.getMessage("reminder.email.introduction", new String[] { owner.getCalendarAccount().getDisplayName() }, null));
 		messageBody.append(NEWLINE);
 		messageBody.append(NEWLINE);
-		messageBody.append("Title: ");
-		messageBody.append(event.getSummary().getValue());
-		messageBody.append(NEWLINE);
+		Summary summary = event.getSummary();
+		if(summary != null) {
+			messageBody.append(this.messageSource.getMessage("reminder.email.title", new String[] { summary.getValue() }, null));
+			messageBody.append(NEWLINE);
+		}
 		SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, yyyy");
 		SimpleDateFormat tf = new SimpleDateFormat("h:mm a");
 		messageBody.append(df.format(event.getStartDate().getDate()));
 		messageBody.append(NEWLINE);
-		messageBody.append("Time: ");
-		messageBody.append(tf.format(event.getStartDate().getDate()));
-		messageBody.append(" to ");
-		messageBody.append(tf.format(event.getEndDate(true).getDate()));
-		
+		messageBody.append(
+				this.messageSource.getMessage("reminder.email.time", 
+						new String[] { tf.format(event.getStartDate().getDate()), tf.format(event.getEndDate(true).getDate())}, 
+						null));	
 		Location location = event.getLocation();
 		if(location != null) {
 			messageBody.append(NEWLINE);
-			messageBody.append("Location: ");
-			messageBody.append(event.getLocation().getValue());
+			messageBody.append(this.messageSource.getMessage("reminder.email.location", new String [] { location.getValue() }, null));
 		}
 		messageBody.append(NEWLINE);
 		messageBody.append(NEWLINE);
-		messageBody.append("This appointment was scheduled via the WiscCal Scheduling Assistant - https://tools.wisccal.wisc.edu/available/");
+		messageBody.append(this.messageSource.getMessage("reminder.email.footer", null, null));
 		return messageBody.toString();
 	}
 	

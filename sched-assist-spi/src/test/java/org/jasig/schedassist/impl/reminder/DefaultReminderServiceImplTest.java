@@ -19,14 +19,21 @@
 
 package org.jasig.schedassist.impl.reminder;
 
+import java.util.Locale;
+
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.Location;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.CommonDateOperations;
 import org.jasig.schedassist.model.InputFormatException;
+import org.jasig.schedassist.model.mock.MockCalendarAccount;
+import org.jasig.schedassist.model.mock.MockScheduleOwner;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.context.support.StaticMessageSource;
 
 /**
  * @author Nicholas Blair
@@ -34,15 +41,30 @@ import org.junit.Test;
  */
 public class DefaultReminderServiceImplTest {
 
+	private Log LOG = LogFactory.getLog(this.getClass());
+	private StaticMessageSource messageSource = new StaticMessageSource();
+	public DefaultReminderServiceImplTest() {
+		messageSource.addMessage("reminder.email.footer", Locale.getDefault(), "Footer - link");
+		messageSource.addMessage("reminder.email.introduction", Locale.getDefault(), "Reminder, meeting with {0}");
+		messageSource.addMessage("reminder.email.location", Locale.getDefault(), "Location: {0}");
+		messageSource.addMessage("reminder.email.time", Locale.getDefault(), "Time: {0} to {1}");
+		messageSource.addMessage("reminder.email.title", Locale.getDefault(), "Title: {0}");
+	}
 	@Test
-	public void testCreateMessageBody() throws InputFormatException {
+	public void testCreateMessageBodyControl() throws InputFormatException {
 		VEvent event = new VEvent(new Date(CommonDateOperations.parseDateTimePhrase("20110830-1200")), 
 				new Date(CommonDateOperations.parseDateTimePhrase("20110830-1300")), 
 				"some summary");
 
 		event.getProperties().add(new Location("somewhere"));
 		
-		String messageBody = DefaultReminderServiceImpl.createMessageBody(event);
+		DefaultReminderServiceImpl reminderService = new DefaultReminderServiceImpl();
+		reminderService.setMessageSource(messageSource);
+		MockCalendarAccount account = new MockCalendarAccount();
+		account.setDisplayName("Some Person");
+		MockScheduleOwner owner = new MockScheduleOwner(account, 1L);
+		String messageBody = reminderService.createMessageBody(event, owner);
+		LOG.debug("testCreateMessageBodyControl: " + messageBody);
 		Assert.assertTrue(messageBody.contains("Title: some summary"));
 		Assert.assertTrue(messageBody.contains("Location: somewhere"));
 	}
@@ -53,7 +75,14 @@ public class DefaultReminderServiceImplTest {
 				new Date(CommonDateOperations.parseDateTimePhrase("20110830-1300")), 
 				"some summary");
 		
-		String messageBody = DefaultReminderServiceImpl.createMessageBody(event);
+		DefaultReminderServiceImpl reminderService = new DefaultReminderServiceImpl();
+		reminderService.setMessageSource(messageSource);
+
+		MockCalendarAccount account = new MockCalendarAccount();
+		account.setDisplayName("Some Person");
+		MockScheduleOwner owner = new MockScheduleOwner(account, 1L);
+		String messageBody = reminderService.createMessageBody(event, owner);
+		LOG.debug("testCreateMessageBodyNoLocation: " + messageBody);
 		Assert.assertTrue(messageBody.contains("Title: some summary"));
 		Assert.assertFalse(messageBody.contains("Location"));
 	}
