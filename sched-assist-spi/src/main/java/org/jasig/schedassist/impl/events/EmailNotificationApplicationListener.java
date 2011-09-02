@@ -84,6 +84,7 @@ public class EmailNotificationApplicationListener implements
 	@Async
 	@Override
 	public void onApplicationEvent(AbstractAppointmentEvent event) {
+		LOG.debug("email notification listener received event " + event);
 		if(event instanceof AppointmentCreatedEvent) {
 			AppointmentCreatedEvent a = (AppointmentCreatedEvent) event;
 			final String messageBody = createMessageBody(a.getEvent(), a.getEventDescription(), a.getOwner());
@@ -119,7 +120,13 @@ public class EmailNotificationApplicationListener implements
 				message.setFrom(owner.getCalendarAccount().getEmailAddress());
 				message.setTo(new String[] { owner.getCalendarAccount().getEmailAddress(), visitor.getCalendarAccount().getEmailAddress() });
 			}		
-			message.setSubject(event.getSummary().getValue());
+			Summary summary = event.getSummary();
+			if(summary != null) {
+				message.setSubject(summary.getValue());
+			} else {
+				LOG.warn("event missing summary" + event);
+				message.setSubject("Appointment");
+			}
 			message.setText(messageBody);
 			
 			LOG.debug("sending message: " + message.toString());

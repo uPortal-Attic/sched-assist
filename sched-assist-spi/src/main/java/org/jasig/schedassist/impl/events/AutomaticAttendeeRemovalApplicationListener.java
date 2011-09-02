@@ -25,12 +25,15 @@ import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.Cn;
+import net.fortuna.ical4j.model.property.Location;
+import net.fortuna.ical4j.model.property.Summary;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.MessageSource;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Async;
@@ -49,6 +52,7 @@ public class AutomaticAttendeeRemovalApplicationListener implements
 	
 	private Log LOG = LogFactory.getLog(this.getClass());
 	private MailSender mailSender;
+	private MessageSource messageSource;
 	private String noReplyFromAddress = "no.reply.wisccal@doit.wisc.edu";
 	
 	/**
@@ -57,6 +61,13 @@ public class AutomaticAttendeeRemovalApplicationListener implements
 	@Autowired
 	public void setMailSender(MailSender mailSender) {
 		this.mailSender = mailSender;
+	}
+	/**
+	 * @param messageSource the messageSource to set
+	 */
+	@Autowired
+	public void setMessageSource(MessageSource messageSource) {
+		this.messageSource = messageSource;
 	}
 	/**
 	 * @param noReplyFromAddress the noReplyFromAddress to set
@@ -85,7 +96,13 @@ public class AutomaticAttendeeRemovalApplicationListener implements
 		String removedAttendeeEmail = removedAttendee.getValue().substring(EmailNotificationApplicationListener.MAILTO_PREFIX.length());
 		message.setTo(removedAttendeeEmail);
 		
-		message.setSubject(vevent.getSummary().getValue() + " has been updated");
+		Summary summary = vevent.getSummary();
+		if(summary != null) {
+			message.setSubject(summary.getValue() + " has been updated");
+		} else {
+			LOG.warn("event is missing summary: " + event);
+			message.setSubject("Appointment has been updated");
+		}
 		message.setText(constructMessageBody(vevent, removedAttendee, owner.getDisplayName()));
 		
 		LOG.debug("sending message: " + message.toString());
@@ -102,30 +119,34 @@ public class AutomaticAttendeeRemovalApplicationListener implements
 	 */
 	protected String constructMessageBody(VEvent event, Property removedAttendee, String ownerName) {
 		StringBuilder body = new StringBuilder();
-		body.append("WiscCal Scheduling Assistant has automatically removed ");
 		Parameter cn = removedAttendee.getParameter(Cn.CN);
-		body.append(cn.getValue());
-		body.append(" from the following group appointment: ");
+		
+		body.append(this.messageSource.getMessage("automatic.attendee.remove.notify.introduction", new String[] { cn.getValue() }, null));
+
 		body.append(EmailNotificationApplicationListener.NEWLINE);
 		body.append(EmailNotificationApplicationListener.NEWLINE);
-		body.append("Title: ");
-		body.append(event.getSummary().getValue());
-		body.append(EmailNotificationApplicationListener.NEWLINE);
+		Summary summary = event.getSummary();
+		if(summary != null) {
+			body.append(this.messageSource.getMessage("notify.email.title", new String[] { summary.getValue() }, null));
+			body.append(EmailNotificationApplicationListener.NEWLINE);
+		}
 		SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, yyyy");
 		SimpleDateFormat tf = new SimpleDateFormat("h:mm a");
 		body.append(df.format(event.getStartDate().getDate()));
 		body.append(EmailNotificationApplicationListener.NEWLINE);
-		body.append("Time: ");
-		body.append(tf.format(event.getStartDate().getDate()));
-		body.append(" to ");
-		body.append(tf.format(event.getEndDate(true).getDate()));
-		body.append(EmailNotificationApplicationListener.NEWLINE);
-		body.append("Location: ");
-		body.append(event.getLocation().getValue());
+		body.append(
+				this.messageSource.getMessage("notify.email.time", 
+						new String[] { tf.format(event.getStartDate().getDate()), tf.format(event.getEndDate(true).getDate())}, 
+						null));	
+		Location location = event.getLocation();
+		if(location != null) {
+			body.append(EmailNotificationApplicationListener.NEWLINE);
+			body.append(this.messageSource.getMessage("notify.email.location", new String [] { location.getValue() }, null));
+		}
 		body.append(EmailNotificationApplicationListener.NEWLINE);
 		body.append(EmailNotificationApplicationListener.NEWLINE);
 		
-		body.append("This attendee was automatically removed because they previously specified via WiscCal that they will not be able to attend.");
+		body.append(this.messageSource.getMessage("automatic.attendee.remove.notify.footer", null, null));
 		
 		return body.toString();
 	}
