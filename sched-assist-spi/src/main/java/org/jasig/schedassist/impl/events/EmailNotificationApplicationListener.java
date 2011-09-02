@@ -22,6 +22,8 @@ package org.jasig.schedassist.impl.events;
 import java.text.SimpleDateFormat;
 
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.Location;
+import net.fortuna.ical4j.model.property.Summary;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -30,6 +32,7 @@ import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.MessageSource;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Async;
@@ -52,6 +55,7 @@ public class EmailNotificationApplicationListener implements
 	
 	private Log LOG = LogFactory.getLog(this.getClass());
 	private MailSender mailSender;
+	private MessageSource messageSource;
 	private String noReplyFromAddress = "no.reply.wisccal@doit.wisc.edu";
 	/**
 	 * @param mailSender the mailSender to set
@@ -59,6 +63,13 @@ public class EmailNotificationApplicationListener implements
 	@Autowired
 	public void setMailSender(MailSender mailSender) {
 		this.mailSender = mailSender;
+	}
+	/**
+	 * @param messageSource the messageSource to set
+	 */
+	@Autowired
+	public void setMessageSource(MessageSource messageSource) {
+		this.messageSource = messageSource;
 	}
 	/**
 	 * @param noReplyFromAddress the noReplyFromAddress to set
@@ -75,16 +86,20 @@ public class EmailNotificationApplicationListener implements
 	public void onApplicationEvent(AbstractAppointmentEvent event) {
 		if(event instanceof AppointmentCreatedEvent) {
 			AppointmentCreatedEvent a = (AppointmentCreatedEvent) event;
-			sendEmail(a.getOwner(), a.getVisitor(), a.getEvent(), createMessageBody(a.getEvent(), a.getEventDescription()));
+			final String messageBody = createMessageBody(a.getEvent(), a.getEventDescription(), a.getOwner());
+			sendEmail(a.getOwner(), a.getVisitor(), a.getEvent(), messageBody);
 		} else if (event instanceof AppointmentCancelledEvent) {
 			AppointmentCancelledEvent a = (AppointmentCancelledEvent) event;
-			sendEmail(a.getOwner(), a.getVisitor(), a.getEvent(), cancelMessageBody(a.getEvent(), a.getCancelReason()));
+			final String messageBody = cancelMessageBody(a.getEvent(), a.getCancelReason(), a.getOwner());
+			sendEmail(a.getOwner(), a.getVisitor(), a.getEvent(), messageBody);
 		} else if (event instanceof AppointmentJoinedEvent) {
 			AppointmentJoinedEvent a = (AppointmentJoinedEvent) event;
-			sendEmail(a.getOwner(), a.getVisitor(), a.getEvent(), createMessageBody(a.getEvent(), null));
+			final String messageBody = createMessageBody(a.getEvent(), null, a.getOwner());
+			sendEmail(a.getOwner(), a.getVisitor(), a.getEvent(), messageBody);
 		} else if (event instanceof AppointmentLeftEvent) {
 			AppointmentLeftEvent a = (AppointmentLeftEvent) event;
-			sendEmail(a.getOwner(), a.getVisitor(), a.getEvent(), cancelMessageBody(a.getEvent(), null));
+			final String messageBody = cancelMessageBody(a.getEvent(), null, a.getOwner());
+			sendEmail(a.getOwner(), a.getVisitor(), a.getEvent(), messageBody);
 		}
 	}
 	
@@ -135,33 +150,36 @@ public class EmailNotificationApplicationListener implements
 	 * @param event
 	 * @return
 	 */
-	protected static String createMessageBody(final VEvent event, String eventDescription) {
+	protected String createMessageBody(final VEvent event, String eventDescription, IScheduleOwner owner) {
 		StringBuilder messageBody = new StringBuilder();
-		messageBody.append("The following meeting has been added to your agenda:");
+		messageBody.append(this.messageSource.getMessage("notify.email.introduction", new String[] { owner.getCalendarAccount().getDisplayName() }, null));
 		messageBody.append(NEWLINE);
 		messageBody.append(NEWLINE);
-		messageBody.append("Title: ");
-		messageBody.append(event.getSummary().getValue());
-		messageBody.append(NEWLINE);
+		Summary summary = event.getSummary();
+		if(summary != null) {
+			messageBody.append(this.messageSource.getMessage("notify.email.title", new String[] { summary.getValue() }, null));
+			messageBody.append(NEWLINE);
+		}
 		SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, yyyy");
 		SimpleDateFormat tf = new SimpleDateFormat("h:mm a");
 		messageBody.append(df.format(event.getStartDate().getDate()));
 		messageBody.append(NEWLINE);
-		messageBody.append("Time: ");
-		messageBody.append(tf.format(event.getStartDate().getDate()));
-		messageBody.append(" to ");
-		messageBody.append(tf.format(event.getEndDate(true).getDate()));
-		messageBody.append(NEWLINE);
-		messageBody.append("Location: ");
-		messageBody.append(event.getLocation().getValue());
+		messageBody.append(
+				this.messageSource.getMessage("notify.email.time", 
+						new String[] { tf.format(event.getStartDate().getDate()), tf.format(event.getEndDate(true).getDate())}, 
+						null));	
+		Location location = event.getLocation();
+		if(location != null) {
+			messageBody.append(NEWLINE);
+			messageBody.append(this.messageSource.getMessage("notify.email.location", new String [] { location.getValue() }, null));
+		}
 		messageBody.append(NEWLINE);
 		if(StringUtils.isNotBlank(eventDescription)) {
-			messageBody.append("Reason: ");
-			messageBody.append(eventDescription);
+			messageBody.append(this.messageSource.getMessage("notify.email.reason", new String [] { eventDescription }, null));
 			messageBody.append(NEWLINE);
 		}
 		messageBody.append(NEWLINE);
-		messageBody.append("This appointment was scheduled via the WiscCal Scheduling Assistant - https://tools.wisccal.wisc.edu/available/");
+		messageBody.append(this.messageSource.getMessage("notify.email.footer", null, null));
 		return messageBody.toString();
 	}
 	
@@ -170,30 +188,31 @@ public class EmailNotificationApplicationListener implements
 	 * @param event
 	 * @return
 	 */
-	protected static String cancelMessageBody(final VEvent event, final String cancelReason) {
+	protected String cancelMessageBody(final VEvent event, final String cancelReason, final IScheduleOwner owner) {
 		StringBuilder messageBody = new StringBuilder();
-		messageBody.append("The following meeting has been removed from your agenda:");
+		messageBody.append(this.messageSource.getMessage("notify.email.cancel", new String[] { owner.getCalendarAccount().getDisplayName() }, null));
 		messageBody.append(NEWLINE);
 		messageBody.append(NEWLINE);
-		messageBody.append("Title: ");
-		messageBody.append(event.getSummary().getValue());
-		messageBody.append(NEWLINE);
+		Summary summary = event.getSummary();
+		if(summary != null) {
+			messageBody.append(this.messageSource.getMessage("notify.email.title", new String[] { summary.getValue() }, null));
+			messageBody.append(NEWLINE);
+		}
 		SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, yyyy");
 		SimpleDateFormat tf = new SimpleDateFormat("h:mm a");
 		messageBody.append(df.format(event.getStartDate().getDate()));
 		messageBody.append(NEWLINE);
-		messageBody.append("Time: ");
-		messageBody.append(tf.format(event.getStartDate().getDate()));
-		messageBody.append(" to ");
-		messageBody.append(tf.format(event.getEndDate(true).getDate()));
+		messageBody.append(
+				this.messageSource.getMessage("notify.email.time", 
+						new String[] { tf.format(event.getStartDate().getDate()), tf.format(event.getEndDate(true).getDate())}, 
+						null));	
 		messageBody.append(NEWLINE);
 		if(StringUtils.isNotBlank(cancelReason)) {
-			messageBody.append("Reason for cancelling: ");
-			messageBody.append(cancelReason);
+			messageBody.append(this.messageSource.getMessage("notify.email.cancel.reason", new String [] { cancelReason }, null));
 			messageBody.append(NEWLINE);
 		}
 		messageBody.append(NEWLINE);
-		messageBody.append("This appointment was scheduled via the WiscCal Scheduling Assistant - https://tools.wisccal.wisc.edu/available/");
+		messageBody.append(this.messageSource.getMessage("notify.email.footer", null, null));
 		return messageBody.toString();
 	}
 

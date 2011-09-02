@@ -20,13 +20,19 @@
 package org.jasig.schedassist.impl.events;
 
 import java.util.Date;
+import java.util.Locale;
 
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.Location;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.CommonDateOperations;
+import org.jasig.schedassist.model.mock.MockCalendarAccount;
+import org.jasig.schedassist.model.mock.MockScheduleOwner;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.context.support.StaticMessageSource;
 
 /**
  * Tests for {@link EmailNotificationApplicationListener}.
@@ -36,6 +42,22 @@ import org.junit.Test;
  */
 public class EmailNotificationApplicationListenerTest {
 	
+	private Log LOG = LogFactory.getLog(this.getClass());
+	private StaticMessageSource messageSource = new StaticMessageSource();
+	
+	/**
+	 * Sets up the message source.
+	 */
+	public EmailNotificationApplicationListenerTest() {
+		messageSource.addMessage("notify.email.footer", Locale.getDefault(), "Footer - link");
+		messageSource.addMessage("notify.email.introduction", Locale.getDefault(), "Notify meeting with {0}");
+		messageSource.addMessage("notify.email.cancel", Locale.getDefault(), "Notify cancel meeting with {0}");
+		messageSource.addMessage("notify.email.cancel.reason", Locale.getDefault(), "Reason for cancellation: {0}");
+		messageSource.addMessage("notify.email.location", Locale.getDefault(), "Location: {0}");
+		messageSource.addMessage("notify.email.reason", Locale.getDefault(), "Reason: {0}");
+		messageSource.addMessage("notify.email.time", Locale.getDefault(), "Time: {0} to {1}");
+		messageSource.addMessage("notify.email.title", Locale.getDefault(), "Title: {0}");
+	}
 	/**
 	 * Verify expected output for {@link EmailNotificationApplicationListener#createMessageBody(VEvent)}
 	 * 
@@ -48,23 +70,22 @@ public class EmailNotificationApplicationListenerTest {
 		VEvent event = new VEvent(new net.fortuna.ical4j.model.DateTime(startDate), 
 				new net.fortuna.ical4j.model.DateTime(endDate), "test appointment with student name");
 		event.getProperties().add(new Location("some office"));
-		String messageBody = EmailNotificationApplicationListener.createMessageBody(event, null);
-		StringBuilder expected = new StringBuilder();
-		final String newline = System.getProperty("line.separator");
-		expected.append("The following meeting has been added to your agenda:");
-		expected.append(newline);
-		expected.append(newline);
-		expected.append("Title: test appointment with student name");
-		expected.append(newline);
-		expected.append("Tue, May 12, 2009");
-		expected.append(newline);
-		expected.append("Time: 1:00 PM to 2:00 PM");
-		expected.append(newline);
-		expected.append("Location: some office");
-		expected.append(newline);
-		expected.append(newline);
-		expected.append("This appointment was scheduled via the WiscCal Scheduling Assistant - https://tools.wisccal.wisc.edu/available/");
-		Assert.assertEquals(expected.toString(), messageBody);
+		
+		MockCalendarAccount account = new MockCalendarAccount();
+		account.setDisplayName("Some Person");
+		MockScheduleOwner owner = new MockScheduleOwner(account, 1L);
+		
+		EmailNotificationApplicationListener listener = new EmailNotificationApplicationListener();
+		listener.setMessageSource(messageSource);
+		
+		String messageBody = listener.createMessageBody(event, null, owner);
+		LOG.debug("testCreateMessageBodyEmptyDescription: " + messageBody);
+		Assert.assertTrue(messageBody.contains("Notify meeting with Some Person"));
+		Assert.assertTrue(messageBody.contains("Title: test appointment with student name"));
+		Assert.assertTrue(messageBody.contains("Location: some office"));
+		Assert.assertTrue(messageBody.contains("Tue, May 12, 2009"));
+		Assert.assertTrue(messageBody.contains("Time: 1:00 PM to 2:00 PM"));
+		Assert.assertTrue(messageBody.contains("Footer - link"));
 	}
 	
 	/**
@@ -79,25 +100,22 @@ public class EmailNotificationApplicationListenerTest {
 		VEvent event = new VEvent(new net.fortuna.ical4j.model.DateTime(startDate), 
 				new net.fortuna.ical4j.model.DateTime(endDate), "test appointment with student name");
 		event.getProperties().add(new Location("some office"));
-		String messageBody = EmailNotificationApplicationListener.createMessageBody(event, "test appointment");
-		StringBuilder expected = new StringBuilder();
-		final String newline = System.getProperty("line.separator");
-		expected.append("The following meeting has been added to your agenda:");
-		expected.append(newline);
-		expected.append(newline);
-		expected.append("Title: test appointment with student name");
-		expected.append(newline);
-		expected.append("Tue, May 12, 2009");
-		expected.append(newline);
-		expected.append("Time: 1:00 PM to 2:00 PM");
-		expected.append(newline);
-		expected.append("Location: some office");
-		expected.append(newline);
-		expected.append("Reason: test appointment");
-		expected.append(newline);
-		expected.append(newline);
-		expected.append("This appointment was scheduled via the WiscCal Scheduling Assistant - https://tools.wisccal.wisc.edu/available/");
-		Assert.assertEquals(expected.toString(), messageBody);
+		MockCalendarAccount account = new MockCalendarAccount();
+		account.setDisplayName("Some Person");
+		MockScheduleOwner owner = new MockScheduleOwner(account, 1L);
+		
+		EmailNotificationApplicationListener listener = new EmailNotificationApplicationListener();
+		listener.setMessageSource(messageSource);
+		
+		String messageBody = listener.createMessageBody(event, "test appointment", owner);
+		LOG.debug("testCreateMessageBodyWithDescription: " + messageBody);
+		Assert.assertTrue(messageBody.contains("Notify meeting with Some Person"));
+		Assert.assertTrue(messageBody.contains("Title: test appointment with student name"));
+		Assert.assertTrue(messageBody.contains("Location: some office"));
+		Assert.assertTrue(messageBody.contains("Tue, May 12, 2009"));
+		Assert.assertTrue(messageBody.contains("Time: 1:00 PM to 2:00 PM"));
+		Assert.assertTrue(messageBody.contains("Footer - link"));
+		Assert.assertTrue(messageBody.contains("Reason: test appointment"));
 	}
 	
 	/**
@@ -112,25 +130,29 @@ public class EmailNotificationApplicationListenerTest {
 		VEvent event = new VEvent(new net.fortuna.ical4j.model.DateTime(startDate), 
 				new net.fortuna.ical4j.model.DateTime(endDate), "test appointment with student name");
 		event.getProperties().add(new Location("some office"));
-		String messageBody = EmailNotificationApplicationListener.cancelMessageBody(event, "I can't make it.");
-		StringBuilder expected = new StringBuilder();
-		final String newline = System.getProperty("line.separator");
-		expected.append("The following meeting has been removed from your agenda:");
-		expected.append(newline);
-		expected.append(newline);
-		expected.append("Title: test appointment with student name");
-		expected.append(newline);
-		expected.append("Tue, May 12, 2009");
-		expected.append(newline);
-		expected.append("Time: 1:00 PM to 2:00 PM");
-		expected.append(newline);
-		expected.append("Reason for cancelling: I can't make it.");
-		expected.append(newline);
-		expected.append(newline);
-		expected.append("This appointment was scheduled via the WiscCal Scheduling Assistant - https://tools.wisccal.wisc.edu/available/");
-		Assert.assertEquals(expected.toString(), messageBody);
+		MockCalendarAccount account = new MockCalendarAccount();
+		account.setDisplayName("Some Person");
+		MockScheduleOwner owner = new MockScheduleOwner(account, 1L);
+		
+		EmailNotificationApplicationListener listener = new EmailNotificationApplicationListener();
+		listener.setMessageSource(messageSource);
+		
+		String messageBody = listener.cancelMessageBody(event, "I can't make it.", owner);
+		LOG.debug("testCancelMessageBody: " + messageBody);
+		Assert.assertTrue(messageBody.contains("Notify cancel meeting with Some Person"));
+		Assert.assertTrue(messageBody.contains("Title: test appointment with student name"));
+		Assert.assertTrue(messageBody.contains("Tue, May 12, 2009"));
+		Assert.assertTrue(messageBody.contains("Time: 1:00 PM to 2:00 PM"));
+		Assert.assertTrue(messageBody.contains("Footer - link"));
+		Assert.assertTrue(messageBody.contains("Reason for cancellation: I can't make it."));
 	}
 	
+	/**
+	 * Oracle Calendar accounts sometimes have invalid email addresses.
+	 * Test {@link EmailNotificationApplicationListener#isEmailAddressValid(String)} with some examples.
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void testInvalidScheduleOwnerEmail() throws Exception {
 		
