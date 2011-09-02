@@ -38,6 +38,16 @@
             </list>
         </property>
     </bean>
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="alwaysUseMessageFormat" value="true" />
+        <property name="cacheSeconds" value="60" />
+        <property name="useCodeAsDefaultMessage" value="true" />
+        <property name="basenames">
+            <list>
+                <value>classpath:/i18n/Messages</value>
+            </list>
+        </property>                                     
+    </bean>
     
 	<!-- available-web applicationContext -->
 	<context:annotation-config base-package="org.jasig.schedassist"/>
