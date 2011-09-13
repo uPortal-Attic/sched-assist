@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to Jasig under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Jasig licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License. You may obtain a
+    copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <!-- 
+    <bean id="visitorCalendarAccount1" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
+        <property name="calendarUniqueId" value="${integration.calendarAccount.visitor1.calendarUniqueId}"/>
+        <property name="displayName" value="${integration.calendarAccount.visitor1.displayName}"/>
+        <property name="emailAddress" value="${integration.calendarAccount.visitor1.emailAddress}"/>
+        <property name="username" value="${integration.calendarAccount.visitor1.username}"/>
+        <property name="eligible" value="${integration.calendarAccount.visitor1.eligible}"/>
+        <qualifier value="visitor1"/>
+    </bean> 
+    
+    <bean id="visitorCalendarAccount2" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
+        <property name="calendarUniqueId" value="${integration.calendarAccount.visitor2.calendarUniqueId}"/>
+        <property name="displayName" value="${integration.calendarAccount.visitor2.displayName}"/>
+        <property name="emailAddress" value="${integration.calendarAccount.visitor2.emailAddress}"/>
+        <property name="username" value="${integration.calendarAccount.visitor2.username}"/>
+        <property name="eligible" value="${integration.calendarAccount.visitor2.eligible}"/>
+        <qualifier value="visitor2"/>
+    </bean> 
+    
+    <bean id="ownerCalendarAccount" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
+        <property name="calendarUniqueId" value="${integration.calendarAccount.owner1.calendarUniqueId}"/>
+        <property name="displayName" value="${integration.calendarAccount.owner1.displayName}"/>
+        <property name="emailAddress" value="${integration.calendarAccount.owner1.emailAddress}"/>
+        <property name="username" value="${integration.calendarAccount.owner1.username}"/>
+        <property name="eligible" value="${integration.calendarAccount.owner1.eligible}"/>
+        <qualifier value="owner1"/>
+    </bean> 
+     -->  
+     
+    <!-- 
+    These sample calendar accounts are sourced from the Bedework quickstart LDAP
+    Replace the property values with your own test accounts for Integration tests.
+     -->
+    <bean id="visitorCalendarAccount1" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
+        <property name="calendarUniqueId" value="jrthompson2"/>
+        <property name="displayName" value="JESSE R THOMPSON"/>
+        <property name="emailAddress" value="jrthompson2@wisctest.wisc.edu"/>
+        <property name="username" value="jrthompson2"/>
+        <property name="eligible" value="true"/>
+        <qualifier value="visitor1"/>
+    </bean> 
+    
+    <bean id="visitorCalendarAccount2" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
+        <property name="calendarUniqueId" value="dgkarnowski"/>
+        <property name="displayName" value="DAVID G KARNOWSKI"/>
+        <property name="emailAddress" value="dgkarnowski@wisctest.wisc.edu"/>
+        <property name="username" value="dgkarnowski"/>
+        <property name="eligible" value="true"/>
+        <qualifier value="visitor2"/>
+    </bean> 
+    
+    <bean id="ownerCalendarAccount" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
+        <property name="calendarUniqueId" value="npblair"/>
+        <property name="displayName" value="NICHOLAS P BLAIR"/>
+        <property name="emailAddress" value="npblair@wisctest.wisc.edu"/>
+        <property name="username" value="npblair"/>
+        <property name="eligible" value="true"/>
+        <qualifier value="owner1"/>
+    </bean> 
+    
+      
+</beans>

@@ -129,7 +129,7 @@ public class CaldavIntegrationTest {
 	 */
 	@Test
 	public void testCreateAndCancelIndividualAppointment() {
-		
+		// starts now
 		Date start = DateUtils.truncate(new Date(), java.util.Calendar.MINUTE);
 		Date end = DateUtils.addHours(start, 1);
 		final DateTime ical4jstart = new DateTime(start);
@@ -179,7 +179,8 @@ public class CaldavIntegrationTest {
 	 */
 	@Test
 	public void testGroupAppointmentWorkflow() {
-		Date startDate = DateUtils.truncate(new Date(), java.util.Calendar.MINUTE);
+		// start an hour from now to avoid conflicts with individual apppointment
+		Date startDate = DateUtils.truncate(DateUtils.addHours(new Date(), 1), java.util.Calendar.MINUTE);
 		Date endDate = DateUtils.addHours(startDate, 1);
 		final DateTime ical4jstart = new DateTime(startDate);
 		final DateTime ical4jend = new DateTime(endDate);
@@ -278,6 +279,5 @@ public class CaldavIntegrationTest {
 		this.calendarDataDao.cancelAppointment(owner1, lookupResult);
 		VEvent lookupResultAfterCancel = this.calendarDataDao.getExistingAppointment(owner1, block);
 		Assert.assertNull(lookupResultAfterCancel);
-
 	}
 }

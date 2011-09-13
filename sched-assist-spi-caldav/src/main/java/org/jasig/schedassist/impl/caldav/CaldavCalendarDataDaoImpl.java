@@ -420,6 +420,8 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	 * @return
 	 */
 	protected String generateEventUri(IScheduleOwner owner, VEvent event) {
+		Validate.notNull(event, "event argument cannot be null");
+		Validate.notNull(event.getUid(), "cannot generateEventUri for event with null UID");
 		String accountHome = this.caldavDialect.getCalendarAccountHome(owner.getCalendarAccount());
 
 		StringBuilder eventUri = new StringBuilder(accountHome);

@@ -20,10 +20,11 @@
 /**
  * 
  */
-package org.jasig.schedassist.impl.caldav;
+package org.jasig.schedassist.impl.caldav.bedework;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
+import org.jasig.schedassist.impl.caldav.HttpMethodInterceptor;
 import org.jasig.schedassist.model.ICalendarAccount;
 
 /**

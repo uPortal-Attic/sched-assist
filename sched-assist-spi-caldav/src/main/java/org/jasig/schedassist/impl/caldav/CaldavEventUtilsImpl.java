@@ -31,7 +31,6 @@ import net.fortuna.ical4j.model.property.Organizer;
 import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Transp;
 import net.fortuna.ical4j.model.property.Uid;
-import net.fortuna.ical4j.model.property.XProperty;
 
 import org.jasig.schedassist.IAffiliationSource;
 import org.jasig.schedassist.model.AppointmentRole;
@@ -74,7 +73,6 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl {
 				eventDescription);
 		event.getProperties().add(constructOrganizer(owner.getCalendarAccount()));
 		event.getProperties().add(this.generateNewUid());
-		event.getProperties().add(new XProperty("X-BEDEWORK-SUBMITTEDBY", owner.getCalendarAccount().getUsername()));
 		return event;
 	}
 

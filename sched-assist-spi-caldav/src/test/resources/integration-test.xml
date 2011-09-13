@@ -37,44 +37,26 @@
         </property>
     </bean>
     
-	<!-- BEGIN CalDAV server specific beans -->
-	<!--  in this example, implementations compatible for Bedework are chosen -->
-	<bean id="caldavHost" class="java.net.URI">
-		<constructor-arg><value>${caldav.host}</value></constructor-arg>
-	</bean>
-	<bean class="org.jasig.schedassist.impl.caldav.DefaultCaldavDialectImpl"/>
-	<bean class="org.jasig.schedassist.impl.caldav.BedeworkHttpMethodInterceptorImpl"/>
-	<!-- END CalDAV server specific beans -->
+    <!--  
+    Import either "bedework.xml" or "default-caldav.xml" (if not using bedework
+    One or the other, never both
+     -->
+
+	<import resource="integration/bedework.xml"/>
+    <!--  
+    <import resource="integration/default-caldav.xml"/>
+    -->
     
     <context:annotation-config />
     <context:component-scan base-package="org.jasig.schedassist.impl.caldav"/>  
-            
-    <bean id="visitorCalendarAccount1" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
-        <property name="calendarUniqueId" value="johnsa"/>
-        <property name="displayName" value="Johnson, Arlen"/>
-        <property name="emailAddress" value="johnsa@mysite.org"/>
-        <property name="username" value="johnsa"/>
-        <property name="eligible" value="true"/>
-        <qualifier value="visitor1"/>
-    </bean> 
     
-    <bean id="visitorCalendarAccount2" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
-        <property name="calendarUniqueId" value="douglm"/>
-        <property name="displayName" value="Douglass, Mike"/>
-        <property name="emailAddress" value="douglm@mysite.org"/>
-        <property name="username" value="douglm"/>
-        <property name="eligible" value="true"/>
-        <qualifier value="visitor2"/>
-    </bean> 
-    
-    <bean id="ownerCalendarAccount" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
-        <property name="calendarUniqueId" value="schwag"/>
-        <property name="displayName" value="Schwartz, Gary"/>
-        <property name="emailAddress" value="schwag@mysite.org"/>
-        <property name="username" value="schwag"/>
-        <property name="eligible" value="true"/>
-        <qualifier value="owner1"/>
-    </bean> 
+    <!-- 
+     | An AffiliationSource implementation tells the scheduling assistant which accounts are
+     | Instructors and which accounts are Advisors   
+     +-->      
+    <bean id="affiliationSource" class="org.jasig.schedassist.NullAffiliationSourceImpl"/>
+  
+   	<import resource="integration/sample-calendarAccounts.xml"/>
     
     <bean id="caldavAdminCredentials" class="org.apache.commons.httpclient.UsernamePasswordCredentials">
     	<constructor-arg index="0"><value>${caldav.admin.username}</value></constructor-arg>
