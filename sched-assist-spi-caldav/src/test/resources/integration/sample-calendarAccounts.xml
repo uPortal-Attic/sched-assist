@@ -27,7 +27,10 @@
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <!-- 
+	<!-- 
+	 | You don't need to edit this file to specify test accounts; 
+	 | edit the 'integration.calendarAccount' prefixed properties in integration.properties 
+	 +-->
     <bean id="visitorCalendarAccount1" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
         <property name="calendarUniqueId" value="${integration.calendarAccount.visitor1.calendarUniqueId}"/>
         <property name="displayName" value="${integration.calendarAccount.visitor1.displayName}"/>
@@ -36,7 +39,6 @@
         <property name="eligible" value="${integration.calendarAccount.visitor1.eligible}"/>
         <qualifier value="visitor1"/>
     </bean> 
-    
     <bean id="visitorCalendarAccount2" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
         <property name="calendarUniqueId" value="${integration.calendarAccount.visitor2.calendarUniqueId}"/>
         <property name="displayName" value="${integration.calendarAccount.visitor2.displayName}"/>
@@ -45,7 +47,6 @@
         <property name="eligible" value="${integration.calendarAccount.visitor2.eligible}"/>
         <qualifier value="visitor2"/>
     </bean> 
-    
     <bean id="ownerCalendarAccount" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
         <property name="calendarUniqueId" value="${integration.calendarAccount.owner1.calendarUniqueId}"/>
         <property name="displayName" value="${integration.calendarAccount.owner1.displayName}"/>
@@ -54,38 +55,5 @@
         <property name="eligible" value="${integration.calendarAccount.owner1.eligible}"/>
         <qualifier value="owner1"/>
     </bean> 
-     -->  
-     
-    <!-- 
-    These sample calendar accounts are sourced from the Bedework quickstart LDAP
-    Replace the property values with your own test accounts for Integration tests.
-     -->
-    <bean id="visitorCalendarAccount1" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
-        <property name="calendarUniqueId" value="jrthompson2"/>
-        <property name="displayName" value="JESSE R THOMPSON"/>
-        <property name="emailAddress" value="jrthompson2@wisctest.wisc.edu"/>
-        <property name="username" value="jrthompson2"/>
-        <property name="eligible" value="true"/>
-        <qualifier value="visitor1"/>
-    </bean> 
-    
-    <bean id="visitorCalendarAccount2" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
-        <property name="calendarUniqueId" value="dgkarnowski"/>
-        <property name="displayName" value="DAVID G KARNOWSKI"/>
-        <property name="emailAddress" value="dgkarnowski@wisctest.wisc.edu"/>
-        <property name="username" value="dgkarnowski"/>
-        <property name="eligible" value="true"/>
-        <qualifier value="visitor2"/>
-    </bean> 
-    
-    <bean id="ownerCalendarAccount" class="org.jasig.schedassist.model.mock.MockCalendarAccount">
-        <property name="calendarUniqueId" value="npblair"/>
-        <property name="displayName" value="NICHOLAS P BLAIR"/>
-        <property name="emailAddress" value="npblair@wisctest.wisc.edu"/>
-        <property name="username" value="npblair"/>
-        <property name="eligible" value="true"/>
-        <qualifier value="owner1"/>
-    </bean> 
-    
-      
+         
 </beans>
