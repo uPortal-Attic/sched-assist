@@ -42,21 +42,12 @@
 	<bean class="org.jasig.schedassist.impl.caldav.DefaultCaldavDialectImpl"/>
 	
 	<!-- BEGIN: Bedework Specific beans -->
-	<bean class="org.jasig.schedassist.impl.caldav.bedework.BedeworkHttpMethodInterceptorImpl"/>
+	<bean id="methodInterceptor" class="org.jasig.schedassist.impl.caldav.bedework.BedeworkHttpMethodInterceptorImpl"/>
 	<bean id="eventUtils" class="org.jasig.schedassist.impl.caldav.bedework.BedeworkEventUtilsImpl">
 		<constructor-arg ref="affiliationSource"/>
 	</bean>
 	<!-- END: Bedework Specific beans -->
-	<!-- 
-	 | Alternative choices are available for these 2 beans; if using a different Caldav server
-	 | remove the bedework specific beans and uncomment the following 2 beans.
-	 -->
-	<!-- 
-	<bean class="org.jasig.schedassist.impl.caldav.NoopHttpMethodInterceptorImpl"/>
-	<bean id="eventUtils" class="org.jasig.schedassist.impl.caldav.CaldavEventUtilsImpl">
-		<constructor-arg ref="affiliationSource"/>
-	</bean>
-	-->
+	<!-- If using a CalDAV server other than Bedework, look in localOverridesContext.xml for other options -->
 	
 	<bean id="caldavAdminCredentials" class="org.apache.commons.httpclient.UsernamePasswordCredentials">
     	<constructor-arg index="0"><value>${caldav.admin.username}</value></constructor-arg>

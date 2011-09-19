@@ -48,4 +48,13 @@
 	</bean>
 	-->
 	
+	<!-- 
+	 | If using a different Caldav server uncomment the following 2 beans.
+	 -->
+	<!-- 
+	<bean id="methodInterceptor" class="org.jasig.schedassist.impl.caldav.NoopHttpMethodInterceptorImpl"/>
+	<bean id="eventUtils" class="org.jasig.schedassist.impl.caldav.CaldavEventUtilsImpl">
+		<constructor-arg ref="affiliationSource"/>
+	</bean>
+	-->
 </beans>
