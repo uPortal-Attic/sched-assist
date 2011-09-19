@@ -109,10 +109,7 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl {
 			return true;
 		} else {
 			return Transp.OPAQUE.equals(transp);
-		}
-		
-		
-		
+		}	
 	}
 
 	/* (non-Javadoc)
@@ -129,6 +126,16 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl {
 			attendee.getParameters().add(Role.REQ_PARTICIPANT);
 		}
 		return attendee;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.model.DefaultEventUtilsImpl#convertBlockToReflectionEvent(org.jasig.schedassist.model.AvailableBlock)
+	 */
+	@Override
+	protected VEvent convertBlockToReflectionEvent(AvailableBlock block) {
+		VEvent reflection = super.convertBlockToReflectionEvent(block);
+		reflection.getProperties().add(this.generateNewUid());
+		return reflection;
 	}
 
 }

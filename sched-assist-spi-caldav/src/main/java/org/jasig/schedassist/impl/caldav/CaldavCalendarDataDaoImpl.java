@@ -59,6 +59,7 @@ import org.jasig.schedassist.model.AppointmentRole;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableSchedule;
 import org.jasig.schedassist.model.AvailableVersion;
+import org.jasig.schedassist.model.CommonDateOperations;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IEventUtils;
 import org.jasig.schedassist.model.IScheduleOwner;
@@ -397,6 +398,14 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	public void reflectAvailableSchedule(IScheduleOwner owner,
 			AvailableSchedule schedule) {
 		log.info("reflectAvailableSchedule unimplemented");
+		if(schedule.isEmpty()) {
+			return;
+		}
+		Date startDate = CommonDateOperations.beginningOfDay(schedule.getScheduleStartTime());
+		Date endDate = CommonDateOperations.endOfDay(schedule.getScheduleEndTime());
+		//purgeAvailableScheduleReflections(owner, startDate, endDate);
+		
+		//Calendar newReflections = this.eventUtils.convertScheduleForReflection(schedule);
 	}
 
 	/* (non-Javadoc)
