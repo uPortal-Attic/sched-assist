@@ -461,21 +461,6 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			results.add(wrapEventInCalendar(e));
 		}
 		return results;
-		/*
-		SortedSet<AvailableBlock> combinedBlocks = AvailableBlockBuilder.combine(availableSchedule.getAvailableBlocks());
-		ComponentList components = new ComponentList();
-		for(AvailableBlock block: combinedBlocks) {
-			VEvent event = convertBlockToReflectionEvent(block);
-			components.add(event);
-		}
-		net.fortuna.ical4j.model.Calendar result = new net.fortuna.ical4j.model.Calendar(components);
-		result.getProperties().add(PROD_ID);
-		result.getProperties().add(Version.VERSION_2_0);
-		
-		List<net.fortuna.ical4j.model.Calendar> results = new ArrayList<net.fortuna.ical4j.model.Calendar>();
-		results.add(result);
-		return results;
-		*/
 	}
 	
 	/* (non-Javadoc)
