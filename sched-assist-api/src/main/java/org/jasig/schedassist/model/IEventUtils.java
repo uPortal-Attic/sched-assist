@@ -19,6 +19,8 @@
 
 package org.jasig.schedassist.model;
 
+import java.util.List;
+
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
@@ -152,9 +154,9 @@ public interface IEventUtils {
 	 * 
 	 * @see ICalendarDataDao#reflectAvailableSchedule(IScheduleOwner, AvailableSchedule)
 	 * @param availableSchedule
-	 * @return the owner's  availability schedule as a Calendar appropriate for storing in the calendar system
+	 * @return the owner's availability schedule as a list of Calendars appropriate for storing in the calendar system
 	 */
-	Calendar convertScheduleForReflection(AvailableSchedule availableSchedule);
+	List<Calendar> convertScheduleForReflection(AvailableSchedule availableSchedule);
 	
 	/**
 	 * Generate a new {@link Uid}, intended for use with Scheduling Assistant {@link VEvent}s.
@@ -162,4 +164,12 @@ public interface IEventUtils {
 	 * @return a new {@link Uid}
 	 */
 	Uid generateNewUid();
+	
+	/**
+	 * Wrap the {@link VEvent} argument in a {@link Calendar}.
+	 * 
+	 * @param event
+	 * @return
+	 */
+	Calendar wrapEventInCalendar(VEvent event);
 }

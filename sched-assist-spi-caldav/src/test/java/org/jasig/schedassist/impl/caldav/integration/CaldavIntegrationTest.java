@@ -20,6 +20,8 @@
 package org.jasig.schedassist.impl.caldav.integration;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
@@ -31,6 +33,7 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.PartStat;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Summary;
+import net.fortuna.ical4j.model.property.Transp;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
@@ -38,9 +41,12 @@ import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.SchedulingException;
 import org.jasig.schedassist.impl.caldav.CaldavCalendarDataDaoImpl;
+import org.jasig.schedassist.impl.caldav.CalendarWithURI;
 import org.jasig.schedassist.model.AppointmentRole;
+import org.jasig.schedassist.model.AvailabilityReflection;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
+import org.jasig.schedassist.model.AvailableSchedule;
 import org.jasig.schedassist.model.CommonDateOperations;
 import org.jasig.schedassist.model.IEventUtils;
 import org.jasig.schedassist.model.InputFormatException;
@@ -79,17 +85,17 @@ public class CaldavIntegrationTest {
 	@Autowired
 	@Qualifier("owner1")
 	private MockCalendarAccount ownerCalendarAccount1;
-	
+
 	@Autowired
 	@Qualifier("visitor1")
 	private MockCalendarAccount visitorCalendarAccount1;
-	
+
 	@Autowired
 	@Qualifier("visitor2")
 	private MockCalendarAccount visitorCalendarAccount2;
-	
+
 	private Log log = LogFactory.getLog(this.getClass());
-	
+
 	/**
 	 * Simple integration test to see if {@link ICalendarDataDao#getCalendar(org.jasig.schedassist.model.ICalendarAccount, Date, Date)}
 	 * returns data.
@@ -117,7 +123,7 @@ public class CaldavIntegrationTest {
 		Assert.assertNotNull(summary);
 		Assert.assertEquals("dentist appointment", summary.getValue());
 	}
-	
+
 	/**
 	 * Basic workflow integration test:
 	 * <ol>
@@ -134,38 +140,38 @@ public class CaldavIntegrationTest {
 		Date end = DateUtils.addHours(start, 1);
 		final DateTime ical4jstart = new DateTime(start);
 		final DateTime ical4jend = new DateTime(end);
-		
+
 		AvailableBlock block = AvailableBlockBuilder.createBlock(start, end, 1);
 		MockScheduleOwner owner1 = new MockScheduleOwner(ownerCalendarAccount1, 1);
 		owner1.setPreference(Preferences.MEETING_PREFIX, "test appointment");
 		owner1.setPreference(Preferences.LOCATION, "meeting room 1a");
-		
+
 		MockScheduleVisitor visitor1 = new MockScheduleVisitor(visitorCalendarAccount1);
 		VEvent event = this.calendarDataDao.createAppointment(visitor1, owner1, block, "testCreateAndCancelIndividualAppointment");
 		Assert.assertNotNull(event);
-		
+
 		VEvent lookupResult = this.calendarDataDao.getExistingAppointment(owner1, block);
 		Assert.assertNotNull(lookupResult);
 		Assert.assertEquals(ical4jstart, lookupResult.getStartDate().getDate());
 		Assert.assertEquals(ical4jend, lookupResult.getEndDate().getDate());
 		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookupResult.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
 		Assert.assertEquals(1, Integer.parseInt(lookupResult.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
-		
+
 		Assert.assertEquals(2, lookupResult.getProperties(Attendee.ATTENDEE).size());
-		
+
 		Property visitorAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, visitorCalendarAccount1);
 		Assert.assertNotNull(visitorAttendee);
 		Assert.assertEquals(AppointmentRole.VISITOR, visitorAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
-		
+
 		Property ownerAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, ownerCalendarAccount1);
 		Assert.assertNotNull(ownerAttendee);
 		Assert.assertEquals(AppointmentRole.OWNER, ownerAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
-		
+
 		this.calendarDataDao.cancelAppointment(owner1, event);
 		VEvent lookupResultAfterCancel = this.calendarDataDao.getExistingAppointment(owner1, block);
 		Assert.assertNull(lookupResultAfterCancel);
 	}
-	
+
 	/**
 	 * Integration test to create and manipulate a group appointment.
 	 * <ol>
@@ -185,12 +191,12 @@ public class CaldavIntegrationTest {
 		final DateTime ical4jstart = new DateTime(startDate);
 		final DateTime ical4jend = new DateTime(endDate);
 		AvailableBlock block = AvailableBlockBuilder.createBlock(startDate, endDate, 2);
-		
+
 		MockScheduleOwner owner1 = new MockScheduleOwner(ownerCalendarAccount1, 1);
 		owner1.setPreference(Preferences.MEETING_PREFIX, "group appointment");
 		owner1.setPreference(Preferences.LOCATION, "meeting room 1b");
 		MockScheduleVisitor visitor1 = new MockScheduleVisitor(visitorCalendarAccount1);
-		
+
 		VEvent event = this.calendarDataDao.createAppointment(visitor1, owner1, block, "testGroupAppointmentWorkflow");
 		Assert.assertNotNull(event);
 		event = this.calendarDataDao.getExistingAppointment(owner1, block);
@@ -204,7 +210,7 @@ public class CaldavIntegrationTest {
 		Property ownerAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, owner1.getCalendarAccount());
 		Assert.assertNotNull(ownerAttendee);
 		Assert.assertEquals(AppointmentRole.OWNER, ownerAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
-		
+
 		VEvent lookupResult = this.calendarDataDao.getExistingAppointment(owner1, block);
 		Assert.assertNotNull(lookupResult);
 		Assert.assertEquals(ical4jstart, lookupResult.getStartDate().getDate());
@@ -212,10 +218,10 @@ public class CaldavIntegrationTest {
 		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookupResult.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
 		Assert.assertEquals(2, Integer.parseInt(lookupResult.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
 		Assert.assertEquals(2, lookupResult.getProperties(Attendee.ATTENDEE).size());
-		
+
 
 		MockScheduleVisitor visitor2 = new MockScheduleVisitor(visitorCalendarAccount2);
-		
+
 		// make 2nd visitor join
 		try {
 			this.calendarDataDao.joinAppointment(visitor2, owner1, lookupResult);
@@ -245,7 +251,7 @@ public class CaldavIntegrationTest {
 				}
 			}
 		}
-		
+
 		// now make visitor1 leave the appointment
 		try {
 			this.calendarDataDao.leaveAppointment(visitor1, owner1, lookupResult);
@@ -275,9 +281,43 @@ public class CaldavIntegrationTest {
 				}
 			}
 		}
-		
+
 		this.calendarDataDao.cancelAppointment(owner1, lookupResult);
 		VEvent lookupResultAfterCancel = this.calendarDataDao.getExistingAppointment(owner1, block);
 		Assert.assertNull(lookupResultAfterCancel);
+	}
+
+	/**
+	 * Reflect an {@link AvailableSchedule} into the owner's account and verify expected behavior.
+	 * 
+	 * @throws InputFormatException
+	 */
+	@Test
+	public void testReflectAvailabilitySchedule() throws InputFormatException {
+		final boolean reflectionEnabled = Boolean.parseBoolean(System.getProperty("org.jasig.schedassist.impl.caldav.reflectionEnabled", "false"));
+		if(reflectionEnabled) {
+			MockScheduleOwner owner1 = new MockScheduleOwner(ownerCalendarAccount1, 1);
+
+			Date start = CommonDateOperations.parseDatePhrase("20110919");
+			Date end = DateUtils.addDays(start, 11);
+
+			Set<AvailableBlock> availableBlocks = AvailableBlockBuilder.createBlocks("9:00 AM", "3:00 PM", "MWF", start, end);
+			AvailableSchedule schedule = new AvailableSchedule(availableBlocks);
+			this.calendarDataDao.reflectAvailableSchedule(owner1, schedule);
+
+			List<CalendarWithURI> results = this.calendarDataDao.peekAtAvailableScheduleReflections(owner1, start, end);
+			Assert.assertEquals(1, results.size());
+			CalendarWithURI calendar = results.get(0);
+			VEvent event = (VEvent) calendar.getCalendar().getComponent(VEvent.VEVENT);
+			Assert.assertTrue(event.getProperties().contains(AvailabilityReflection.TRUE));
+			Assert.assertEquals("Available 9:00 AM - 3:00 PM", event.getSummary().getValue());
+			Assert.assertTrue(event.getProperties().contains(Transp.TRANSPARENT));
+
+			this.calendarDataDao.purgeAvailableScheduleReflections(owner1, start, end);
+			results = this.calendarDataDao.peekAtAvailableScheduleReflections(owner1, start, end);
+			Assert.assertEquals(0, results.size());
+		} else {
+			log.debug("testReflectAvailabilitySchedule disabled");
+		}
 	}
 }

@@ -217,6 +217,7 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 	/**
 	 * Wrap the event in a {@link Calendar}.
 	 * 
+	 * TODO duplicate of eventUtils function, wire in dependency
 	 * @param event
 	 * @return
 	 */

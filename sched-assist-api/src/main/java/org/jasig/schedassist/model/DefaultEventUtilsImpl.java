@@ -19,12 +19,18 @@
 
 package org.jasig.schedassist.model;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -34,7 +40,9 @@ import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.ParameterList;
 import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.PropertyFactoryImpl;
 import net.fortuna.ical4j.model.PropertyList;
+import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.Cn;
 import net.fortuna.ical4j.model.parameter.CuType;
@@ -43,16 +51,19 @@ import net.fortuna.ical4j.model.parameter.Rsvp;
 import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Clazz;
+import net.fortuna.ical4j.model.property.Created;
 import net.fortuna.ical4j.model.property.Description;
 import net.fortuna.ical4j.model.property.DtEnd;
 import net.fortuna.ical4j.model.property.DtStamp;
 import net.fortuna.ical4j.model.property.DtStart;
+import net.fortuna.ical4j.model.property.LastModified;
 import net.fortuna.ical4j.model.property.Location;
-import net.fortuna.ical4j.model.property.Priority;
 import net.fortuna.ical4j.model.property.ProdId;
+import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.Sequence;
 import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Summary;
+import net.fortuna.ical4j.model.property.Transp;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 
@@ -77,9 +88,9 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	 */
 	public static final String ICAL_DATETIME_FORMAT = "yyyyMMdd'T'HHmmss'Z'";
 	/**
-	 * The {@link ProdId} used when storing iCalendar for the Available application.
+	 * {@link ProdId} attached to {@link Calendar}s sent to the CalDAV server by the Scheduling Assistant.
 	 */
-	public static final ProdId AVAILABLE_PROD_ID = new ProdId("-//Scheduling Assistant//iCal4j 1.0//EN");
+	public static final ProdId PROD_ID = new ProdId("-//jasig.org//Jasig Scheduling Assistant 1.0//EN");
 	// Commons-Lang provides a thread-safe replacement for SimpleDateFormat
 	private static final FastDateFormat FASTDATEFORMAT = FastDateFormat.getInstance(ICAL_DATETIME_FORMAT, 
 			TimeZone.getTimeZone("UTC"));
@@ -424,8 +435,33 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	 * @see org.jasig.schedassist.model.IEventUtils#convertScheduleForReflection(org.jasig.schedassist.model.AvailableSchedule)
 	 */
 	@Override
-	public net.fortuna.ical4j.model.Calendar convertScheduleForReflection(
+	public List<net.fortuna.ical4j.model.Calendar> convertScheduleForReflection(
 			final AvailableSchedule availableSchedule) {
+		if(availableSchedule.isEmpty()) {
+			return Collections.emptyList();
+		}
+		SortedSet<AvailableBlock> combinedBlocks = AvailableBlockBuilder.combine(availableSchedule.getAvailableBlocks());
+		Map<String, VEvent> summaryToEvent = new HashMap<String, VEvent>();
+		for(AvailableBlock block: combinedBlocks) {
+			String summary = constructSummaryValueForReflectionEvent(block);
+			VEvent event = summaryToEvent.get(summary);
+			if(event == null) {
+				event = convertBlockToReflectionEvent(block);
+				summaryToEvent.put(summary, event);
+			} else {
+			    // add Rdate to existing event
+			 	net.fortuna.ical4j.model.Date start = new net.fortuna.ical4j.model.Date(DateUtils.truncate(block.getStartTime(), java.util.Calendar.DATE));
+			 	CustomRDate rDate = new CustomRDate(start.toString());
+				event.getProperties().add(rDate);
+			}
+		}
+		
+		List<net.fortuna.ical4j.model.Calendar> results = new ArrayList<net.fortuna.ical4j.model.Calendar>();
+		for(VEvent e: summaryToEvent.values()) {
+			results.add(wrapEventInCalendar(e));
+		}
+		return results;
+		/*
 		SortedSet<AvailableBlock> combinedBlocks = AvailableBlockBuilder.combine(availableSchedule.getAvailableBlocks());
 		ComponentList components = new ComponentList();
 		for(AvailableBlock block: combinedBlocks) {
@@ -433,13 +469,27 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			components.add(event);
 		}
 		net.fortuna.ical4j.model.Calendar result = new net.fortuna.ical4j.model.Calendar(components);
-		result.getProperties().add(AVAILABLE_PROD_ID);
+		result.getProperties().add(PROD_ID);
 		result.getProperties().add(Version.VERSION_2_0);
-		return result;
+		
+		List<net.fortuna.ical4j.model.Calendar> results = new ArrayList<net.fortuna.ical4j.model.Calendar>();
+		results.add(result);
+		return results;
+		*/
 	}
 	
-	
-	
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.model.IEventUtils#wrapEventInCalendar(net.fortuna.ical4j.model.component.VEvent)
+	 */
+	@Override
+	public net.fortuna.ical4j.model.Calendar wrapEventInCalendar(VEvent event) {
+		ComponentList components = new ComponentList();
+		components.add(event);
+		net.fortuna.ical4j.model.Calendar result = new net.fortuna.ical4j.model.Calendar(components);
+		result.getProperties().add(Version.VERSION_2_0);
+		result.getProperties().add(PROD_ID);
+		return result;
+	}
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.model.IEventUtils#generateNewUid()
 	 */
@@ -460,37 +510,45 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	 * @return an appropriate event
 	 */
 	protected VEvent convertBlockToReflectionEvent(final AvailableBlock block) {
+		Date blockStartTime = DateUtils.truncate(block.getStartTime(), Calendar.DATE);
+		DtStart start = new DtStart(new net.fortuna.ical4j.model.Date(blockStartTime));
+		DtStamp stamp = new DtStamp(new net.fortuna.ical4j.model.DateTime(new Date()));
+		Date blockEndTime = DateUtils.addDays(blockStartTime, 1);
+		DtEnd end = new DtEnd(new net.fortuna.ical4j.model.Date(blockEndTime));
+		
+		PropertyList properties = new PropertyList();
+		properties.add(new Summary(constructSummaryValueForReflectionEvent(block)));
+		properties.add(start);
+		properties.add(stamp);
+		properties.add(end);
+		properties.add(new Created(new DateTime(new Date())));
+		properties.add(new LastModified(new DateTime(new Date())));
+		properties.add(Clazz.PRIVATE);
+		properties.add(new Sequence(0));
+		
+		properties.add(Transp.TRANSPARENT);
+		
+		if(StringUtils.isNotBlank(block.getMeetingLocation())) {
+			properties.add(new Location(block.getMeetingLocation()));
+		} 
+		properties.add(AvailabilityReflection.TRUE);
+		VEvent event = new VEvent(properties);
+		return event;
+	}
+	
+	/**
+	 * 
+	 * @param block
+	 * @return
+	 */
+	protected String constructSummaryValueForReflectionEvent(final AvailableBlock block) {
 		SimpleDateFormat df = new SimpleDateFormat("h:mm a");
 		StringBuilder summary = new StringBuilder();
 		summary.append("Available ");
 		summary.append(df.format(block.getStartTime()));
 		summary.append(" - ");
 		summary.append(df.format(block.getEndTime()));
-		
-		Date blockStartTime = DateUtils.truncate(block.getStartTime(), Calendar.DATE);
-		DtStart start = new DtStart(new net.fortuna.ical4j.model.Date(blockStartTime));
-		start.getParameters().add(Value.DATE);
-		
-		DtStamp stamp = new DtStamp(new net.fortuna.ical4j.model.DateTime(new Date()));
-		
-		Date blockEndTime = DateUtils.addDays(blockStartTime, 1);
-		DtEnd end = new DtEnd(new net.fortuna.ical4j.model.Date(blockEndTime));
-		end.getParameters().add(Value.DATE);
-		
-		PropertyList properties = new PropertyList();
-		properties.add(new Summary(summary.toString()));
-		properties.add(start);
-		properties.add(stamp);
-		properties.add(end);
-		properties.add(Status.VEVENT_CONFIRMED);
-		properties.add(Clazz.PRIVATE);
-		properties.add(new Sequence(0));
-		properties.add(new Priority(5));
-		properties.add(AvailabilityReflection.TRUE);
-		
-		
-		VEvent event = new VEvent(properties);
-		return event;
+		return summary.toString();
 	}
 
 	/**
@@ -538,4 +596,43 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		}
 	}
 
+	/**
+	 * Temporary workaround for problem with RDATE class in ical4j not supporting VALUE=DATE type values.
+	 * 
+	 * @author Nicholas Blair, npblair@wisc.edu
+	 *
+	 */
+	static class CustomRDate extends Property {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private static final ParameterList params = new ParameterList();
+		static {
+			params.add(Value.DATE);
+		}
+		private String value;
+		
+		public CustomRDate(String value) {
+			super(RDate.RDATE, params, PropertyFactoryImpl.getInstance());
+			this.value=value;
+		}
+
+		@Override
+		public void setValue(String aValue) throws IOException,
+				URISyntaxException, ParseException {
+			this.value=aValue;
+		}
+
+		@Override
+		public void validate() throws ValidationException {
+		}
+
+		@Override
+		public String getValue() {
+			return value;
+		}
+		
+	}
 }

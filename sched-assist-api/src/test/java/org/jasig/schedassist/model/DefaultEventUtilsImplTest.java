@@ -27,8 +27,12 @@ import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 
+import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.Property;
@@ -39,6 +43,7 @@ import net.fortuna.ical4j.model.parameter.CuType;
 import net.fortuna.ical4j.model.parameter.PartStat;
 import net.fortuna.ical4j.model.parameter.Rsvp;
 import net.fortuna.ical4j.model.property.Attendee;
+import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.Status;
 
 import org.apache.commons.lang.time.DateUtils;
@@ -817,16 +822,19 @@ public class DefaultEventUtilsImplTest {
 				makeDateTime("20100808-0000"), 
 				makeDateTime("20100814-0000"));
 		
-		// expand to 30 minute blocks first
+		// expand to 30 minute blocks first to verify they are combined properly
 		blocks = AvailableBlockBuilder.expand(blocks, 30);
-		net.fortuna.ical4j.model.Calendar calendar = this.eventUtils.convertScheduleForReflection(new AvailableSchedule(blocks));
+		List<net.fortuna.ical4j.model.Calendar> calendars = this.eventUtils.convertScheduleForReflection(new AvailableSchedule(blocks));
 		
-		Assert.assertEquals(3, calendar.getComponents().size());
+		Assert.assertEquals(1, calendars.size());
+		net.fortuna.ical4j.model.Calendar calendar = calendars.get(0);
+		Assert.assertEquals(1, calendar.getComponents().size());
 		ComponentList components = calendar.getComponents(VEvent.VEVENT);
 		for(Object o : components) {
 			VEvent event = (VEvent) o;
 			Assert.assertEquals("Available 9:00 AM - 3:00 PM", event.getSummary().getValue());
 			Assert.assertEquals(AvailabilityReflection.TRUE, event.getProperty(AvailabilityReflection.AVAILABILITY_REFLECTION));
+			Assert.assertEquals(2, event.getProperties(RDate.RDATE).size());
 		}
 	}
 	
@@ -876,6 +884,115 @@ public class DefaultEventUtilsImplTest {
 				Assert.assertEquals("mailto:someowner@wisc.edu", attendee.getValue());
 			} else {
 				Assert.fail("unexpected property " + o);
+			}
+		}
+	}
+	/**
+	 * Test {@link DefaultEventUtilsImpl#convertScheduleForReflection(AvailableSchedule)} on a 
+	 * single block schedule.
+	 * 
+	 * @throws InputFormatException
+	 */
+	@Test
+	public void testConvertScheduleForReflectionControl() throws InputFormatException {	
+		AvailableBlock block = AvailableBlockBuilder.createBlock("20110503-0800", "20110503-0900");
+		
+		Set<AvailableBlock> availableBlocks = new HashSet<AvailableBlock>();
+		availableBlocks.add(block);
+		AvailableSchedule availableSchedule = new AvailableSchedule(availableBlocks);
+		List<Calendar> calendars = eventUtils.convertScheduleForReflection(availableSchedule);
+		Assert.assertEquals(1, calendars.size());
+		Calendar calendar = calendars.get(0);
+		
+		ComponentList components = calendar.getComponents(VEvent.VEVENT);
+		Assert.assertEquals(1, components.size());
+		for(Object o: components) {
+			VEvent event = (VEvent) o;
+			Assert.assertEquals("Available 8:00 AM - 9:00 AM", event.getSummary().getValue());
+			Assert.assertEquals("20110503", event.getStartDate().getValue());
+			Assert.assertTrue(event.getProperties().contains(AvailabilityReflection.TRUE));
+		}
+	}
+	
+	/**
+	 * Test {@link DefaultEventUtilsImpl#convertScheduleForReflection(AvailableSchedule)} on a 
+	 * series of blocks that all have the same time phrase (8:00 AM to 9:00 AM).
+	 * 
+	 * @throws InputFormatException
+	 */
+	@Test
+	public void testConvertScheduleForReflectionSingleSeries() throws InputFormatException {
+		Set<AvailableBlock> availableBlocks = AvailableBlockBuilder.createBlocks("8:00 AM", "9:00 AM", "MWF", 
+				CommonDateOperations.parseDatePhrase("20110919"), CommonDateOperations.parseDatePhrase("20111028"));
+
+		AvailableSchedule availableSchedule = new AvailableSchedule(availableBlocks);
+		List<Calendar> calendars = eventUtils.convertScheduleForReflection(availableSchedule);
+		Assert.assertEquals(1, calendars.size());
+		Calendar calendar = calendars.get(0);
+		
+		ComponentList components = calendar.getComponents(VEvent.VEVENT);
+		Assert.assertEquals(1, components.size());
+		for(Object o: components) {
+			VEvent event = (VEvent) o;
+			Assert.assertEquals("Available 8:00 AM - 9:00 AM", event.getSummary().getValue());
+			// start date will match first block in the series
+			Assert.assertEquals("20110919", event.getStartDate().getValue());
+			Assert.assertTrue(event.getProperties().contains(AvailabilityReflection.TRUE));
+			PropertyList rDateList = event.getProperties(RDate.RDATE);
+			Assert.assertEquals(17, rDateList.size());
+		}
+	}
+	
+	/**
+	 * Test {@link DefaultEventUtilsImpl#convertScheduleForReflection(AvailableSchedule)} on a schedule
+	 * that contains multiple availability series.
+	 * 
+	 * @throws InputFormatException
+	 */
+	@Test
+	public void testConvertScheduleForReflectionMultipleSeries() throws InputFormatException {
+		Set<AvailableBlock> series1 = AvailableBlockBuilder.createBlocks("8:00 AM", "9:00 AM", "MWF", 
+				CommonDateOperations.parseDatePhrase("20110919"), CommonDateOperations.parseDatePhrase("20111028"));
+
+		Set<AvailableBlock> series2 = AvailableBlockBuilder.createBlocks("1:00 PM", "3:00 PM", "MWF", 
+				CommonDateOperations.parseDatePhrase("20110919"), CommonDateOperations.parseDatePhrase("20111028"));
+		
+		
+		Set<AvailableBlock> series3 = AvailableBlockBuilder.createBlocks("11:00 AM", "2:00 PM", "TR", 
+				CommonDateOperations.parseDatePhrase("20110919"), CommonDateOperations.parseDatePhrase("20111028"));
+		
+		AvailableSchedule availableSchedule = new AvailableSchedule(series1);
+		availableSchedule.addAvailableBlocks(series2);
+		availableSchedule.addAvailableBlocks(series3);
+		
+		List<Calendar> calendars = eventUtils.convertScheduleForReflection(availableSchedule);
+		Assert.assertEquals(3, calendars.size());
+		for(Calendar calendar: calendars) {
+			
+			ComponentList components = calendar.getComponents(VEvent.VEVENT);
+			Assert.assertEquals(1, components.size());
+			
+			VEvent event = (VEvent) components.get(0);
+			if("Available 8:00 AM - 9:00 AM".equals(event.getSummary().getValue())) {
+				// start date will match first block in the series
+				Assert.assertEquals("20110919", event.getStartDate().getValue());
+				Assert.assertTrue(event.getProperties().contains(AvailabilityReflection.TRUE));
+				PropertyList rDateList = event.getProperties(RDate.RDATE);
+				Assert.assertEquals(17, rDateList.size());
+			} else if ("Available 1:00 PM - 3:00 PM".equals(event.getSummary().getValue())) {
+				// start date will match first block in the series
+				Assert.assertEquals("20110919", event.getStartDate().getValue());
+				Assert.assertTrue(event.getProperties().contains(AvailabilityReflection.TRUE));
+				PropertyList rDateList = event.getProperties(RDate.RDATE);
+				Assert.assertEquals(17, rDateList.size());
+			} else if ("Available 11:00 AM - 2:00 PM".equals(event.getSummary().getValue())) {
+				// start date will match first block in the series
+				Assert.assertEquals("20110920", event.getStartDate().getValue());
+				Assert.assertTrue(event.getProperties().contains(AvailabilityReflection.TRUE));
+				PropertyList rDateList = event.getProperties(RDate.RDATE);
+				Assert.assertEquals(11, rDateList.size());
+			} else {
+				Assert.fail("unexpected event" + event);
 			}
 		}
 	}

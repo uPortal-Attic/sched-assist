@@ -127,7 +127,7 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl {
 		}
 		return attendee;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.model.DefaultEventUtilsImpl#convertBlockToReflectionEvent(org.jasig.schedassist.model.AvailableBlock)
 	 */

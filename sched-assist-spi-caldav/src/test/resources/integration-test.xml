@@ -41,11 +41,12 @@
     Import either "bedework.xml" or "default-caldav.xml" (if not using bedework
     One or the other, never both
      -->
-
+    <!-- 
 	<import resource="integration/bedework.xml"/>
-    <!--  
+	 -->
+    
     <import resource="integration/default-caldav.xml"/>
-    -->
+    
     
     <context:annotation-config />
     <context:component-scan base-package="org.jasig.schedassist.impl.caldav"/>  
