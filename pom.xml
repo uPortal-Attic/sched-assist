@@ -54,7 +54,7 @@
 		<ehcache-spring-annotations.version>1.1.2</ehcache-spring-annotations.version>
 		<hsqldb.version>1.8.0.10</hsqldb.version>
 		<httpclient.version>3.1</httpclient.version>
-		<ical4j.version>1.0.1-SNAPSHOT</ical4j.version>
+		<ical4j.version>1.0.2</ical4j.version>
 		<jasig.resourceserver.version>1.0.14</jasig.resourceserver.version>
 		<javamail.version>1.4.1</javamail.version>
 		<junit.version>4.8.2</junit.version>
@@ -72,35 +72,10 @@
 		<spring-ws.version>1.5.9</spring-ws.version>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>modularity-releases</id>
-			<name>Modularity Releases Repository</name>
-			<url>http://m2.modularity.net.au/releases</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>modularity-snapshots</id>
-			<name>Modularity Snapshots Repository</name>
-			<url>http://m2.modularity.net.au/snapshots</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>net.fortuna.ical4j</groupId>
+				<groupId>org.mnode.ical4j</groupId>
 				<artifactId>ical4j</artifactId>
 				<version>${ical4j.version}</version>
 				<exclusions>
