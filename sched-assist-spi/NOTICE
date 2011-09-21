@@ -27,7 +27,7 @@ This project includes:
   Ehcache Core under The Apache Software License, Version 2.0
   Ehcache Spring Annotations under Apache 2
   HSQLDB Database under HSQLDB License, a BSD open source license
-  iCal4j under iCal4j - License
+  ical4j under iCal4j - License
   JUnit under Common Public License Version 1.0
   Scheduling Assistant API under Apache License Version 2.0
   Scheduling Assistant Mocks under Apache License Version 2.0

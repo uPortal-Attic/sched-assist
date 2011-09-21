@@ -20,7 +20,7 @@ This project includes:
   Backport of JSR 166 under Public Domain
   Commons Lang under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
-  iCal4j under iCal4j - License
+  ical4j under iCal4j - License
   Scheduling Assistant API under Apache License Version 2.0
   Scheduling Assistant Mocks under Apache License Version 2.0
   SLF4J API Module under MIT License

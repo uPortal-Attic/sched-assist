@@ -25,7 +25,7 @@ This project includes:
   Commons Logging under The Apache Software License, Version 2.0
   EasyMock under Apache 2
   HttpClient under Apache License
-  iCal4j under iCal4j - License
+  ical4j under iCal4j - License
   JUnit under Common Public License Version 1.0
   Scheduling Assistant API under Apache License Version 2.0
   Scheduling Assistant Mocks under Apache License Version 2.0
