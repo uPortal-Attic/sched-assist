@@ -76,7 +76,7 @@ public class BlockingCalendarDataDaoImpl implements ICalendarDataDao {
 	}
 
 	@Override
-	public void cancelAppointment(IScheduleOwner owner, VEvent event) {
+	public void cancelAppointment(IScheduleVisitor visitor, IScheduleOwner owner, VEvent event) {
 
 	}
 

@@ -237,7 +237,7 @@ public final class SchedulingAssistantServiceImpl implements SchedulingAssistant
 		if(null == availableAppointment || this.eventUtils.isAttendingMatch(availableAppointment, visitor, owner)) {
 			// if this is a 1.0 appointment (no available version set) or visitor limit is 1
 			if(null == availableAppointment.getProperty(AvailableVersion.AVAILABLE_VERSION) || block.getVisitorLimit() == 1) {
-				calendarDao.cancelAppointment(owner, availableAppointment);
+				calendarDao.cancelAppointment(visitor, owner, availableAppointment);
 				if(null !=  applicationEventPublisher) {
 					applicationEventPublisher.publishEvent(new AppointmentCancelledEvent(availableAppointment, owner, visitor, block, cancelReason));
 				}
@@ -246,7 +246,7 @@ public final class SchedulingAssistantServiceImpl implements SchedulingAssistant
 				int currentVisitorCount = this.eventUtils.getScheduleVisitorCount(availableAppointment);
 				if(currentVisitorCount == 1) {
 					// this attendee is the last one, cancel
-					calendarDao.cancelAppointment(owner, availableAppointment);
+					calendarDao.cancelAppointment(visitor, owner, availableAppointment);
 				} else {
 					// there are other attendees, just leave
 					calendarDao.leaveAppointment(visitor, owner, availableAppointment);

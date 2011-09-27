@@ -174,10 +174,10 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 		Validate.notNull(accountUsername, "username in calendarAccount argument must not be null");
 		
 		StringBuilder uri = new StringBuilder();
-		uri.append(caldavHost.toString());
-		uri.append(accountHomePrefix);
+		uri.append(getCaldavHost().toString());
+		uri.append(getAccountHomePrefix());
 		uri.append(accountUsername);
-		uri.append(accountHomeSuffix);
+		uri.append(getAccountHomeSuffix());
 		return uri.toString();
 	}
 	

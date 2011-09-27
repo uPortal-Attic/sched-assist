@@ -76,10 +76,11 @@ public interface ICalendarDataDao {
 	/**
 	 * Cancel the specified appointment in the {@link IScheduleOwner}'s schedule.
 	 * 
+	 * @param visitor
 	 * @param owner
 	 * @param event
 	 */
-	void cancelAppointment(IScheduleOwner owner, VEvent event);
+	void cancelAppointment(IScheduleVisitor visitor, IScheduleOwner owner, VEvent event);
 	
 	
 	/**

@@ -505,7 +505,7 @@ public class SchedulingAssistantServiceImplTest {
 		// create mock CalendarDao and AvailableScheduleDao
 		ICalendarDataDao mockCalendarDao = EasyMock.createMock(ICalendarDataDao.class);
 		EasyMock.expect(mockCalendarDao.getExistingAppointment(owner, targetBlock)).andReturn(expectedEvent);
-		mockCalendarDao.cancelAppointment(owner, expectedEvent);
+		mockCalendarDao.cancelAppointment(visitor, owner, expectedEvent);
 		EasyMock.expectLastCall();
 		EasyMock.replay(mockCalendarDao);
 		

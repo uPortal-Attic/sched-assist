@@ -61,6 +61,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -93,6 +94,9 @@ public class CaldavIntegrationTest {
 	@Autowired
 	@Qualifier("visitor2")
 	private MockCalendarAccount visitorCalendarAccount2;
+	
+	@Value("reflectionEnabled")
+	private String reflectionEnabled;
 
 	private Log log = LogFactory.getLog(this.getClass());
 
@@ -167,7 +171,7 @@ public class CaldavIntegrationTest {
 		Assert.assertNotNull(ownerAttendee);
 		Assert.assertEquals(AppointmentRole.OWNER, ownerAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
 
-		this.calendarDataDao.cancelAppointment(owner1, event);
+		this.calendarDataDao.cancelAppointment(visitor1, owner1, event);
 		VEvent lookupResultAfterCancel = this.calendarDataDao.getExistingAppointment(owner1, block);
 		Assert.assertNull(lookupResultAfterCancel);
 	}
@@ -282,7 +286,7 @@ public class CaldavIntegrationTest {
 			}
 		}
 
-		this.calendarDataDao.cancelAppointment(owner1, lookupResult);
+		this.calendarDataDao.cancelAppointment(visitor2, owner1, lookupResult);
 		VEvent lookupResultAfterCancel = this.calendarDataDao.getExistingAppointment(owner1, block);
 		Assert.assertNull(lookupResultAfterCancel);
 	}
@@ -294,8 +298,8 @@ public class CaldavIntegrationTest {
 	 */
 	@Test
 	public void testReflectAvailabilitySchedule() throws InputFormatException {
-		final boolean reflectionEnabled = Boolean.parseBoolean(System.getProperty("org.jasig.schedassist.impl.caldav.reflectionEnabled", "false"));
-		if(reflectionEnabled) {
+		System.setProperty("org.jasig.schedassist.impl.caldav.reflectionEnabled", reflectionEnabled);
+		if(Boolean.parseBoolean(reflectionEnabled)) {
 			MockScheduleOwner owner1 = new MockScheduleOwner(ownerCalendarAccount1, 1);
 
 			Date start = CommonDateOperations.parseDatePhrase("20110919");
