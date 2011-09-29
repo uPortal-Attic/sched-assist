@@ -58,6 +58,7 @@
 		<javamail.version>1.4.1</javamail.version>
 		<junit.version>4.8.2</junit.version>
 		<log4j.version>1.2.16</log4j.version>
+		<mockito.version>1.8.5</mockito.version>
 		<ognl.version>2.7.3</ognl.version>
 		<opencsv.version>2.1</opencsv.version>
 		<pluto-taglib.version>1.1.7</pluto-taglib.version>
@@ -386,6 +387,11 @@
 				<groupId>org.easymock</groupId>
 				<artifactId>easymock</artifactId>
 				<version>${easymock.version}</version>
+			</dependency>
+			<dependency>
+    			<groupId>org.mockito</groupId>
+				<artifactId>mockito-all</artifactId>
+    			<version>${mockito.version}</version>
 			</dependency>
 		</dependencies>
 
