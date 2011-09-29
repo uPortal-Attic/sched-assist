@@ -20,6 +20,8 @@
 
 package org.jasig.schedassist.web.owner.schedule;
 
+import java.util.Date;
+
 
 /**
  * Form backing object for {@link ClearWeekFormController} and {@link ClearEntireAvailableScheduleFormController}.
@@ -67,6 +69,51 @@ public class ClearAvailableScheduleFormBackingObject {
 	 */
 	public void setWeekOfPhrase(String weekOfPhrase) {
 		this.weekOfPhrase = weekOfPhrase;
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (confirmedCancelAll ? 1231 : 1237);
+		result = prime * result + (confirmedCancelWeek ? 1231 : 1237);
+		result = prime * result
+				+ ((weekOfPhrase == null) ? 0 : weekOfPhrase.hashCode());
+		return result;
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ClearAvailableScheduleFormBackingObject other = (ClearAvailableScheduleFormBackingObject) obj;
+		if (confirmedCancelAll != other.confirmedCancelAll)
+			return false;
+		if (confirmedCancelWeek != other.confirmedCancelWeek)
+			return false;
+		if (weekOfPhrase == null) {
+			if (other.weekOfPhrase != null)
+				return false;
+		} else if (!weekOfPhrase.equals(other.weekOfPhrase))
+			return false;
+		return true;
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "ClearAvailableScheduleFormBackingObject [confirmedCancelAll="
+				+ confirmedCancelAll + ", confirmedCancelWeek="
+				+ confirmedCancelWeek + ", weekOfPhrase=" + weekOfPhrase + "]";
 	}
 
 }

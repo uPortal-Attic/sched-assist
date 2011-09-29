@@ -88,13 +88,50 @@ public class ClearWeekFormController {
 	@RequestMapping(method=RequestMethod.GET)
 	protected String setupForm(@RequestParam(value="weekOf",required=false) String weekOfPhrase, final ModelMap model) {
 		ClearAvailableScheduleFormBackingObject fbo = new ClearAvailableScheduleFormBackingObject();
-		if(StringUtils.isBlank(weekOfPhrase)) {
-			SimpleDateFormat df = CommonDateOperations.getDateFormat();
-			weekOfPhrase = df.format(CommonDateOperations.calculateSundayPrior(new Date()));
+		if(StringUtils.isBlank(weekOfPhrase)) {	
+			setWeekOfDefault(fbo);
+		} else {
+			safeInterpretWeekOfPhrase(weekOfPhrase, fbo);
 		}
-		fbo.setWeekOfPhrase(weekOfPhrase);
+		try {
+			model.addAttribute("weekOf", CommonDateOperations.parseDatePhrase(fbo.getWeekOfPhrase()));
+		} catch (InputFormatException e) {
+			LOG.warn("illegal state, InputFormatException thrown for known safe weekOfPhrase", e);
+		}
 		model.addAttribute("command", fbo);
 		return "owner-schedule/clear-week-form";
+	}
+	
+	/**
+	 * Parses the weekOfPhrase query parameter, and mutates the command object with safe values
+	 * no matter what.
+	 * 
+	 * @param weekOfPhrase
+	 * @param command
+	 */
+	protected void safeInterpretWeekOfPhrase(String weekOfPhrase, ClearAvailableScheduleFormBackingObject command) {
+		try {
+			// first parse the string to get the intended date
+			Date weekOf = CommonDateOperations.parseDatePhrase(weekOfPhrase);
+			// then calculate the sunday prior
+			weekOf = CommonDateOperations.calculateSundayPrior(weekOf);
+			// convert the sunday prior back into the datePhrase format
+			SimpleDateFormat df = CommonDateOperations.getDateFormat();
+			command.setWeekOfPhrase(df.format(weekOf));
+		} catch (InputFormatException e) {
+			// failed to parse weekOf, default to "this week"
+			setWeekOfDefault(command);
+			LOG.debug("failed to parse " + weekOfPhrase + ", using default values");
+		}
+	}
+	/**
+	 * Mutates the command object, setting default value for weekOfPhrase based on "today".
+	 * @param command
+	 */
+	protected void setWeekOfDefault(ClearAvailableScheduleFormBackingObject command) {
+		Date weekOf = CommonDateOperations.calculateSundayPrior(new Date());
+		SimpleDateFormat df = CommonDateOperations.getDateFormat();
+		command.setWeekOfPhrase(df.format(weekOf));
 	}
 	/**
 	 * 
@@ -116,7 +153,7 @@ public class ClearWeekFormController {
 			model.put("weekOf", weekOf);
 			return new ModelAndView("owner-schedule/clear-week-success", model);
 		} else {
-			LOG.info("owner (" + owner + ") did not confirm request to clear schedule for weekOf " + fbo.getWeekOfPhrase() + ", cancelling");
+			LOG.debug("owner (" + owner + ") did not confirm request to clear schedule for weekOf " + fbo.getWeekOfPhrase() + ", cancelling");
 			return new ModelAndView(new RedirectView("schedule.html", true));
 		}
 	}
