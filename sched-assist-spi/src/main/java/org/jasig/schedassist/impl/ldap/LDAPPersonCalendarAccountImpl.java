@@ -43,21 +43,20 @@ class LDAPPersonCalendarAccountImpl extends AbstractCalendarAccount {
 
 	private Map<String, String> attributesMap = new HashMap<String, String>();
 	/**
-	 * 
-	 */
-	public LDAPPersonCalendarAccountImpl() {
-	}
-	/**
+	 * Default implementation.
 	 * 
 	 * @param attributes
+	 * @param ldapAttributesKey
 	 */
-	public LDAPPersonCalendarAccountImpl(Map<String, String> attributes) {
+	public LDAPPersonCalendarAccountImpl(Map<String, String> attributes, LDAPAttributesKey ldapAttributesKey) {
 		this.attributesMap = attributes;
-		setCalendarUniqueId(attributes.get("uid"));
-		setDisplayName(attributes.get("cn"));
-		setEligible(true);
-		setEmailAddress(attributes.get("mail"));
-		setUsername(attributes.get("uid"));
+		// populate fields first
+		setCalendarUniqueId(attributes.get(ldapAttributesKey.getUniqueIdentifierAttributeName()));
+		setDisplayName(attributes.get(ldapAttributesKey.getDisplayNameAttributeName()));
+		setEmailAddress(attributes.get(ldapAttributesKey.getEmailAddressAttributeName()));
+		setUsername(attributes.get(ldapAttributesKey.getUsernameAttributeName()));
+		// set eligibility
+		setEligible(ldapAttributesKey.evaluateEligibilityAttributeValue(attributes));
 	}
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.model.AbstractCalendarAccount#getAttributeValue(java.lang.String)
@@ -81,12 +80,6 @@ class LDAPPersonCalendarAccountImpl extends AbstractCalendarAccount {
 	@Override
 	public String getCalendarLoginId() {
 		return getUsername();
-	}
-	/**
-	 * @param attributesMap the attributesMap to set
-	 */
-	protected void setAttributesMap(Map<String, String> attributesMap) {
-		this.attributesMap = attributesMap;
 	}
 
 }

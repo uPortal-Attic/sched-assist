@@ -40,17 +40,48 @@ import org.springframework.ldap.core.AttributesMapper;
  */
 public class DefaultAttributesMapperImpl implements AttributesMapper {
 
+	protected final LDAPAttributesKey ldapAttributesKey;
+	private String passwordAttributeName = "userPassword";
+	/**
+	 * 
+	 * @param ldapAttributesKey
+	 */
+	public DefaultAttributesMapperImpl(LDAPAttributesKey ldapAttributesKey) {
+		this.ldapAttributesKey = ldapAttributesKey;
+	}
+	/**
+	 * 
+	 * @param ldapAttributesKey
+	 * @param passwordAttributeName
+	 */
+	public DefaultAttributesMapperImpl(LDAPAttributesKey ldapAttributesKey, String passwordAttributeName) {
+		this.ldapAttributesKey = ldapAttributesKey;
+		this.passwordAttributeName = passwordAttributeName;
+	}
 	/* (non-Javadoc)
 	 * @see org.springframework.ldap.core.AttributesMapper#mapFromAttributes(javax.naming.directory.Attributes)
 	 */
 	@Override
 	public Object mapFromAttributes(Attributes attributes) throws NamingException {
+		Map<String, String> attributesMap = convertToStringAttributesMap(attributes);
+		
+		LDAPPersonCalendarAccountImpl account = new LDAPPersonCalendarAccountImpl(attributesMap, ldapAttributesKey);
+		return account;
+	}
+	
+	/**
+	 * 
+	 * @param attributes
+	 * @return
+	 * @throws NamingException
+	 */
+	protected final Map<String, String> convertToStringAttributesMap(Attributes attributes) throws NamingException {
 		Map<String, String> attributesMap = new HashMap<String, String>();
 		
 		NamingEnumeration<String> attributeNames = attributes.getIDs();
 		while(attributeNames.hasMore()) {
 			String attributeName = attributeNames.next();
-			if("userPassword".equalsIgnoreCase(attributeName)) {
+			if(passwordAttributeName.equalsIgnoreCase(attributeName)) {
 				// skip
 				continue;
 			}
@@ -62,9 +93,7 @@ public class DefaultAttributesMapperImpl implements AttributesMapper {
 			
 			attributesMap.put(attributeName.toLowerCase(), value);
 		}
-		
-		LDAPPersonCalendarAccountImpl account = new LDAPPersonCalendarAccountImpl(attributesMap);
-		return account;
+		return attributesMap;
 	}
 
 }

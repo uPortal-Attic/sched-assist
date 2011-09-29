@@ -16,10 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-/**
- * 
- */
 package org.jasig.schedassist.impl.ldap;
 
 import java.util.Collections;
@@ -31,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.ldap.SizeLimitExceededException;
@@ -51,15 +48,14 @@ import com.googlecode.ehcache.annotations.KeyGenerator;
  * @author Nicholas BlairNicholas Blair
  * @version $Id: LDAPCalendarAccountDaoImpl.java $
  */
-public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
+public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao, InitializingBean {
 
 	private static final String WILD = "*";
 	private LdapTemplate ldapTemplate;
-	private AttributesMapper attributesMapper = new DefaultAttributesMapperImpl();
+	private AttributesMapper attributesMapper;
 	private String baseDn = "o=isp";
-	private String calendarUsernameAttributeName = "uid";
-	private String calendarUniqueIdAttributeName = "uid";
-	private String calendarDisplayNameAttributeName = "cn";
+
+	private LDAPAttributesKey ldapAttributesKey = new LDAPAttributesKeyImpl();
 	private long searchResultsLimit = 25L;
 	private int searchTimeLimit = 5000;
 	private final Log log = LogFactory.getLog(this.getClass());
@@ -86,25 +82,11 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 		this.baseDn = baseDn;
 	}
 	/**
-	 * @param calendarUsernameAttributeName the calendarUsernameAttributeName to set
+	 * @param ldapAttributesKey the ldapAttributesKey to set
 	 */
-	public void setCalendarUsernameAttributeName(
-			String calendarUsernameAttributeName) {
-		this.calendarUsernameAttributeName = calendarUsernameAttributeName;
-	}
-	/**
-	 * @param calendarUniqueIdAttributeName the calendarUniqueIdAttributeName to set
-	 */
-	public void setCalendarUniqueIdAttributeName(
-			String calendarUniqueIdAttributeName) {
-		this.calendarUniqueIdAttributeName = calendarUniqueIdAttributeName;
-	}
-	/**
-	 * @param calendarDisplayNameAttributeName the calendarDisplayNameAttributeName to set
-	 */
-	public void setCalendarDisplayNameAttributeName(
-			String calendarDisplayNameAttributeName) {
-		this.calendarDisplayNameAttributeName = calendarDisplayNameAttributeName;
+	@Autowired(required=false)
+	public void setLdapAttributesKey(LDAPAttributesKey ldapAttributesKey) {
+		this.ldapAttributesKey = ldapAttributesKey;
 	}
 	/**
 	 * @param searchResultsLimit the searchResultsLimit to set
@@ -119,13 +101,25 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 		this.searchTimeLimit = searchTimeLimit;
 	}
 
+	/**
+	 * Initialize the attributesMapper field if not set by DI.
+	 * 
+	 *  (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(attributesMapper == null) {
+			attributesMapper = new DefaultAttributesMapperImpl(this.ldapAttributesKey);
+		}
+	}
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.ICalendarAccountDao#getCalendarAccount(java.lang.String)
 	 */
 	@Override
 	@Cacheable(cacheName="userAccountCache", keyGenerator=@KeyGenerator(name="StringCacheKeyGenerator"))
 	public ICalendarAccount getCalendarAccount(String username) {
-		EqualsFilter filter = new EqualsFilter(this.calendarUsernameAttributeName, username);
+		EqualsFilter filter = new EqualsFilter(ldapAttributesKey.getUsernameAttributeName(), username);
 		return executeSearch(filter);
 	}
 
@@ -136,7 +130,7 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 	@Cacheable(cacheName="userAccountCache", keyGenerator=@KeyGenerator(name="StringCacheKeyGenerator"))
 	public ICalendarAccount getCalendarAccountFromUniqueId(
 			String calendarUniqueId) {
-		return getCalendarAccount(this.calendarUniqueIdAttributeName, calendarUniqueId);
+		return getCalendarAccount(ldapAttributesKey.getUniqueIdentifierAttributeName(), calendarUniqueId);
 	}
 
 	/* (non-Javadoc)
@@ -149,7 +143,7 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 		AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter(attributeName, attributeValue));
 		// make sure our results have usernames
-		filter.and(new LikeFilter(this.calendarUsernameAttributeName, WILD));
+		filter.and(new LikeFilter(ldapAttributesKey.getUsernameAttributeName(), WILD));
 		return executeSearch(filter);
 	}
 
@@ -167,14 +161,14 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 		wildSearchText.append(WILD);
 		
 		OrFilter orFilter = new OrFilter();
-		orFilter.or(new LikeFilter(this.calendarUsernameAttributeName, wildSearchText.toString()));
-		orFilter.or(new LikeFilter(this.calendarDisplayNameAttributeName, wildSearchText.toString()));
+		orFilter.or(new LikeFilter(ldapAttributesKey.getUsernameAttributeName(), wildSearchText.toString()));
+		orFilter.or(new LikeFilter(ldapAttributesKey.getDisplayNameAttributeName(), wildSearchText.toString()));
 		
 		filter.and(orFilter);
 		// guarantee search for users with calendar attributes
-		filter.and(new LikeFilter(this.calendarUniqueIdAttributeName, WILD));
+		filter.and(new LikeFilter(ldapAttributesKey.getUniqueIdentifierAttributeName(), WILD));
 		// guarantee search for users with usernames
-		filter.and(new LikeFilter(this.calendarUsernameAttributeName, WILD));
+		filter.and(new LikeFilter(ldapAttributesKey.getUsernameAttributeName(), WILD));
 		return executeSearchReturnList(filter);
 	}
 
