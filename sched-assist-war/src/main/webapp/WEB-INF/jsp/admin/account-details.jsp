@@ -68,6 +68,9 @@
 <c:if test="${isAdvisor}">
 <li><img src="${starIcon}"/>&nbsp;<spring:message code="account.is.an.academic.advisor"/></li>
 </c:if>
+<c:if test="${isInstructor}">
+<li><img src="${starIcon}"/>&nbsp;<spring:message code="account.is.an.instructor"/></li>
+</c:if>
 </ul>
 
 <c:choose>

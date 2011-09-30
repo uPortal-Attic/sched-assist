@@ -105,6 +105,7 @@ public class AccountDetailsController {
 				model.addAttribute("isDelegate", account instanceof IDelegateCalendarAccount);
 				model.addAttribute("calendarAccount", account);
 				model.addAttribute("isAdvisor", affiliationSource.doesAccountHaveAffiliation(account, AffiliationImpl.ADVISOR));
+				model.addAttribute("isInstructor", affiliationSource.doesAccountHaveAffiliation(account, AffiliationImpl.INSTRUCTOR));
 				model.addAttribute("calendarAccountAttributes", account.getAttributes().entrySet());
 				
 				// try to look up visitor
