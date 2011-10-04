@@ -54,17 +54,23 @@
 	<bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
 		<constructor-arg ref="ldapContextSource" />
 	</bean>
+	<bean id="ldapAttributesKey" class="org.jasig.schedassist.impl.ldap.LDAPAttributesKeyImpl">
+		<property name="usernameAttributeName" value="uid"/>
+		<property name="uniqueIdentifierAttributeName" value="mail"/>
+		<property name="emailAddressAttributeName" value="mail"/>
+		<property name="displayNameAttributeName" value="cn"/>
+	</bean>
 	<bean id="calendarAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPCalendarAccountDaoImpl">
 		<property name="ldapTemplate" ref="ldapTemplate"/>
 		<property name="baseDn" ref="userAccountBaseDn"/>
+		<property name="ldapAttributesKey" ref="ldapAttributesKey"/>
 		<qualifier value="people"></qualifier>
 	</bean>
 	 
-	<bean id="delegateAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPDelegateCalendarAccountDaoImpl">
-		<!--  
+	<bean id="delegateAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPDelegateCalendarAccountDaoImpl"> 
 		<property name="ldapTemplate" ref="ldapTemplate"/>
 		<property name="baseDn" ref="resourceAccountBaseDn"/>
-		-->
+		<property name="ldapAttributesKey" ref="ldapAttributesKey"/>
 		<qualifier value="delegates"></qualifier>
 	</bean>
 	
