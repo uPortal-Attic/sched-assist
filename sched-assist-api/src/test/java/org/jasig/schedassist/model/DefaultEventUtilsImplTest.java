@@ -57,10 +57,10 @@ public class DefaultEventUtilsImplTest {
 
 	private DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 	/**
-	 * 
+	 * TODO depends on VM's timezone
 	 * @throws Exception
 	 */
-	@Test
+	//@Test
 	public void testConvertToICalendarFormatControl() throws Exception {
 		String output = DefaultEventUtilsImpl.convertToICalendarFormat(makeDateTime("20091006-1243"));
 		Assert.assertEquals("20091006T174300Z", output);
