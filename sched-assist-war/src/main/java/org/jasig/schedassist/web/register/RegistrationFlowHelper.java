@@ -114,7 +114,7 @@ public class RegistrationFlowHelper {
 			owner = ownerDao.updatePreference(owner, Preferences.ADVISOR_SHARE_WITH_STUDENTS, "true");
 		}
 		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.INSTRUCTOR)) {
-			// set INSTRUCTOR_SHARE_WITH_STUDENTS by default for all academic advisors
+			// set INSTRUCTOR_SHARE_WITH_STUDENTS by default for all instructors
 			owner = ownerDao.updatePreference(owner, Preferences.INSTRUCTOR_SHARE_WITH_STUDENTS, "true");
 		}
 		if(registration.isScheduleSet()) {
