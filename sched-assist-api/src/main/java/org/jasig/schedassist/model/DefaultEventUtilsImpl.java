@@ -179,20 +179,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 				title.append(visitor.getCalendarAccount().getDisplayName());
 				
 				// build event description
-				StringBuilder descriptionBuilder = new StringBuilder();
-				descriptionBuilder.append(eventDescription);
-				// if the owner is an advisor
-				if(getAffiliationSource().doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.ADVISOR )) {
-					// and the visitor is a student
-					String studentEmplid = visitor.getCalendarAccount().getAttributeValue("wiscedustudentid");
-					if(null != studentEmplid) {
-						// append the UW Student ID to the event description
-						descriptionBuilder.append(" [UW Student ID: ");
-						descriptionBuilder.append(studentEmplid);
-						descriptionBuilder.append("]");
-					}
-				}
-				Description description = new Description(descriptionBuilder.toString());
+				Description description = new Description(eventDescription);
 				event.getProperties().add(description);
 			} 
 			

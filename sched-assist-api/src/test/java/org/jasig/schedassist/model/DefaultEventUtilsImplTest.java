@@ -19,10 +19,6 @@
 
 package org.jasig.schedassist.model;
 
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,8 +43,6 @@ import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.Status;
 
 import org.apache.commons.lang.time.DateUtils;
-import org.easymock.EasyMock;
-import org.jasig.schedassist.IAffiliationSource;
 import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.junit.Assert;
 import org.junit.Test;
@@ -378,68 +372,7 @@ public class DefaultEventUtilsImplTest {
 		}
 	}
 	
-	/**
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testConstructAvailableAppointmentVisitorIsStudentOwnerIsAdvisor() throws Exception {
-		
-		// construct visitor
-		MockCalendarAccount person = new MockCalendarAccount();
-		person.setEmailAddress("somevisitor@wisc.edu");
-		person.setDisplayName("Some Visitor");
-		person.setAttributeValue("wiscedustudentid", "studentidnumber");
-		MockScheduleVisitor visitor = new MockScheduleVisitor(person);
-		
-		// construct owner
-		MockCalendarAccount person2 = new MockCalendarAccount();
-		person2.setEmailAddress("someowner@wisc.edu");
-		person2.setDisplayName("Some Owner");
-		person2.setAttributeValue("wisceduadvisorflag", "Y");
-		MockScheduleOwner owner = new MockScheduleOwner(person2, 1);
-		owner.setPreference(Preferences.LOCATION, "Owner's office");
-		
-		// need to construct an AffiliationSource that will mock the "advisor" scenario
-		IAffiliationSource affiliationSource = EasyMock.createMock(IAffiliationSource.class);
-		expect(affiliationSource.doesAccountHaveAffiliation(person2, AffiliationImpl.ADVISOR)).andReturn(true);
-		replay(affiliationSource);
-		DefaultEventUtilsImpl alternate = new DefaultEventUtilsImpl(affiliationSource);
-		
-		VEvent availableAppointment = alternate.constructAvailableAppointment(
-				AvailableBlockBuilder.createBlock("20091006-1300", "20091006-1330"),
-				owner, 
-				visitor, 
-				"test event description");
-		
-		Assert.assertEquals("Appointment with Some Visitor", availableAppointment.getSummary().getValue());
-		Assert.assertEquals("test event description [UW Student ID: studentidnumber]", availableAppointment.getDescription().getValue());
-		Assert.assertEquals("Owner's office", availableAppointment.getLocation().getValue());
-		Assert.assertEquals(makeDateTime("20091006-1300"), availableAppointment.getStartDate().getDate());
-		Assert.assertEquals(makeDateTime("20091006-1330"), availableAppointment.getEndDate().getDate());
-		Assert.assertEquals("TRUE", availableAppointment.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT).getValue());
-		Assert.assertEquals("1", availableAppointment.getProperty(VisitorLimit.VISITOR_LIMIT).getValue());
-		Assert.assertEquals(Status.VEVENT_CONFIRMED, availableAppointment.getProperty(Status.STATUS));
-		PropertyList attendeePropertyList = availableAppointment.getProperties(Attendee.ATTENDEE);
-		for(Object o : attendeePropertyList) {
-			Property attendee = (Property) o;
-			Assert.assertEquals(PartStat.ACCEPTED, attendee.getParameter(PartStat.PARTSTAT));
-			Assert.assertEquals(CuType.INDIVIDUAL, attendee.getParameter(CuType.CUTYPE));
-			Assert.assertEquals(Rsvp.FALSE, attendee.getParameter(Rsvp.RSVP));
-			Parameter appointmentRole = attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
-			if("VISITOR".equals(appointmentRole.getValue())) {
-				Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
-				Assert.assertEquals("Some Visitor", attendee.getParameter("CN").getValue());
-			} else if ("OWNER".equals(appointmentRole.getValue())) {
-				Assert.assertEquals("mailto:someowner@wisc.edu", attendee.getValue());
-				Assert.assertEquals("Some Owner", attendee.getParameter("CN").getValue());
-			} else {
-				Assert.fail("unexpected value for appointment role: " + appointmentRole.getValue());
-			}
-		}
-		
-		verify(affiliationSource);
-	}
+	
 	
 	/**
 	 * 
