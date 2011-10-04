@@ -33,7 +33,9 @@ import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.parameter.PartStat;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Uid;
@@ -59,6 +61,9 @@ import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.jasig.schedassist.SchedulingException;
 import org.jasig.schedassist.impl.caldav.xml.ReportResponseHandlerImpl;
+import org.jasig.schedassist.impl.events.AutomaticAppointmentCancellationEvent;
+import org.jasig.schedassist.impl.events.AutomaticAppointmentCancellationEvent.Reason;
+import org.jasig.schedassist.impl.events.AutomaticAttendeeRemovalEvent;
 import org.jasig.schedassist.model.AppointmentRole;
 import org.jasig.schedassist.model.AvailabilityReflection;
 import org.jasig.schedassist.model.AvailableBlock;
@@ -70,9 +75,11 @@ import org.jasig.schedassist.model.IEventUtils;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
 import org.jasig.schedassist.model.SchedulingAssistantAppointment;
+import org.jasig.schedassist.model.VisitorLimit;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 /**
@@ -119,6 +126,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	private HttpMethodInterceptor methodInterceptor = new NoopHttpMethodInterceptorImpl();
 	private boolean cancelUpdatesVisitorCalendar = false;
 	private final boolean reflectionEnabled = Boolean.parseBoolean(System.getProperty("org.jasig.schedassist.impl.caldav.reflectionEnabled", "false"));
+	private ApplicationEventPublisher applicationEventPublisher;
 
 	/**
 	 * @param httpClient the httpClient to set
@@ -161,6 +169,14 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	@Autowired(required=false)
 	public void setMethodInterceptor(HttpMethodInterceptor methodInterceptor) {
 		this.methodInterceptor = methodInterceptor;
+	}
+	/**
+	 * @param applicationEventPublisher the applicationEventPublisher to set
+	 */
+	@Autowired
+	public void setApplicationEventPublisher(
+			ApplicationEventPublisher applicationEventPublisher) {
+		this.applicationEventPublisher = applicationEventPublisher;
 	}
 	/**
 	 * @param cancelUpdatesVisitorCalendar the cancelUpdatesVisitorCalendar to set
@@ -221,7 +237,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 				visitor, 
 				eventDescription);
 		try {
-			int statusCode = putNewEvent(owner, event);
+			int statusCode = putNewEvent(owner.getCalendarAccount(), event);
 			if(log.isDebugEnabled()) {
 				log.debug("createAppointment status code: " + statusCode);
 			}
@@ -323,7 +339,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 			Attendee attendee = this.eventUtils.constructAvailableAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
 			event.getProperties().add(attendee);
 			try {
-				int statusCode = putExistingEvent(owner, event, calendarWithURI.getEtag());
+				int statusCode = putExistingEvent(owner.getCalendarAccount(), event, calendarWithURI.getEtag());
 				log.debug("joinAppointment status code: " + statusCode);
 				if(statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_CREATED || statusCode == HttpStatus.SC_NO_CONTENT) {
 					return event;
@@ -363,7 +379,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 			Property attendee = this.eventUtils.getAttendeeForUserFromEvent(event, visitor.getCalendarAccount());
 			event.getProperties().remove(attendee);
 			try {
-				int statusCode = putExistingEvent(owner, event, calendarWithURI.getEtag());
+				int statusCode = putExistingEvent(owner.getCalendarAccount(), event, calendarWithURI.getEtag());
 				log.debug("leaveAppointment status code: " + statusCode);
 				if(statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_CREATED || statusCode == HttpStatus.SC_NO_CONTENT) {
 					log.debug("leaveAppointment owner calendar update successful");
@@ -438,7 +454,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 					VEvent reflect = (VEvent) o;
 					//put!
 					try {
-						int statusCode = putNewEvent(owner, reflect);
+						int statusCode = putNewEvent(owner.getCalendarAccount(), reflect);
 						if(statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_CREATED || statusCode == HttpStatus.SC_NO_CONTENT) {
 							return;
 						} else {
@@ -534,10 +550,10 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	 * @param owner
 	 * @return
 	 */
-	protected String generateEventUri(IScheduleOwner owner, VEvent event) {
+	protected String generateEventUri(ICalendarAccount owner, VEvent event) {
 		Validate.notNull(event, "event argument cannot be null");
 		Validate.notNull(event.getUid(), "cannot generateEventUri for event with null UID");
-		String accountHome = this.caldavDialect.getCalendarAccountHome(owner.getCalendarAccount());
+		String accountHome = this.caldavDialect.getCalendarAccountHome(owner);
 
 		StringBuilder eventUri = new StringBuilder(accountHome);
 		eventUri.append(event.getUid().getValue());
@@ -572,7 +588,13 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 				InputStream content = method.getResponseBodyAsStream();
 				ReportResponseHandlerImpl reportResponseHandler = new ReportResponseHandlerImpl();
 				List<CalendarWithURI> calendars = reportResponseHandler.extractCalendars(content);
-				return calendars;
+				List<CalendarWithURI> results = new ArrayList<CalendarWithURI>();
+				for(CalendarWithURI c: calendars) {
+					if(purgeDeclinedAttendees(c, calendarAccount) != null) {
+						results.add(c);
+					}
+				}
+				return results;
 			} else {
 				throw new CaldavDataAccessException("unexpected status code: " + statusCode);
 			}
@@ -718,21 +740,21 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	/**
 	 * Store a new event using CalDAV PUT.
 	 * 
-	 * @param owner
+	 * @param eventOwner
 	 * @param event
 	 * @return
 	 * @throws HttpException
 	 * @throws IOException
 	 */
-	protected int putNewEvent(IScheduleOwner owner, VEvent event) throws HttpException, IOException {
-		String uri = generateEventUri(owner, event);
+	protected int putNewEvent(ICalendarAccount eventOwner, VEvent event) throws HttpException, IOException {
+		String uri = generateEventUri(eventOwner, event);
 
 		PutMethod method = constructPutMethod(uri, event);
 		method.addRequestHeader(IF_NONE_MATCH_HEADER);
 
-		HttpMethod toExecute = this.methodInterceptor.doWithMethod(method, owner.getCalendarAccount());
+		HttpMethod toExecute = this.methodInterceptor.doWithMethod(method, eventOwner);
 		if(log.isDebugEnabled()) {
-			log.debug("putNewEvent executing " + methodToString(method) + " for " + owner);
+			log.debug("putNewEvent executing " + methodToString(method) + " for " + eventOwner);
 		}
 		int statusCode = this.httpClient.executeMethod(toExecute);
 		if(log.isDebugEnabled()) {
@@ -745,27 +767,122 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	/**
 	 * Update an existing event using CalDAV PUT.
 	 * 
-	 * @param owner
+	 * @param eventOwner
 	 * @param event
 	 * @param etag
 	 * @return
 	 * @throws HttpException
 	 * @throws IOException
 	 */
-	protected int putExistingEvent(IScheduleOwner owner, VEvent event, String etag) throws HttpException, IOException {
-		String uri = generateEventUri(owner, event);
+	protected int putExistingEvent(ICalendarAccount eventOwner, VEvent event, String etag) throws HttpException, IOException {
+		String uri = generateEventUri(eventOwner, event);
 
 		PutMethod method = constructPutMethod(uri, event);
 		method.addRequestHeader(IF_MATCH_HEADER, etag);
 
-		HttpMethod toExecute = this.methodInterceptor.doWithMethod(method, owner.getCalendarAccount());
+		HttpMethod toExecute = this.methodInterceptor.doWithMethod(method, eventOwner);
 		if(log.isDebugEnabled()) {
-			log.debug("putExistingEvent executing " + methodToString(method) + " for " + owner);
+			log.debug("putExistingEvent executing " + methodToString(method) + " for " + eventOwner);
 		}
 		int statusCode = this.httpClient.executeMethod(toExecute);
 		return statusCode;
 	}
-
+	/**
+	 * This method will inspect {@link IScheduleVisitor} {@link Attendee}s among the {@link SchedulingAssistantAppointment}s
+	 * in the {@link Calendar} argument.
+	 * If an {@link Attendee} on an {@link SchedulingAssistantAppointment} has {@link Partstat#DECLINED}, the appointment
+	 * will be cancelled (if one on one or lone visitor on group appt) or the attendee will be removed (group appointment
+	 * with multiple attending visitors).
+	 * 
+	 * @param calendarWithURI
+	 * @param session
+	 * @param owner
+	 * @return the calendar minus any events or attendees that have been removed.
+	 * @throws SchedulingException 
+	 * @throws StatusException 
+	 */
+	protected CalendarWithURI purgeDeclinedAttendees(CalendarWithURI calendarWithURI, ICalendarAccount owner)  {
+		ComponentList componentList = calendarWithURI.getCalendar().getComponents(VEvent.VEVENT);
+		if(componentList.size() != 1) {
+			return calendarWithURI;
+		}
+		for(Object o: componentList) {
+			VEvent event = (VEvent) o;
+			final boolean hasAvailableAppointmentProperty = SchedulingAssistantAppointment.TRUE.equals(event.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
+			final boolean isAttendingAsOwner = this.eventUtils.isAttendingAsOwner(event, owner);
+			if(hasAvailableAppointmentProperty && isAttendingAsOwner) {
+				PropertyList attendeeList = this.eventUtils.getAttendeeListFromEvent(event);		
+				Property visitorLimitProp = event.getProperty(VisitorLimit.VISITOR_LIMIT);
+				final int visitorLimit = Integer.parseInt(visitorLimitProp.getValue());
+				
+				for(Object a : attendeeList) {
+					Property attendee = (Property) a;
+					if(PartStat.DECLINED.equals(attendee.getParameter(PartStat.PARTSTAT))) {
+						log.trace("found attendee that has DECLINED event: " + attendee);
+						Parameter appointmentRole = attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
+						if(AppointmentRole.OWNER.equals(appointmentRole) ) {
+							// remove whole appointment
+							//Uid eventUid = event.getUid();
+							deleteCalendar(calendarWithURI, owner);
+							log.warn("purgeDeclinedAttendees successfully cancelled appointment due to owner decline " + event);
+							
+							this.applicationEventPublisher.publishEvent(new AutomaticAppointmentCancellationEvent(event, owner, Reason.OWNER_DECLINED));
+							return null;
+						} else if (AppointmentRole.VISITOR.equals(appointmentRole)) {
+							int availableVisitorCount = this.eventUtils.getScheduleVisitorCount(event);
+							if(visitorLimit > 1 && availableVisitorCount > 1) {
+								// remove only the attendee (leave event)
+								event.getProperties().remove(attendee);
+								
+								try {
+									int statusCode = putExistingEvent(owner, event, calendarWithURI.getEtag());
+									log.debug("purgeDeclinedAttendees leave status code: " + statusCode);
+									if(statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_CREATED || statusCode == HttpStatus.SC_NO_CONTENT) {
+										log.warn("purgeDeclinedAttendees successfully removed declined attendee from group appointment " + event);
+										this.applicationEventPublisher.publishEvent(new AutomaticAttendeeRemovalEvent(event, owner, attendee));
+									} else if (statusCode == HttpStatus.SC_PRECONDITION_FAILED) {
+										// event changed in the interim, fail fast
+										//throw new SchedulingException("purgeDeclinedAttendees leave failed for " + attendee + " and " + owner + ", appointment was altered");
+										// leave appointment as is
+										log.warn("purgeDeclinedAttendees leave failed for " + attendee + " and " + owner + ", appointment was altered");
+									} else {
+										throw new CaldavDataAccessException("purgeDeclinedAttendees leave failed for " + attendee + ", " + owner + " failed with unexpected status code: " + statusCode);
+									}
+								} catch (HttpException e) {
+									log.error("an HttpException occurred in joinAppointment for " + owner + ", " + attendee );
+									throw new CaldavDataAccessException(e);
+								} catch (IOException e) {
+									log.error("an IOException occurred in joinAppointment for " + owner + ", " + attendee);
+									throw new CaldavDataAccessException(e);
+								} 
+								
+								
+							} else {
+								// either one on one appointment or group appointment with only 1 visitor
+								// remove whole appointment
+								//Uid eventUid = event.getUid();
+								deleteCalendar(calendarWithURI, owner);
+								log.warn("purgeDeclinedAttendees successfully cancelled appointment due to no remaining visitors " + event);
+								this.applicationEventPublisher.publishEvent(new AutomaticAppointmentCancellationEvent(event, owner, Reason.NO_REMAINING_VISITORS));
+								return null;
+							}
+						}
+					} 
+				}
+				
+				
+			} else {
+				if(log.isTraceEnabled()) {
+					String eventUid = "not set";
+					if(event.getUid() != null) {
+						eventUid = event.getUid().getValue();
+					}
+					log.trace("event (UID=" + eventUid + ") not a candidate for purge, hasAvailableAppointmentProperty=" + hasAvailableAppointmentProperty + ", isAttendingAsOwner=" + isAttendingAsOwner);
+				}
+			}
+		}
+		return calendarWithURI;
+	}
 	/**
 	 * 
 	 * @param uri

@@ -16,7 +16,7 @@
 	</properties>
 	<dependencies>
 		<dependency>
-			<artifactId>sched-assist-api</artifactId>
+			<artifactId>sched-assist-spi</artifactId>
 			<groupId>${project.groupId}</groupId>
 			<version>${project.version}</version>
 		</dependency>
