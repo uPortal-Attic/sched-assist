@@ -234,8 +234,10 @@ public class DefaultEventUtilsImplTest {
 		MockScheduleOwner owner = new MockScheduleOwner(person2, 1);
 		owner.setPreference(Preferences.LOCATION, "Owner's office");
 		
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20091006-1300"), makeDateTime("20091006-1330"));
+		
 		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
-				AvailableBlockBuilder.createBlock("20091006-1300", "20091006-1330"),
+				block,
 				owner, 
 				visitor, 
 				"test event description");
@@ -287,8 +289,10 @@ public class DefaultEventUtilsImplTest {
 		MockScheduleOwner owner = new MockScheduleOwner(person2, 1);
 		owner.setPreference(Preferences.LOCATION, "Owner's office");
 		
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20091006-1300"), makeDateTime("20091006-1330"), 1, "alternate location");
+		
 		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
-				AvailableBlockBuilder.createBlock("20091006-1300", "20091006-1330", 1, "alternate location"),
+				block,
 				owner, 
 				visitor, 
 				"test event description");
@@ -341,7 +345,7 @@ public class DefaultEventUtilsImplTest {
 		owner.setPreference(Preferences.LOCATION, "Owner's office");
 		
 		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
-				AvailableBlockBuilder.createBlock("20091006-1300", "20091006-1330"),
+				AvailableBlockBuilder.createBlock(makeDateTime("20091006-1300"), makeDateTime("20091006-1330")),
 				owner, 
 				visitor, 
 				"test event description");
@@ -392,8 +396,10 @@ public class DefaultEventUtilsImplTest {
 		
 		Assert.assertTrue(owner.isSamePerson(visitor));
 		
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20091006-1300"), makeDateTime("20091006-1330"));
+		
 		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
-				AvailableBlockBuilder.createBlock("20091006-1300", "20091006-1330"),
+				block,
 				owner, 
 				visitor, 
 				"test event description");
@@ -438,9 +444,10 @@ public class DefaultEventUtilsImplTest {
 		owner.setPreference(Preferences.LOCATION, "Owner's office");
 		
 		Assert.assertTrue(owner.isSamePerson(visitor));
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20091006-1300"), makeDateTime("20091006-1330"), 2);
 		
 		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
-				AvailableBlockBuilder.createBlock("20091006-1300", "20091006-1330", 2),
+				block,
 				owner, 
 				visitor, 
 				"test event description");
