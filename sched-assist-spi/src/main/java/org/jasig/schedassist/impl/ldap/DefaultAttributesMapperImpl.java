@@ -41,22 +41,12 @@ import org.springframework.ldap.core.AttributesMapper;
 public class DefaultAttributesMapperImpl implements AttributesMapper {
 
 	protected final LDAPAttributesKey ldapAttributesKey;
-	private String passwordAttributeName = "userPassword";
 	/**
 	 * 
 	 * @param ldapAttributesKey
 	 */
 	public DefaultAttributesMapperImpl(LDAPAttributesKey ldapAttributesKey) {
 		this.ldapAttributesKey = ldapAttributesKey;
-	}
-	/**
-	 * 
-	 * @param ldapAttributesKey
-	 * @param passwordAttributeName
-	 */
-	public DefaultAttributesMapperImpl(LDAPAttributesKey ldapAttributesKey, String passwordAttributeName) {
-		this.ldapAttributesKey = ldapAttributesKey;
-		this.passwordAttributeName = passwordAttributeName;
 	}
 	/* (non-Javadoc)
 	 * @see org.springframework.ldap.core.AttributesMapper#mapFromAttributes(javax.naming.directory.Attributes)
@@ -81,7 +71,7 @@ public class DefaultAttributesMapperImpl implements AttributesMapper {
 		NamingEnumeration<String> attributeNames = attributes.getIDs();
 		while(attributeNames.hasMore()) {
 			String attributeName = attributeNames.next();
-			if(passwordAttributeName.equalsIgnoreCase(attributeName)) {
+			if(ldapAttributesKey.getPasswordAttributeName().equalsIgnoreCase(attributeName)) {
 				// skip
 				continue;
 			}

@@ -27,12 +27,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.ldap.SizeLimitExceededException;
 import org.springframework.ldap.TimeLimitExceededException;
-import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
@@ -48,15 +46,14 @@ import com.googlecode.ehcache.annotations.KeyGenerator;
  * @author Nicholas BlairNicholas Blair
  * @version $Id: LDAPCalendarAccountDaoImpl.java $
  */
-public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao, InitializingBean {
+public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 
 	private static final String WILD = "*";
 	private LdapTemplate ldapTemplate;
-	private AttributesMapper attributesMapper;
 	private String baseDn = "o=isp";
 
 	private LDAPAttributesKey ldapAttributesKey = new LDAPAttributesKeyImpl();
-	private long searchResultsLimit = 25L;
+	private long searchResultsLimit = 50L;
 	private int searchTimeLimit = 5000;
 	private final Log log = LogFactory.getLog(this.getClass());
 	
@@ -67,13 +64,6 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao, Initiali
 	@Autowired
 	public void setLdapTemplate(LdapTemplate ldapTemplate) {
 		this.ldapTemplate = ldapTemplate;
-	}
-	/**
-	 * @param attributesMapper the attributesMapper to set
-	 */
-	@Autowired(required=false)
-	public void setAttributesMapper(AttributesMapper attributesMapper) {
-		this.attributesMapper = attributesMapper;
 	}
 	/**
 	 * @param baseDn the baseDn to set
@@ -101,18 +91,6 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao, Initiali
 		this.searchTimeLimit = searchTimeLimit;
 	}
 
-	/**
-	 * Initialize the attributesMapper field if not set by DI.
-	 * 
-	 *  (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		if(attributesMapper == null) {
-			attributesMapper = new DefaultAttributesMapperImpl(this.ldapAttributesKey);
-		}
-	}
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.ICalendarAccountDao#getCalendarAccount(java.lang.String)
 	 */
@@ -167,8 +145,6 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao, Initiali
 		filter.and(orFilter);
 		// guarantee search for users with calendar attributes
 		filter.and(new LikeFilter(ldapAttributesKey.getUniqueIdentifierAttributeName(), WILD));
-		// guarantee search for users with usernames
-		filter.and(new LikeFilter(ldapAttributesKey.getUsernameAttributeName(), WILD));
 		return executeSearchReturnList(filter);
 	}
 
@@ -198,7 +174,7 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao, Initiali
 		
 		List<ICalendarAccount> results = Collections.emptyList();
 		try {
-			results = ldapTemplate.search(baseDn, searchFilter.toString(), sc, attributesMapper);
+			results = ldapTemplate.search(baseDn, searchFilter.toString(), sc, new DefaultAttributesMapperImpl(ldapAttributesKey));
 		} catch (SizeLimitExceededException e) {
 			log.debug("search filter exceeded results size limit(" + searchResultsLimit +"): " + searchFilter);
 		} catch (TimeLimitExceededException e) {

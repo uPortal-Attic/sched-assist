@@ -51,7 +51,10 @@ public interface LDAPAttributesKey {
 	 * @return the delegateContactInformationAttributeName
 	 */
 	public String getDelegateContactInformationAttributeName();
-	
+	/**
+	 * @return the passwordAttributeName
+	 */
+	public String getPasswordAttributeName();
 	/**
 	 * Return true if the value of the eligibilityAttribute equates to the
 	 * account being eligible for service.

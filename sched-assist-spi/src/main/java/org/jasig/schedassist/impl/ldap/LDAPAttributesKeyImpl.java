@@ -40,6 +40,7 @@ public class LDAPAttributesKeyImpl implements LDAPAttributesKey {
 	private String delegateOwnerAttributeName = "owneruid";
 	private String delegateLocationAttributeName = "postaladdress";
 	private String delegateContactInformationAttributeName = "telephonenumber";
+	private String passwordAttributeName = "userPassword";
 	
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.impl.ldap.LDAPAttributesKey#getUsernameAttributeName()
@@ -150,6 +151,18 @@ public class LDAPAttributesKeyImpl implements LDAPAttributesKey {
 		this.delegateContactInformationAttributeName = delegateContactInformationAttributeName;
 	}
 	/**
+	 * @return the passwordAttributeName
+	 */
+	public String getPasswordAttributeName() {
+		return passwordAttributeName;
+	}
+	/**
+	 * @param passwordAttributeName the passwordAttributeName to set
+	 */
+	public void setPasswordAttributeName(String passwordAttributeName) {
+		this.passwordAttributeName = passwordAttributeName;
+	}
+	/**
 	 * Default implementation returns true if the uniqueIdentifier attribute is not empty.
 	 * 
 	 * @see org.jasig.schedassist.impl.ldap.LDAPAttributesKey#evaluateEligibilityAttributeValue(java.lang.String)
@@ -194,6 +207,10 @@ public class LDAPAttributesKeyImpl implements LDAPAttributesKey {
 				* result
 				+ ((emailAddressAttributeName == null) ? 0
 						: emailAddressAttributeName.hashCode());
+		result = prime
+				* result
+				+ ((passwordAttributeName == null) ? 0 : passwordAttributeName
+						.hashCode());
 		result = prime
 				* result
 				+ ((uniqueIdentifierAttributeName == null) ? 0
@@ -252,6 +269,11 @@ public class LDAPAttributesKeyImpl implements LDAPAttributesKey {
 		} else if (!emailAddressAttributeName
 				.equals(other.emailAddressAttributeName))
 			return false;
+		if (passwordAttributeName == null) {
+			if (other.passwordAttributeName != null)
+				return false;
+		} else if (!passwordAttributeName.equals(other.passwordAttributeName))
+			return false;
 		if (uniqueIdentifierAttributeName == null) {
 			if (other.uniqueIdentifierAttributeName != null)
 				return false;
@@ -281,7 +303,8 @@ public class LDAPAttributesKeyImpl implements LDAPAttributesKey {
 				+ ", delegateLocationAttributeName="
 				+ delegateLocationAttributeName
 				+ ", delegateContactInformationAttributeName="
-				+ delegateContactInformationAttributeName + "]";
+				+ delegateContactInformationAttributeName
+				+ ", passwordAttributeName=" + passwordAttributeName + "]";
 	}
 	
 }
