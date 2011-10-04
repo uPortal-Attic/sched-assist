@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TimeZone;
 import java.util.TreeSet;
 
 import junit.framework.Assert;
@@ -916,6 +917,7 @@ public class VisibleScheduleBuilderTest {
 	 */
 	private Date makeDateTime(String dateTimePhrase) throws ParseException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmm");
+		dateFormat.setTimeZone(TimeZone.getTimeZone("America/Chicago"));
 		Date time = dateFormat.parse(dateTimePhrase);
 		return time;
 	}

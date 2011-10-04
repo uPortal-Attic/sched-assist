@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TimeZone;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
@@ -60,7 +61,7 @@ public class DefaultEventUtilsImplTest {
 	 * TODO depends on VM's timezone
 	 * @throws Exception
 	 */
-	//@Test
+	@Test
 	public void testConvertToICalendarFormatControl() throws Exception {
 		String output = DefaultEventUtilsImpl.convertToICalendarFormat(makeDateTime("20091006-1243"));
 		Assert.assertEquals("20091006T174300Z", output);
@@ -939,8 +940,9 @@ public class DefaultEventUtilsImplTest {
 	 */
 	private Date makeDateTime(String dateTimePhrase) throws ParseException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmm");
+		dateFormat.setTimeZone(TimeZone.getTimeZone("America/Chicago"));
 		Date time = dateFormat.parse(dateTimePhrase);
-		DateUtils.truncate(time, java.util.Calendar.SECOND);
+		time = DateUtils.truncate(time, java.util.Calendar.SECOND);
 		return time;
 	}
 	
