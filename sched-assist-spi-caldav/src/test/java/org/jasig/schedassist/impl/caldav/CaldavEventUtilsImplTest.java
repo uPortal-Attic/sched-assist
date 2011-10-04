@@ -24,6 +24,10 @@ package org.jasig.schedassist.impl.caldav;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
@@ -36,6 +40,7 @@ import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.jasig.schedassist.model.AppointmentRole;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
+import org.jasig.schedassist.model.CommonDateOperations;
 import org.jasig.schedassist.model.InputFormatException;
 import org.jasig.schedassist.model.Preferences;
 import org.jasig.schedassist.model.VisitorLimit;
@@ -77,12 +82,17 @@ public class CaldavEventUtilsImplTest {
 	 * @throws InputFormatException
 	 * @throws IOException
 	 * @throws ParserException
+	 * @throws ParseException 
 	 */
 	@Test
-	public void testConstructIndividualAppointment() throws InputFormatException, IOException, ParserException {
+	public void testConstructIndividualAppointment() throws InputFormatException, IOException, ParserException, ParseException {
 		CaldavEventUtilsImpl eventUtils = new CaldavEventUtilsImpl(new NullAffiliationSourceImpl());
 		
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20110503-0800", "20110503-0900");
+		SimpleDateFormat dateFormat = CommonDateOperations.getDateTimeFormat();
+		dateFormat.setTimeZone(TimeZone.getTimeZone("America/Chicago"));
+		Date start = dateFormat.parse("20110503-0800");
+		Date end = dateFormat.parse("20110503-0900");
+		AvailableBlock block = AvailableBlockBuilder.createBlock(start, end);
 		MockCalendarAccount ownerAccount = new MockCalendarAccount();
 		ownerAccount.setDisplayName("OWNER NAME");
 		ownerAccount.setEmailAddress("someone@wherever.org");
@@ -123,12 +133,18 @@ public class CaldavEventUtilsImplTest {
 	 * @throws InputFormatException
 	 * @throws IOException
 	 * @throws ParserException
+	 * @throws ParseException 
 	 */
 	@Test
-	public void testConstructGroupAppointment() throws InputFormatException, IOException, ParserException {
+	public void testConstructGroupAppointment() throws InputFormatException, IOException, ParserException, ParseException {
 		CaldavEventUtilsImpl eventUtils = new CaldavEventUtilsImpl(new NullAffiliationSourceImpl());
 		
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20110503-0800", "20110503-0900", 5);
+		SimpleDateFormat dateFormat = CommonDateOperations.getDateTimeFormat();
+		dateFormat.setTimeZone(TimeZone.getTimeZone("America/Chicago"));
+		Date start = dateFormat.parse("20110503-0800");
+		Date end = dateFormat.parse("20110503-0900");
+		
+		AvailableBlock block = AvailableBlockBuilder.createBlock(start, end, 5);
 		MockCalendarAccount ownerAccount = new MockCalendarAccount();
 		ownerAccount.setDisplayName("OWNER NAME");
 		ownerAccount.setEmailAddress("someone@wherever.org");
