@@ -27,6 +27,7 @@
     <p>Powered by the <a href="https://wiki.jasig.org/display/SA/Home">Scheduling Assistant</a>, an open-source project by <a href="http://www.jasig.org">Jasig</a></p>
     <p>The <a href="https://wiki.jasig.org/display/SA/Home">Scheduling Assistant</a> is licensed under the Apache License, Version 2.0 as approved by the Open Source Initiative (OSI),<br/>
     an OSI-certified ("open") and Gnu/FSF-recognized ("free") license.</p>
+    <p><a title="Silk icon set 1.3" href="http://www.famfamfam.com/lab/icons/silk/">Silk icon set 1.3</a> courtesy of Mark James.</p>
   </div>
 
 
