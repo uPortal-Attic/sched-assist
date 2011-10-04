@@ -24,7 +24,10 @@ package org.jasig.schedassist.impl.caldav;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,8 +48,10 @@ public class DefaultCaldavDialectImplTest {
 	private Log log = LogFactory.getLog(this.getClass());
 	
 	@Test
-	public void testFormatDateTime() throws InputFormatException {
-		Date date = CommonDateOperations.parseDateTimePhrase("20110502-1602");
+	public void testFormatDateTime() throws ParseException  {
+		SimpleDateFormat dateFormat = CommonDateOperations.getDateTimeFormat();
+		dateFormat.setTimeZone(TimeZone.getTimeZone("America/Chicago"));
+		Date date = dateFormat.parse("20110502-1602");
 		DefaultCaldavDialectImpl dialect = new DefaultCaldavDialectImpl();
 		
 		//yyyyMMdd'T'HHmmssZ
