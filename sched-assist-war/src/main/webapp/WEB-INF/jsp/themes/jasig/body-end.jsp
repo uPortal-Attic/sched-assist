@@ -25,7 +25,8 @@
 
   <div id="footer">
     <p>Powered by the <a href="https://wiki.jasig.org/display/SA/Home">Scheduling Assistant</a>, an open-source project by <a href="http://www.jasig.org">Jasig</a></p>
-    <p>The <a href="https://wiki.jasig.org/display/SA/Home">Scheduling Assistant</a> is licensed under the Apache License, Version 2.0 as approved by the Open Source Initiative (OSI), an OSI-certified ("open") and Gnu/FSF-recognized ("free") license.</p>
+    <p>The <a href="https://wiki.jasig.org/display/SA/Home">Scheduling Assistant</a> is licensed under the Apache License, Version 2.0 as approved by the Open Source Initiative (OSI),<br/>
+    an OSI-certified ("open") and Gnu/FSF-recognized ("free") license.</p>
   </div>
 
 
