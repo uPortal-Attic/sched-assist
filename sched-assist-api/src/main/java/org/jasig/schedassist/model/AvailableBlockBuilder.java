@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -114,6 +115,10 @@ public final class AvailableBlockBuilder {
 		return createBlocks(startTimePhrase, endTimePhrase, daysOfWeekPhrase, startDate, endDate, visitorLimit, null);
 	}
 	
+	public static SortedSet<AvailableBlock> createBlocks(final String startTimePhrase, final String endTimePhrase, 
+			final String daysOfWeekPhrase, final Date startDate, final Date endDate, final int visitorLimit, final String meetingLocation) throws InputFormatException {
+		return createBlocks(startTimePhrase, endTimePhrase, daysOfWeekPhrase, startDate, endDate, visitorLimit, meetingLocation, TimeZone.getDefault());
+	}
 	/**
 	 * 
 	 * @param startTimePhrase
@@ -127,7 +132,7 @@ public final class AvailableBlockBuilder {
 	 * @throws InputFormatException
 	 */
 	public static SortedSet<AvailableBlock> createBlocks(final String startTimePhrase, final String endTimePhrase, 
-			final String daysOfWeekPhrase, final Date startDate, final Date endDate, final int visitorLimit, final String meetingLocation) throws InputFormatException {
+			final String daysOfWeekPhrase, final Date startDate, final Date endDate, final int visitorLimit, final String meetingLocation, TimeZone timeZone) throws InputFormatException {
 		SortedSet<AvailableBlock> blocks = new TreeSet<AvailableBlock>();
 		// set time of startDate to 00:00:00
 		Date realStartDate = DateUtils.truncate(startDate, Calendar.DATE);
@@ -139,9 +144,9 @@ public final class AvailableBlockBuilder {
 			LOG.debug("createBlocks calculated realStartDate: " + realStartDate + ", realEndDate: " + realEndDate);
 		}
 		
-		List<Date> matchingDays = matchingDays(daysOfWeekPhrase, realStartDate, realEndDate);
+		List<Date> matchingDays = matchingDays(daysOfWeekPhrase, realStartDate, realEndDate, timeZone);
 		for(Date matchingDate : matchingDays) {
-			Calendar startCalendar = Calendar.getInstance();
+			Calendar startCalendar = Calendar.getInstance(timeZone);
 			startCalendar.setTime(matchingDate);
 			Calendar endCalendar = (Calendar) startCalendar.clone();
 			
@@ -488,7 +493,7 @@ public final class AvailableBlockBuilder {
 	 * @return a {@link List} of {@link Date} objects that fall between startDate and endDate and
 	 * exist on the days specified by daysOfWeekPhrase.
 	 */
-	protected static List<Date> matchingDays(final String daysOfWeekPhrase, final Date startDate, final Date endDate) {
+	protected static List<Date> matchingDays(final String daysOfWeekPhrase, final Date startDate, final Date endDate, TimeZone timeZone) {
 		List<Date> matchingDays = new ArrayList<Date>();
 		
 		Set<Integer> daysOfWeek = new HashSet<Integer>();
@@ -518,7 +523,7 @@ public final class AvailableBlockBuilder {
 			}	
 		}
 		
-		Calendar current = Calendar.getInstance();
+		Calendar current = Calendar.getInstance(timeZone);
 		current.setTime(startDate);
 		// set the time to 00:00:00 to insure the time doesn't affect our comparison)
 		// (because there may be a valid time window on endDate)

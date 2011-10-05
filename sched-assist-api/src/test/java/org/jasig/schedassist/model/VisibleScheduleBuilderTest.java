@@ -38,7 +38,10 @@ import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
+import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.ParameterList;
+import net.fortuna.ical4j.model.TimeZoneRegistry;
+import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.Cn;
 import net.fortuna.ical4j.model.parameter.CuType;
@@ -66,6 +69,18 @@ public class VisibleScheduleBuilderTest {
 
 	private DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 	private VisibleScheduleBuilder builder = new VisibleScheduleBuilder(eventUtils);
+
+	private final net.fortuna.ical4j.model.TimeZone americaChicago;
+	
+	
+	/**
+	 * 
+	 * @throws ParseException 
+	 */
+	public VisibleScheduleBuilderTest() throws ParseException {
+		TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
+		americaChicago = registry.getTimeZone("America/Chicago");
+	}
 
 	/**
 	 * Assert empty calendar and empty Advising Schedule throw no errors
@@ -102,13 +117,16 @@ public class VisibleScheduleBuilderTest {
 		MockScheduleOwner owner = new MockScheduleOwner(person, 1);
 		
 		// Aug 4 2008 9:30 AM to 3:30 PM
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20080804-0930", "20080804-1530");
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20080804-0930"), makeDateTime("20080804-1530"));
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.expand(block, 30);
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 
 		// Aug 5 2008 10:30 AM to 11:30 AM 
-		VEvent someEvent = new VEvent(new net.fortuna.ical4j.model.DateTime(makeDateTime("20080805-1030")),
-				new net.fortuna.ical4j.model.DateTime(makeDateTime("20080805-1130")),
+		DateTime eventStart = new net.fortuna.ical4j.model.DateTime(makeDateTime("20080805-1030"));
+		eventStart.setTimeZone(americaChicago);
+		DateTime eventEnd = new DateTime(makeDateTime("20080805-1130"));
+		eventEnd.setTimeZone(americaChicago);
+		VEvent someEvent = new VEvent(eventStart, eventEnd,
 		"some event");
 		ParameterList parameterList = new ParameterList();
 		parameterList.add(PartStat.ACCEPTED);
@@ -147,13 +165,17 @@ public class VisibleScheduleBuilderTest {
 		person.setDisplayName("Some Owner");
 		MockScheduleOwner owner = new MockScheduleOwner(person, 1);
 		
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20091104-0900", "20091104-1000");
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20091104-0900"), makeDateTime("20091104-1000"));
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.expand(block, 30);
 		Assert.assertEquals(2, blocks.size());
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 
-		VEvent someEvent = new VEvent(new net.fortuna.ical4j.model.DateTime(makeDateTime("20091104-0900")),
-				new net.fortuna.ical4j.model.DateTime(makeDateTime("20091104-0930")),
+		DateTime eventStart = new net.fortuna.ical4j.model.DateTime(makeDateTime("20091104-0900"));
+		eventStart.setTimeZone(americaChicago);
+		DateTime eventEnd = new net.fortuna.ical4j.model.DateTime(makeDateTime("20091104-0930"));
+		eventEnd.setTimeZone(americaChicago);
+		VEvent someEvent = new VEvent(eventStart,
+				eventEnd,
 		"conflict event");
 		
 		ParameterList parameterList = new ParameterList();
@@ -199,12 +221,16 @@ public class VisibleScheduleBuilderTest {
 		person.setDisplayName("Some Owner");
 		MockScheduleOwner owner = new MockScheduleOwner(person, 1);
 		
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20091109-0930", "20091109-1230");
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20091109-0930"), makeDateTime("20091109-1230"));
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.expand(block, 30);
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 
-		VEvent someEvent = new VEvent(new net.fortuna.ical4j.model.DateTime(makeDateTime("20091109-1030")),
-				new net.fortuna.ical4j.model.DateTime(makeDateTime("20091109-1130")),
+		DateTime eventStart = new net.fortuna.ical4j.model.DateTime(makeDateTime("20091109-1030"));
+		eventStart.setTimeZone(americaChicago);
+		DateTime eventEnd = new net.fortuna.ical4j.model.DateTime(makeDateTime("20091109-1130"));
+		eventEnd.setTimeZone(americaChicago);
+		VEvent someEvent = new VEvent(eventStart,
+				eventEnd,
 				"some event");
 		ParameterList parameterList = new ParameterList();
 		parameterList.add(PartStat.ACCEPTED);
@@ -250,14 +276,19 @@ public class VisibleScheduleBuilderTest {
 		MockScheduleOwner owner = new MockScheduleOwner(person, 1);
 		
 		// Aug 5 2008 9:30 AM to 3:30 PM
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20080805-0930", "20080805-1530");
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20080805-0930"), makeDateTime("20080805-1530"));
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.expand(block, 30);
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 
 		// Aug 5 2008 10:30 AM to 11:30 AM 
-		VEvent someEvent = new VEvent(new net.fortuna.ical4j.model.DateTime(makeDateTime("20080805-1030")),
-				new net.fortuna.ical4j.model.DateTime(makeDateTime("20080805-1130")),
-		"some event");
+		DateTime eventStart = new net.fortuna.ical4j.model.DateTime(makeDateTime("20080805-1030"));
+		eventStart.setTimeZone(americaChicago);
+		DateTime eventEnd = new net.fortuna.ical4j.model.DateTime(makeDateTime("20080805-1130"));
+		eventEnd.setTimeZone(americaChicago);
+		VEvent someEvent = new VEvent(eventStart,
+				eventEnd,
+				"some event");
+		
 		ParameterList parameterList = new ParameterList();
 		parameterList.add(PartStat.ACCEPTED);
 		parameterList.add(CuType.INDIVIDUAL);
@@ -313,14 +344,19 @@ public class VisibleScheduleBuilderTest {
 		
 
 		// Aug 4 2008 9:30 AM to 3:30 PM
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20080804-0930", "20080804-1530");
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20080804-0930"), makeDateTime("20080804-1530"));
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.expand(block, 30);
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 
 		// some other non-available appointment Aug 4 2008 10:30 AM to 11:30 AM 
-		VEvent someEvent = new VEvent(new net.fortuna.ical4j.model.DateTime(makeDateTime("20080804-1030")),
-				new net.fortuna.ical4j.model.DateTime(makeDateTime("20080804-1130")),
-		"some event");
+		DateTime eventStart = new net.fortuna.ical4j.model.DateTime(makeDateTime("20080804-1030"));
+		eventStart.setTimeZone(americaChicago);
+		DateTime eventEnd = new net.fortuna.ical4j.model.DateTime(makeDateTime("20080804-1130"));
+		eventEnd.setTimeZone(americaChicago);
+		VEvent someEvent = new VEvent(eventStart,
+				eventEnd,
+				"some event");
+		
 		ParameterList parameterList = new ParameterList();
 		parameterList.add(PartStat.ACCEPTED);
 		parameterList.add(CuType.INDIVIDUAL);
@@ -333,7 +369,7 @@ public class VisibleScheduleBuilderTest {
 
 		// make available appointment with visitor from 1:00 PM to 1:30 PM
 		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
-				AvailableBlockBuilder.createBlock("20080804-1300", "20080804-1330"), 
+				AvailableBlockBuilder.createBlock(makeDateTime("20080804-1300"), makeDateTime("20080804-1330")), 
 				owner, visitor, "advising appt");
 		components.add(availableAppointment);
 
@@ -384,14 +420,19 @@ public class VisibleScheduleBuilderTest {
 		MockScheduleOwner owner = new MockScheduleOwner(person1, 1);
 
 		// Aug 4 2008 9:30 AM to 3:30 PM
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20080804-0930", "20080804-1530");
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20080804-0930"), makeDateTime("20080804-1530"));
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.expand(block, 30);
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 
 		// Aug 4 2008 10:30 AM to 11:30 AM 
-		VEvent someEvent = new VEvent(new net.fortuna.ical4j.model.DateTime(makeDateTime("20080804-1030")),
-				new net.fortuna.ical4j.model.DateTime(makeDateTime("20080804-1130")),
-		"some event");
+		DateTime eventStart = new net.fortuna.ical4j.model.DateTime(makeDateTime("20080804-1030"));
+		eventStart.setTimeZone(americaChicago);
+		DateTime eventEnd = new net.fortuna.ical4j.model.DateTime(makeDateTime("20080804-1130"));
+		eventEnd.setTimeZone(americaChicago);
+		VEvent someEvent = new VEvent(eventStart,
+				eventEnd,
+				"some event");
+
 		ParameterList parameterList = new ParameterList();
 		parameterList.add(PartStat.ACCEPTED);
 		parameterList.add(CuType.INDIVIDUAL);
@@ -404,7 +445,7 @@ public class VisibleScheduleBuilderTest {
 
 		// make available appointment with visitor from 1:00 PM to 1:30 PM
 		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
-				AvailableBlockBuilder.createBlock("20080804-1300", "20080804-1330"), 
+				AvailableBlockBuilder.createBlock(makeDateTime("20080804-1300"), makeDateTime("20080804-1330")), 
 				owner, visitor, "advising appt");
 		components.add(availableAppointment);
 
@@ -457,16 +498,25 @@ public class VisibleScheduleBuilderTest {
 				"12:00 PM",
 				"MRF",
 				makeDateTime("20091102-0000"),
-				makeDateTime("20091127-1800"));
+				makeDateTime("20091127-0000"),
+				1,
+				null,
+				TimeZone.getTimeZone("America/Chicago"));
 
 		TreeSet<AvailableBlock> expanded = new TreeSet<AvailableBlock>(AvailableBlockBuilder.expand(blocks, 30));
+		//Assert.assertEquals(72, expanded.size());
 		LOG.info("expanded set first: " + expanded.first() + ", last: " + expanded.last());
 		AvailableSchedule schedule = new AvailableSchedule(expanded);
 
 		// event conflict is thursday of 2nd week
-		VEvent someEvent = new VEvent(new net.fortuna.ical4j.model.DateTime(makeDateTime("20091112-1030")),
-				new net.fortuna.ical4j.model.DateTime(makeDateTime("20091112-1130")),
+		DateTime eventStart = new net.fortuna.ical4j.model.DateTime(makeDateTime("20091112-0930"));
+		eventStart.setTimeZone(americaChicago);
+		DateTime eventEnd = new net.fortuna.ical4j.model.DateTime(makeDateTime("20091112-1030"));
+		eventEnd.setTimeZone(americaChicago);
+		VEvent someEvent = new VEvent(eventStart,
+				eventEnd,
 				"some event");
+
 		ParameterList parameterList = new ParameterList();
 		parameterList.add(PartStat.ACCEPTED);
 		parameterList.add(CuType.INDIVIDUAL);
@@ -529,15 +579,23 @@ public class VisibleScheduleBuilderTest {
 		
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.createBlocks("9:00 AM", 
 				"12:00 PM",
-				"MTWRF",
-				makeDateTime("20091102-0830"),
-				makeDateTime("20091106-1600"));
-
+				"TW",
+				makeDateTime("20091103-0000"),
+				makeDateTime("20091105-0000"),
+				1,
+				null,
+				TimeZone.getTimeZone("America/Chicago"));
+		Assert.assertEquals(2, blocks.size());
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 
-		VEvent someEvent = new VEvent(new net.fortuna.ical4j.model.DateTime(makeDateTime("20091103-1000")),
-				new net.fortuna.ical4j.model.DateTime(makeDateTime("20091103-1030")),
+		DateTime eventStart = new net.fortuna.ical4j.model.DateTime(makeDateTime("20091103-1000"));
+		eventStart.setTimeZone(americaChicago);
+		DateTime eventEnd = new net.fortuna.ical4j.model.DateTime(makeDateTime("20091103-1030"));
+		eventEnd.setTimeZone(americaChicago);
+		VEvent someEvent = new VEvent(eventStart,
+				eventEnd,
 				"some conflicting appointment");
+
 		ParameterList parameterList = new ParameterList();
 		parameterList.add(PartStat.ACCEPTED);
 		parameterList.add(CuType.INDIVIDUAL);
@@ -550,15 +608,16 @@ public class VisibleScheduleBuilderTest {
 
 		
 		owner.setPreference(Preferences.DURATIONS, MeetingDurations.FORTYFIVE.getKey());
-		VisibleSchedule visible =this.builder.calculateVisibleSchedule(makeDateTime("20091102-0830"),
+		VisibleSchedule visible =this.builder.calculateVisibleSchedule(makeDateTime("20091102-0000"),
 				makeDateTime("20091106-1600"),
 				new Calendar(components), 
 				schedule, 
 				owner);
 
-		Assert.assertEquals(20, visible.getSize());
-		Assert.assertEquals(19, visible.getFreeCount());
+		Assert.assertEquals(8, visible.getSize());
 		Assert.assertEquals(1, visible.getBusyCount());
+		Assert.assertEquals(7, visible.getFreeCount());
+		
 		AvailableBlock busyBlock = visible.getBusyList().get(0);
 		Assert.assertEquals(makeDateTime("20091103-0945"), busyBlock.getStartTime());
 		Assert.assertEquals(makeDateTime("20091103-1030"), busyBlock.getEndTime());
@@ -575,8 +634,11 @@ public class VisibleScheduleBuilderTest {
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.createBlocks("9:00 AM", 
 				"1:00 PM",
 				"MWF",
-				makeDateTime("20090720-0800"),
-				makeDateTime("20090724-1400"));
+				makeDateTime("20090720-0000"),
+				makeDateTime("20090725-0000"),
+				1,
+				null,
+				TimeZone.getTimeZone("America/Chicago"));
 
 		TreeSet<AvailableBlock> expanded = new TreeSet<AvailableBlock>(AvailableBlockBuilder.expand(blocks, 30));
 		Assert.assertEquals(makeDateTime("20090720-0900"), expanded.first().getStartTime());
@@ -644,8 +706,11 @@ public class VisibleScheduleBuilderTest {
 		Set<AvailableBlock> blocks = AvailableBlockBuilder.createBlocks("9:00 AM", 
 				"1:00 PM",
 				"MWF",
-				makeDateTime("20090720-0800"),
-				makeDateTime("20090724-1400"));
+				makeDateTime("20090720-0000"),
+				makeDateTime("20090725-0000"), 
+				1,
+				null,
+				TimeZone.getTimeZone("America/Chicago"));
 
 		TreeSet<AvailableBlock> expanded = new TreeSet<AvailableBlock>(AvailableBlockBuilder.expand(blocks, 40));
 		Assert.assertEquals(makeDateTime("20090720-0900"), expanded.first().getStartTime());
@@ -712,8 +777,8 @@ public class VisibleScheduleBuilderTest {
 		person2.setDisplayName("Some Visitor");
 		MockScheduleVisitor visitor = new MockScheduleVisitor(person2);
 		
-		final Date targetMeetingStart = CommonDateOperations.parseDateTimePhrase("20091117-1300");
-		final Date targetMeetingEnd = CommonDateOperations.parseDateTimePhrase("20091117-1330");
+		final Date targetMeetingStart = makeDateTime("20091117-1300");
+		final Date targetMeetingEnd = makeDateTime("20091117-1330");
 		
 		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
 				AvailableBlockBuilder.createBlock(targetMeetingStart, targetMeetingEnd, 4),
@@ -725,14 +790,16 @@ public class VisibleScheduleBuilderTest {
 		components.add(availableAppointment);
 		Calendar calendar = new Calendar(components);
 		SortedSet<AvailableBlock> blocks = AvailableBlockBuilder.createBlocks("1:00 PM", "2:00 PM", "TR", 
-				CommonDateOperations.parseDatePhrase("20091115"),
-				CommonDateOperations.parseDatePhrase("20091121"),
-				4);
+				makeDateTime("20091115-0000"),
+				makeDateTime("20091121-0000"),
+				4,
+				null,
+				TimeZone.getTimeZone("America/Chicago"));
 		
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 		VisibleSchedule visibleSchedule = this.builder.calculateVisibleSchedule(
-				CommonDateOperations.parseDatePhrase("20091115"), 
-				CommonDateOperations.parseDatePhrase("20091121"), 
+				makeDateTime("20091115-0000"), 
+				makeDateTime("20091121-0000"), 
 				calendar, 
 				schedule, 
 				owner,
@@ -754,8 +821,8 @@ public class VisibleScheduleBuilderTest {
 		MockScheduleVisitor visitor2 = new MockScheduleVisitor(person3);
 		
 		VisibleSchedule visibleSchedule2 = this.builder.calculateVisibleSchedule(
-				CommonDateOperations.parseDatePhrase("20091115"), 
-				CommonDateOperations.parseDatePhrase("20091121"), 
+				makeDateTime("20091115-0000"), 
+				makeDateTime("20091121-0000"), 
 				calendar, 
 				schedule, 
 				owner,
@@ -787,15 +854,23 @@ public class VisibleScheduleBuilderTest {
 				"12:00 PM",
 				"MTRF",
 				makeDateTime("20090202-0830"),
-				makeDateTime("20090206-1600"));
+				makeDateTime("20090206-1600"),
+				1,
+				null,
+				TimeZone.getTimeZone("America/Chicago"));
 
 		TreeSet<AvailableBlock> expanded = new TreeSet<AvailableBlock>(AvailableBlockBuilder.expand(blocks, 45));
 		LOG.info("expanded set first: " + expanded.first() + ", last: " + expanded.last());
 		AvailableSchedule schedule = new AvailableSchedule(expanded);
 
-		VEvent someEvent = new VEvent(new net.fortuna.ical4j.model.DateTime(makeDateTime("20090203-1000")),
-				new net.fortuna.ical4j.model.DateTime(makeDateTime("20090203-1030")),
-		"some conflicting appointment");
+		DateTime eventStart = new net.fortuna.ical4j.model.DateTime(makeDateTime("20090203-1000"));
+		eventStart.setTimeZone(americaChicago);
+		DateTime eventEnd = new net.fortuna.ical4j.model.DateTime(makeDateTime("20090203-1030"));
+		eventEnd.setTimeZone(americaChicago);
+		VEvent someEvent = new VEvent(eventStart,
+				eventEnd,
+				"some conflicting appointment");
+		
 		Attendee attendee = new Attendee();
 		attendee.setValue("mailto:person@domain.edu");
 		attendee.getParameters().add(new XParameter("X-ORACLE-SHOWASFREE", "FREE"));
@@ -851,7 +926,7 @@ public class VisibleScheduleBuilderTest {
 		person2.setDisplayName("Some Other Owner");
 		MockScheduleOwner owner2 = new MockScheduleOwner(person2, 2);
 		
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20100911-0646", "20100911-0701", 3);
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20100911-0646"), makeDateTime("20100911-0701"), 3);
 		VEvent event = this.eventUtils.constructAvailableAppointment(block, owner2, visitor1, "test appointment");
 		
 		ComponentList components = new ComponentList();
@@ -863,8 +938,8 @@ public class VisibleScheduleBuilderTest {
 		person3.setDisplayName("Unsuspecting Visitor");
 		MockScheduleVisitor visitor3 = new MockScheduleVisitor(person3);
 		
-		VisibleSchedule visibleSchedule = this.builder.calculateVisibleSchedule(CommonDateOperations.getDateTimeFormat().parse("20100910-1200"),
-				CommonDateOperations.getDateTimeFormat().parse("20100917-1200"), 
+		VisibleSchedule visibleSchedule = this.builder.calculateVisibleSchedule(makeDateTime("20100910-1200"),
+				makeDateTime("20100917-1200"), 
 				owner1Calendar, emptyAvailableSchedule, owner1, visitor3);
 		
 		Assert.assertEquals(0, visibleSchedule.getAttendingCount());
@@ -881,7 +956,7 @@ public class VisibleScheduleBuilderTest {
 	 * @throws ParserException
 	 * @throws InputFormatException
 	 */
-	//@Test
+	@Test
 	public void testVisitorConflictsMisaligned() throws ParseException, IOException, ParserException, InputFormatException {
 		InputStream calendarData = new ClassPathResource("org/jasig/schedassist/model/misaligned-conflicts-test.ics").getInputStream();
 		
@@ -892,7 +967,10 @@ public class VisibleScheduleBuilderTest {
 		Date startTime = makeDateTime("20101118-0000");
 		Date endTime = makeDateTime("20101121-0000");
 		
-		SortedSet<AvailableBlock> blocks = AvailableBlockBuilder.createBlocks("10:00 AM", "3:00 PM", "F", startTime, endTime);
+		SortedSet<AvailableBlock> blocks = AvailableBlockBuilder.createBlocks("10:00 AM", "3:00 PM", "F", startTime, endTime,
+				1,
+				null,
+				TimeZone.getTimeZone("America/Chicago"));
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 		
 		MockCalendarAccount person = new MockCalendarAccount();
@@ -904,9 +982,9 @@ public class VisibleScheduleBuilderTest {
 	
 		Assert.assertEquals(3, visibleSchedule.getBusyCount());
 		List<AvailableBlock> busyBlocks = visibleSchedule.getBusyList();
-		Assert.assertTrue(busyBlocks.contains(AvailableBlockBuilder.createBlock("20101119-1324", "20101119-1341")));
-		Assert.assertTrue(busyBlocks.contains(AvailableBlockBuilder.createBlock("20101119-1341", "20101119-1358")));
-		Assert.assertTrue(busyBlocks.contains(AvailableBlockBuilder.createBlock("20101119-1358", "20101119-1415")));
+		Assert.assertTrue(busyBlocks.contains(AvailableBlockBuilder.createBlock(makeDateTime("20101119-1324"), makeDateTime("20101119-1341"))));
+		Assert.assertTrue(busyBlocks.contains(AvailableBlockBuilder.createBlock(makeDateTime("20101119-1341"), makeDateTime("20101119-1358"))));
+		Assert.assertTrue(busyBlocks.contains(AvailableBlockBuilder.createBlock(makeDateTime("20101119-1358"), makeDateTime("20101119-1415"))));
 	}
 	/**
 	 * helper method to create java.util.Date objects from a String
