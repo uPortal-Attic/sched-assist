@@ -56,6 +56,11 @@ import org.junit.Test;
  */
 public class DefaultEventUtilsImplTest {
 
+	static {
+		// Many of the values in the assertions expect America/Chicago
+		TimeZone.setDefault(TimeZone.getTimeZone("America/Chicago"));
+	}
+	
 	private DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 	/**
 	 * TODO depends on VM's timezone
@@ -740,16 +745,19 @@ public class DefaultEventUtilsImplTest {
 	/**
 	 * 
 	 * @throws InputFormatException
+	 * @throws ParseException 
 	 */
 	@Test
-	public void testConvertBlockToReflectionEvent() throws InputFormatException {
-		AvailableBlock block = AvailableBlockBuilder.createBlock("20100812-0900", "20100812-1700");
+	public void testConvertBlockToReflectionEvent() throws InputFormatException, ParseException {
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20100812-0900"),
+				makeDateTime("20100812-1700"));
 		
 		VEvent event = this.eventUtils.convertBlockToReflectionEvent(block);
 		Assert.assertEquals("Available 9:00 AM - 5:00 PM", event.getSummary().getValue());
 		Assert.assertEquals("20100812", event.getStartDate().getValue());
 		
-		block = AvailableBlockBuilder.createBlock("20100812-0930", "20100812-1730");
+		block = AvailableBlockBuilder.createBlock(makeDateTime("20100812-0930"),
+				makeDateTime("20100812-1730"));
 			
 		event = this.eventUtils.convertBlockToReflectionEvent(block);
 		Assert.assertEquals("Available 9:30 AM - 5:30 PM", event.getSummary().getValue());

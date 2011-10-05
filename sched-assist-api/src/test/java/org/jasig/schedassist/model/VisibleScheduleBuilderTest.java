@@ -70,8 +70,12 @@ public class VisibleScheduleBuilderTest {
 	private DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 	private VisibleScheduleBuilder builder = new VisibleScheduleBuilder(eventUtils);
 
-	private final net.fortuna.ical4j.model.TimeZone americaChicago;
+	static {
+		// Many of the values in the assertions expect America/Chicago
+		TimeZone.setDefault(TimeZone.getTimeZone("America/Chicago"));
+	}
 	
+	private final net.fortuna.ical4j.model.TimeZone americaChicago;
 	
 	/**
 	 * 
@@ -500,8 +504,7 @@ public class VisibleScheduleBuilderTest {
 				makeDateTime("20091102-0000"),
 				makeDateTime("20091127-0000"),
 				1,
-				null,
-				TimeZone.getTimeZone("America/Chicago"));
+				null);
 
 		TreeSet<AvailableBlock> expanded = new TreeSet<AvailableBlock>(AvailableBlockBuilder.expand(blocks, 30));
 		//Assert.assertEquals(72, expanded.size());
@@ -583,8 +586,7 @@ public class VisibleScheduleBuilderTest {
 				makeDateTime("20091103-0000"),
 				makeDateTime("20091105-0000"),
 				1,
-				null,
-				TimeZone.getTimeZone("America/Chicago"));
+				null);
 		Assert.assertEquals(2, blocks.size());
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 
@@ -637,8 +639,7 @@ public class VisibleScheduleBuilderTest {
 				makeDateTime("20090720-0000"),
 				makeDateTime("20090725-0000"),
 				1,
-				null,
-				TimeZone.getTimeZone("America/Chicago"));
+				null);
 
 		TreeSet<AvailableBlock> expanded = new TreeSet<AvailableBlock>(AvailableBlockBuilder.expand(blocks, 30));
 		Assert.assertEquals(makeDateTime("20090720-0900"), expanded.first().getStartTime());
@@ -709,8 +710,7 @@ public class VisibleScheduleBuilderTest {
 				makeDateTime("20090720-0000"),
 				makeDateTime("20090725-0000"), 
 				1,
-				null,
-				TimeZone.getTimeZone("America/Chicago"));
+				null);
 
 		TreeSet<AvailableBlock> expanded = new TreeSet<AvailableBlock>(AvailableBlockBuilder.expand(blocks, 40));
 		Assert.assertEquals(makeDateTime("20090720-0900"), expanded.first().getStartTime());
@@ -793,8 +793,7 @@ public class VisibleScheduleBuilderTest {
 				makeDateTime("20091115-0000"),
 				makeDateTime("20091121-0000"),
 				4,
-				null,
-				TimeZone.getTimeZone("America/Chicago"));
+				null);
 		
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 		VisibleSchedule visibleSchedule = this.builder.calculateVisibleSchedule(
@@ -856,8 +855,7 @@ public class VisibleScheduleBuilderTest {
 				makeDateTime("20090202-0830"),
 				makeDateTime("20090206-1600"),
 				1,
-				null,
-				TimeZone.getTimeZone("America/Chicago"));
+				null);
 
 		TreeSet<AvailableBlock> expanded = new TreeSet<AvailableBlock>(AvailableBlockBuilder.expand(blocks, 45));
 		LOG.info("expanded set first: " + expanded.first() + ", last: " + expanded.last());
@@ -949,7 +947,6 @@ public class VisibleScheduleBuilderTest {
 	}
 	
 	/**
-	 * TODO depends on VM's timezone
 	 * 
 	 * @throws ParseException
 	 * @throws IOException
@@ -969,8 +966,7 @@ public class VisibleScheduleBuilderTest {
 		
 		SortedSet<AvailableBlock> blocks = AvailableBlockBuilder.createBlocks("10:00 AM", "3:00 PM", "F", startTime, endTime,
 				1,
-				null,
-				TimeZone.getTimeZone("America/Chicago"));
+				null);
 		AvailableSchedule schedule = new AvailableSchedule(blocks);
 		
 		MockCalendarAccount person = new MockCalendarAccount();

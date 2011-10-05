@@ -29,14 +29,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TimeZone;
 import java.util.TreeMap;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
-import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.TimeZoneRegistry;
-import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VEvent;
 
 import org.apache.commons.lang.time.DateUtils;
@@ -256,13 +252,6 @@ public class VisibleSchedule implements Serializable {
 	}
 	
 	/**
-	 * 
-	 * @return
-	 */
-	public Calendar getCalendar() {
-		return getCalendar(TimeZone.getDefault());
-	}
-	/**
 	 * Convenience method to generate an ical4j {@link Calendar} from
 	 * the {@link AvailableBlock}s stored in this instance.
 	 * 
@@ -270,12 +259,9 @@ public class VisibleSchedule implements Serializable {
 	 * the start date, end date, and have an event title that matches
 	 * the status (and number of attendees if visitorLimit is > 1).
 	 * 
-	 * @param timeZone
 	 * @return a {@link Calendar} of free/busy/attending events from this instance
 	 */
-	public Calendar getCalendar(TimeZone timeZone) {
-		TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
-		net.fortuna.ical4j.model.TimeZone ical4jTimeZone = registry.getTimeZone(timeZone.getID());
+	public Calendar getCalendar() {
 		ComponentList components = new ComponentList();
 		for(Entry<AvailableBlock, AvailableStatus> mapEntry: blockMap.entrySet()) {
 			AvailableBlock block = mapEntry.getKey();
@@ -289,20 +275,14 @@ public class VisibleSchedule implements Serializable {
 				eventTitle.append(") ");
 			}
 			eventTitle.append(status.getValue());
-			
-			DateTime eventStart = new net.fortuna.ical4j.model.DateTime(block.getStartTime());
-			eventStart.setTimeZone(ical4jTimeZone);
-			DateTime eventEnd = new net.fortuna.ical4j.model.DateTime(block.getEndTime());
-			eventEnd.setTimeZone(ical4jTimeZone);
-			VEvent event = new VEvent(eventStart,
-					eventEnd,
+			VEvent event = new VEvent(new net.fortuna.ical4j.model.DateTime(block.getStartTime()),
+					new net.fortuna.ical4j.model.DateTime(block.getEndTime()),
 					eventTitle.toString());
 			components.add(event);
 		}
 		Calendar result = new Calendar(components);
 		return result;
 	}
-	
 	
 	/**
 	 * This method returns a subset of this {@link VisibleSchedule} including 
