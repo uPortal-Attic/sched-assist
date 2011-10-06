@@ -42,6 +42,7 @@ This project includes:
   jsp-api under Commons Development and Distribution License, Version 1.0
   jstl under Commons Development and Distribution License, Version 1.0
   JUnit under Common Public License Version 1.0
+  Mockito under The MIT License
   OGNL - Object Graph Navigation Library under The OpenSymphony Software License, Version 1.1
   opencsv under Apache 2
   quartz under Apache License, Version 2.0
