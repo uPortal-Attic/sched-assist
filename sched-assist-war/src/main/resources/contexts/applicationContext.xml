@@ -31,13 +31,8 @@
 		http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring/ehcache-spring-1.1.xsd
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
 	
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="locations">
-            <list>
-                 <value>classpath:/scheduling-assistant.properties</value>
-            </list>
-        </property>
-    </bean>
+	<context:property-placeholder location="classpath:/scheduling-assistant.properties"/>
+	
     <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
         <property name="alwaysUseMessageFormat" value="true" />
         <property name="cacheSeconds" value="60" />
