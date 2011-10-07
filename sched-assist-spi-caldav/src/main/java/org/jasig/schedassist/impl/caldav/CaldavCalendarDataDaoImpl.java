@@ -181,7 +181,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	/**
 	 * @param cancelUpdatesVisitorCalendar the cancelUpdatesVisitorCalendar to set
 	 */
-	@Value("caldav.cancelUpdatesVisitorCalendar")
+	@Value("${caldav.cancelUpdatesVisitorCalendar}")
 	public void setCancelUpdatesVisitorCalendar(String cancelUpdatesVisitorCalendar) {
 		this.cancelUpdatesVisitorCalendar = Boolean.parseBoolean(cancelUpdatesVisitorCalendar);
 	}
