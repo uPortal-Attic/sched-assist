@@ -176,13 +176,16 @@ public class AdvancedPreferencesFormController {
 		
 		PublicProfile existingProfile = this.publicProfileDao.locatePublicProfileByOwner(owner);
 		
-		boolean checkTags = false;
 		// set public profile preference (only if owner previously was not sharing)
 		if(fbo.isCreatePublicProfile() && null == existingProfile) {
 			PublicProfile newProfile = this.publicProfileDao.createPublicProfile(owner, fbo.getPublicProfileDescription());
 			model.addAttribute("createdPublicProfile", true);
 			model.addAttribute("publicProfileKey", newProfile.getPublicProfileId().getProfileKey());
-			checkTags = true;
+			if(StringUtils.isNotBlank(fbo.getPublicProfileTags())) {
+				List<String> newTags = commaSeparatedToList(fbo.getPublicProfileTags());
+				this.publicProfileDao.setProfileTags(newTags, newProfile.getPublicProfileId());
+				model.addAttribute("updatedPublicProfileTags", true);
+			}
 		} else if(!fbo.isCreatePublicProfile() && null != existingProfile) {
 			this.publicProfileDao.removePublicProfile(existingProfile.getPublicProfileId());
 			model.put("removedPublicProfile", true);
@@ -192,20 +195,17 @@ public class AdvancedPreferencesFormController {
 				// fbo is different from stored, update
 				this.publicProfileDao.updatePublicProfileDescription(existingProfile.getPublicProfileId(), fbo.getPublicProfileDescription());
 				model.addAttribute("updatedPublicProfile", true);
+				
+				List<PublicProfileTag> tags = this.publicProfileDao.getProfileTags(existingProfile.getPublicProfileId());
+				if(!tagsAsString(tags).equals(fbo.getPublicProfileTags())) {
+					// tags differ, persist
+					List<String> newTags = commaSeparatedToList(fbo.getPublicProfileTags());
+					this.publicProfileDao.setProfileTags(newTags, existingProfile.getPublicProfileId());
+					model.addAttribute("updatedPublicProfileTags", true);
+				}
 			}	
-			checkTags = true;
 		}
 		
-		if(checkTags) {
-			// check if we need to update tags
-			List<PublicProfileTag> tags = this.publicProfileDao.getProfileTags(existingProfile.getPublicProfileId());
-			if(!tagsAsString(tags).equals(fbo.getPublicProfileTags())) {
-				// tags differ, persist
-				List<String> newTags = commaSeparatedToList(fbo.getPublicProfileTags());
-				this.publicProfileDao.setProfileTags(newTags, existingProfile.getPublicProfileId());
-				model.addAttribute("updatedPublicProfileTags", true);
-			}
-		}
 		currentUser.updateScheduleOwner(owner);
 		return "owner-preferences/advanced-preferences-success";
 	}
