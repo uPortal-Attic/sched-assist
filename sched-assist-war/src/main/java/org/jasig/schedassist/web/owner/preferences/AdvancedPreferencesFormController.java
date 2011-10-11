@@ -155,7 +155,8 @@ public class AdvancedPreferencesFormController {
 			return "owner-preferences/advanced-preferences-form";
 		}
 	
-		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.ADVISOR)) {
+		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.ADVISOR) &&
+				!owner.getPreference(Preferences.ADVISOR_SHARE_WITH_STUDENTS).equals(String.valueOf(fbo.isAdvisorShareWithStudents()))) {
 			owner = ownerDao.updatePreference(owner, Preferences.ADVISOR_SHARE_WITH_STUDENTS, String.valueOf(fbo.isAdvisorShareWithStudents()));
 			if(fbo.isAdvisorShareWithStudents()) {
 				model.addAttribute("advisorShareWithStudentsOn", true);
@@ -163,7 +164,8 @@ public class AdvancedPreferencesFormController {
 				model.addAttribute("advisorShareWithStudentsOff", true);
 			}
 		}
-		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.INSTRUCTOR)) {
+		if(affiliationSource.doesAccountHaveAffiliation(owner.getCalendarAccount(), AffiliationImpl.INSTRUCTOR) &&
+				!owner.getPreference(Preferences.INSTRUCTOR_SHARE_WITH_STUDENTS).equals(String.valueOf(fbo.isInstructorShareWithStudents()))) {
 			owner = ownerDao.updatePreference(owner, Preferences.INSTRUCTOR_SHARE_WITH_STUDENTS, String.valueOf(fbo.isInstructorShareWithStudents()));
 			if(fbo.isInstructorShareWithStudents()) {
 				model.addAttribute("instructorShareWithStudentsOn", true);
@@ -174,12 +176,13 @@ public class AdvancedPreferencesFormController {
 		
 		PublicProfile existingProfile = this.publicProfileDao.locatePublicProfileByOwner(owner);
 		
+		boolean checkTags = false;
 		// set public profile preference (only if owner previously was not sharing)
 		if(fbo.isCreatePublicProfile() && null == existingProfile) {
 			PublicProfile newProfile = this.publicProfileDao.createPublicProfile(owner, fbo.getPublicProfileDescription());
 			model.addAttribute("createdPublicProfile", true);
 			model.addAttribute("publicProfileKey", newProfile.getPublicProfileId().getProfileKey());
-
+			checkTags = true;
 		} else if(!fbo.isCreatePublicProfile() && null != existingProfile) {
 			this.publicProfileDao.removePublicProfile(existingProfile.getPublicProfileId());
 			model.put("removedPublicProfile", true);
@@ -189,8 +192,11 @@ public class AdvancedPreferencesFormController {
 				// fbo is different from stored, update
 				this.publicProfileDao.updatePublicProfileDescription(existingProfile.getPublicProfileId(), fbo.getPublicProfileDescription());
 				model.addAttribute("updatedPublicProfile", true);
-			}
-			
+			}	
+			checkTags = true;
+		}
+		
+		if(checkTags) {
 			// check if we need to update tags
 			List<PublicProfileTag> tags = this.publicProfileDao.getProfileTags(existingProfile.getPublicProfileId());
 			if(!tagsAsString(tags).equals(fbo.getPublicProfileTags())) {
