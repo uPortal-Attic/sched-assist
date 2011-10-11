@@ -25,11 +25,6 @@
 <head>
 <title><spring:message code="application.name"/> - <spring:message code="advanced.sharing.preferences"/></title>
 <%@ include file="/WEB-INF/jsp/themes/jasig/head-elements.jsp" %>
-<style type="text/css">
-.profileformcomponent {
-
-}
-</style>
 <script type="text/javascript" src="<c:url value="/js/jquery.lockSubmit.js"/>"></script>
 <script type="text/javascript">
 $(document).ready(function(){
@@ -52,21 +47,18 @@ $(document).ready(function(){
 <fieldset>
 <legend><spring:message code="advanced.sharing.preferences"/></legend>
 <div class="formerror"><form:errors path="*"/></div>
-<div class="profileformcomponent">
+
 <h4><spring:message code="create.public.profile"/></h4>
 <label for="createPublicProfile"><spring:message code="create.public.profile.confirm"/>:&nbsp;</label>
 <form:checkbox path="createPublicProfile"/>
-</div>
-<div class="profileformcomponent">
+
 <h4><spring:message code="public.profile.description"/></h4>
 <label for="publicProfileDescription"><spring:message code="public.profile.description.help"/>:</label><br/>
 <form:input path="publicProfileDescription" size="40"/>
-</div>
-<div class="profileformcomponent">
+
 <h4><spring:message code="public.profile.tags"/></h4>
 <label for="publicProfileTags"><spring:message code="public.profile.tags.help"/>:</label><br/>
 <form:input path="publicProfileTags" size="40"/>
-</div>
 
 <c:if test="${command.createPublicProfile && !empty command.publicProfileKey}">
 <p>
