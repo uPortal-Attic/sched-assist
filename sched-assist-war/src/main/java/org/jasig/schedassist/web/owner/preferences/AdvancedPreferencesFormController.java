@@ -195,15 +195,15 @@ public class AdvancedPreferencesFormController {
 				// fbo is different from stored, update
 				this.publicProfileDao.updatePublicProfileDescription(existingProfile.getPublicProfileId(), fbo.getPublicProfileDescription());
 				model.addAttribute("updatedPublicProfile", true);
-				
-				List<PublicProfileTag> tags = this.publicProfileDao.getProfileTags(existingProfile.getPublicProfileId());
-				if(!tagsAsString(tags).equals(fbo.getPublicProfileTags())) {
-					// tags differ, persist
-					List<String> newTags = commaSeparatedToList(fbo.getPublicProfileTags());
-					this.publicProfileDao.setProfileTags(newTags, existingProfile.getPublicProfileId());
-					model.addAttribute("updatedPublicProfileTags", true);
-				}
 			}	
+			// check to see if tags are updated
+			List<PublicProfileTag> tags = this.publicProfileDao.getProfileTags(existingProfile.getPublicProfileId());
+			if(!tagsAsString(tags).equals(fbo.getPublicProfileTags())) {
+				// tags differ, persist
+				List<String> newTags = commaSeparatedToList(fbo.getPublicProfileTags());
+				this.publicProfileDao.setProfileTags(newTags, existingProfile.getPublicProfileId());
+				model.addAttribute("updatedPublicProfileTags", true);
+			}
 		}
 		
 		currentUser.updateScheduleOwner(owner);
