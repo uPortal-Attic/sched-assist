@@ -44,7 +44,7 @@
 <thead>
 <tr>
 <th><spring:message code="cache.name"/></th>
-<th><spring:message code="cache.name"/></th>
+<th><spring:message code="object.count"/></th>
 <th><spring:message code="hits"/></th>
 <th><spring:message code="misses"/></th>
 <th><spring:message code="clear.question"/></th>
