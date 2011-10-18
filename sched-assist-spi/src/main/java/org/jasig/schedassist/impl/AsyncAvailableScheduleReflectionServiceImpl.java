@@ -24,6 +24,7 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import org.jasig.schedassist.model.IScheduleOwner;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +62,7 @@ public class AsyncAvailableScheduleReflectionServiceImpl extends
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.impl.DefaultAvailableScheduleReflectionServiceImpl#purgeReflections(org.jasig.schedassist.model.IScheduleOwner, java.util.Date, java.util.Date)
 	 */
+	@Async
 	@Override
 	public void purgeReflections(IScheduleOwner owner, Date start, Date end) {
 		// remove the owner from the reflection queue if they are present
