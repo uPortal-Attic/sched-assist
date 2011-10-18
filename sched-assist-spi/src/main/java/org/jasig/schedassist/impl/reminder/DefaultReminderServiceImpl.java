@@ -47,8 +47,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.sun.mail.smtp.SMTPAddressFailedException;
-
 /**
  * Default {@link ReminderService} implementation.
  * 
@@ -204,8 +202,11 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 
 			LOG.info("begin processing " + size + " pending reminders");
 			for(IReminder reminder : pending) {
-				sendEmail(reminder);
-				deleteEventReminder(reminder);
+				try {
+					sendEmail(reminder);
+				} finally {
+					deleteEventReminder(reminder);
+				}
 			}
 			LOG.info("completed processing " + size + " reminders");
 		} else {
@@ -248,13 +249,7 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 				mailSender.send(message);
 				LOG.debug("message successfully sent");
 			} catch (MailSendException e) {
-				if(e.contains(SMTPAddressFailedException.class)) {
-					LOG.warn("failed to send reminder message and will not retry as recipient's email address is invalid: " + recipient);
-				} else {
-					LOG.error("unexpected MailSendException for " + owner + ", " + recipient);
-					// rethrow as this could be due to temporary unavailbility of remote SMTP server
-					throw e;
-				}
+				LOG.error("caught MailSendException for " + owner + ", " + recipient + ", " + reminder, e);
 			}
 			
 		} else {
