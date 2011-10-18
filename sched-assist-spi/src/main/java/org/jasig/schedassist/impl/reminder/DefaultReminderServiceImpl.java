@@ -50,11 +50,14 @@ import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.sun.mail.smtp.SMTPAddressFailedException;
 
 /**
  * Default {@link ReminderService} implementation.
@@ -291,8 +294,19 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 			message.setText(messageBody);
 			
 			LOG.debug("sending message: " + message.toString());
-			mailSender.send(message);
-			LOG.debug("message successfully sent");
+			try {
+				mailSender.send(message);
+				LOG.debug("message successfully sent");
+			} catch (MailSendException e) {
+				if(e.contains(SMTPAddressFailedException.class)) {
+					LOG.warn("failed to send reminder message and will not retry as recipient's email address is invalid: " + recipient);
+				} else {
+					LOG.error("unexpected MailSendException for " + owner + ", " + recipient);
+					// rethrow as this could be due to temporary unavailbility of remote SMTP server
+					throw e;
+				}
+			}
+			
 		} else {
 			LOG.debug("skipping send email for reminder with null elements: " + reminder);
 		}
