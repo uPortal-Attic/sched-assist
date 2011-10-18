@@ -19,14 +19,10 @@
 
 package org.jasig.schedassist.impl.reminder;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.sql.DataSource;
 
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.Location;
@@ -39,23 +35,17 @@ import org.jasig.schedassist.SchedulingAssistantService;
 import org.jasig.schedassist.impl.events.EmailNotificationApplicationListener;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.model.AvailableBlock;
-import org.jasig.schedassist.model.AvailableBlockBuilder;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.Reminders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
-import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
-import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.sun.mail.smtp.SMTPAddressFailedException;
 
@@ -70,22 +60,22 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 
 	private static final String NEWLINE = System.getProperty("line.separator");
 	
-	private SimpleJdbcTemplate simpleJdbcTemplate;
+	private ReminderDao reminderDao;
 	private MailSender mailSender;
-	private DataFieldMaxValueIncrementer reminderIdSequence;
+	
 	private OwnerDao ownerDao;
 	private SchedulingAssistantService schedulingAssistantService;
 	private ICalendarAccountDao calendarAccountDao;
 	private MessageSource messageSource;
 	private String noReplyFromAddress = "no.reply.wisccal@doit.wisc.edu";
 	private final Log LOG = LogFactory.getLog(this.getClass());
+	
 	/**
-	 * 
-	 * @param ds
+	 * @param reminderDao the reminderDao to set
 	 */
 	@Autowired
-	public void setDataSource(DataSource ds) {
-		this.simpleJdbcTemplate = new SimpleJdbcTemplate(ds);
+	public void setReminderDao(ReminderDao reminderDao) {
+		this.reminderDao = reminderDao;
 	}
 	/**
 	 * @param mailSender the mailSender to set
@@ -93,14 +83,6 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	@Autowired
 	public void setMailSender(MailSender mailSender) {
 		this.mailSender = mailSender;
-	}
-	/**
-	 * @param reminderIdSequence the reminderIdSequence to set
-	 */
-	@Autowired
-	public void setReminderIdSequence(
-			@Qualifier("reminders") DataFieldMaxValueIncrementer reminderIdSequence) {
-		this.reminderIdSequence = reminderIdSequence;
 	}
 	/**
 	 * @param ownerDao the ownerDao to set
@@ -143,26 +125,9 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	 * @see org.jasig.schedassist.impl.reminder.ReminderService#createEventReminder(org.jasig.schedassist.model.IScheduleOwner, org.jasig.schedassist.model.ICalendarAccount, org.jasig.schedassist.model.AvailableBlock, net.fortuna.ical4j.model.component.VEvent, java.util.Date)
 	 */
 	@Override
-	@Transactional
 	public IReminder createEventReminder(IScheduleOwner owner,
 			ICalendarAccount recipient, AvailableBlock appointmentBlock, VEvent event, Date sendTime) {
-		
-		long newReminderId = this.reminderIdSequence.nextLongValue();
-		int rows = this.simpleJdbcTemplate.update("insert into reminders (reminder_id,owner_id,recipient,event_start,event_end,send_time) values (?,?,?,?,?,?)",
-				newReminderId,
-				owner.getId(),
-				recipient.getUsername(),
-				appointmentBlock.getStartTime(),
-				appointmentBlock.getEndTime(),
-				sendTime);
-		
-		if(rows == 1) {
-			ReminderImpl reminder = new ReminderImpl(newReminderId, owner, recipient, sendTime, event);
-			return reminder;
-		} else {
-			LOG.error("failed to store reminder for " + owner + ", " + recipient);
-			return null;
-		}
+		return reminderDao.createEventReminder(owner, recipient, appointmentBlock, event, sendTime);
 	}
 
 	/*
@@ -170,12 +135,8 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	 * @see org.jasig.schedassist.impl.reminder.ReminderService#deleteEventReminder(org.jasig.schedassist.impl.reminder.IReminder)
 	 */
 	@Override
-	@Transactional
 	public void deleteEventReminder(IReminder reminder) {
-		int rows = this.simpleJdbcTemplate.update("delete from reminders where reminder_id=?", reminder.getReminderId());
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("delete " + reminder + ", rows affected=" + rows);
-		}
+		reminderDao.deleteEventReminder(reminder);
 	}
 
 	/*
@@ -184,11 +145,7 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	 */
 	@Override
 	public List<IReminder> getPendingReminders() {
-		Date now = new Date();
-		List<PersistedReminderImpl> persisted = this.simpleJdbcTemplate.query(
-				"select * from reminders where send_time <= ?", 
-				new PersistedReminderImplRowMapper(), 
-				now);
+		List<PersistedReminderImpl> persisted = reminderDao.getPendingReminders();
 		
 		List<IReminder> results = new ArrayList<IReminder>(persisted.size());
 		for(PersistedReminderImpl p: persisted) {		
@@ -207,16 +164,9 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	@Override
 	public IReminder getReminder(IScheduleOwner owner,
 			ICalendarAccount recipient, AvailableBlock appointmentBlock) {
-		List<PersistedReminderImpl> persisted = this.simpleJdbcTemplate.query(
-				"select * from reminders where owner_id=? and recipient=? and event_start=? and event_end=?", 
-				new PersistedReminderImplRowMapper(), 
-				owner.getId(),
-				recipient.getUsername(),
-				appointmentBlock.getStartTime(),
-				appointmentBlock.getEndTime());
+		PersistedReminderImpl persisted = reminderDao.getReminder(owner, recipient, appointmentBlock);
 		
-		PersistedReminderImpl p = DataAccessUtils.singleResult(persisted);
-		ReminderImpl result = complete(p);
+		ReminderImpl result = complete(persisted);
 		return result;
 	}
 
@@ -355,144 +305,5 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	@Override
 	public void run() {
 		processPendingReminders();
-	}
-
-	/**
-	 * Represents a persisted {@link IReminder}.
-	 * {@link #getRecipient()}, {@link #getScheduleOwner()}, and {@link #getEvent()} 
-	 * intentionally always return null.
-	 * 
-	 * @see DefaultReminderServiceImpl#complete(PersistedReminderImpl)
-	 * @author Nicholas Blair, nblair@doit.wisc.edu
-	 * @version $Id: DefaultReminderServiceImpl.java 3070 2011-02-09 13:53:34Z npblair $
-	 */
-	protected static class PersistedReminderImpl implements IReminder {
-
-		private long reminderId;
-		private long ownerId;
-		private String recipientId;
-		private Date sendTime;
-		private Date blockStartTime;
-		private Date blockEndTime;
-			
-		/**
-		 * @return the reminderId
-		 */
-		public long getReminderId() {
-			return reminderId;
-		}
-		/**
-		 * @param reminderId the reminderId to set
-		 */
-		public void setReminderId(long reminderId) {
-			this.reminderId = reminderId;
-		}
-		/**
-		 * @return the ownerId
-		 */
-		public long getOwnerId() {
-			return ownerId;
-		}
-		/**
-		 * @param ownerId the ownerId to set
-		 */
-		public void setOwnerId(long ownerId) {
-			this.ownerId = ownerId;
-		}
-		/**
-		 * @return the recipientId
-		 */
-		public String getRecipientId() {
-			return recipientId;
-		}
-		/**
-		 * @param recipientId the recipientId to set
-		 */
-		public void setRecipientId(String recipientId) {
-			this.recipientId = recipientId;
-		}
-		/**
-		 * @return the sendTime
-		 */
-		public Date getSendTime() {
-			return sendTime;
-		}
-		/**
-		 * @param sendTime the sendTime to set
-		 */
-		public void setSendTime(Date sendTime) {
-			this.sendTime = sendTime;
-		}
-		/**
-		 * @return the blockStartTime
-		 */
-		public Date getBlockStartTime() {
-			return blockStartTime;
-		}
-		/**
-		 * @param blockStartTime the blockStartTime to set
-		 */
-		public void setBlockStartTime(Date blockStartTime) {
-			this.blockStartTime = blockStartTime;
-		}
-		/**
-		 * @return the blockEndTime
-		 */
-		public Date getBlockEndTime() {
-			return blockEndTime;
-		}
-		/**
-		 * @param blockEndTime the blockEndTime to set
-		 */
-		public void setBlockEndTime(Date blockEndTime) {
-			this.blockEndTime = blockEndTime;
-		}
-		/**
-		 * 
-		 * @return the {@link AvailableBlock} 
-		 */
-		public AvailableBlock getTargetBlock() {
-			return AvailableBlockBuilder.createBlock(blockStartTime, blockEndTime);
-		}
-		
-		
-		@Override
-		public IScheduleOwner getScheduleOwner() {
-			return null;
-		}
-		
-		@Override
-		public ICalendarAccount getRecipient() {
-			return null;
-		}
-		
-		@Override
-		public VEvent getEvent() {
-			return null;
-		}
-	}
-	/**
-	 * {@link RowMapper} for persisted reminders.
-	 *
-	 * @author Nicholas Blair, nblair@doit.wisc.edu
-	 * @version $Id: DefaultReminderServiceImpl.java 3070 2011-02-09 13:53:34Z npblair $
-	 */
-	static class PersistedReminderImplRowMapper implements RowMapper<PersistedReminderImpl> {
-
-		/* (non-Javadoc)
-		 * @see org.springframework.jdbc.core.RowMapper#mapRow(java.sql.ResultSet, int)
-		 */
-		@Override
-		public PersistedReminderImpl mapRow(ResultSet rs, int rowNum)
-				throws SQLException {
-			PersistedReminderImpl result = new PersistedReminderImpl();
-			result.setBlockEndTime(rs.getTimestamp("event_end"));
-			result.setBlockStartTime(rs.getTimestamp("event_start"));
-			result.setOwnerId(rs.getLong("owner_id"));
-			result.setRecipientId(rs.getString("recipient"));
-			result.setReminderId(rs.getLong("reminder_id"));
-			result.setSendTime(rs.getTimestamp("send_time"));
-			return result;
-		}
 	}
 }
