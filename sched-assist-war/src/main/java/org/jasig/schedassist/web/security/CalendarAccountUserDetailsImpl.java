@@ -48,6 +48,7 @@ public class CalendarAccountUserDetailsImpl implements CalendarAccountUserDetail
 	private IScheduleVisitor scheduleVisitor;
 	private IScheduleOwner scheduleOwner;
 	private boolean administrator = false;
+	private String activeDisplayNameAttribute = "mail";
 	private static final String EMPTY = "";
 
 	/**
@@ -65,8 +66,27 @@ public class CalendarAccountUserDetailsImpl implements CalendarAccountUserDetail
 	}
 	
 	CalendarAccountUserDetailsImpl(final ICalendarAccount calendarAccount, final IScheduleOwner scheduleOwner) {
-		this(calendarAccount);
+		this.calendarAccount = calendarAccount;
 		this.scheduleOwner = scheduleOwner;
+	}
+	CalendarAccountUserDetailsImpl(final ICalendarAccount calendarAccount, final IScheduleOwner scheduleOwner, String activeDisplayNameAttribute) {
+		this.calendarAccount = calendarAccount;
+		this.scheduleOwner = scheduleOwner;
+		this.activeDisplayNameAttribute = activeDisplayNameAttribute;
+	}
+
+	/**
+	 * @return the activeDisplayNameAttribute
+	 */
+	public String getActiveDisplayNameAttribute() {
+		return activeDisplayNameAttribute;
+	}
+
+	/**
+	 * @param activeDisplayNameAttribute the activeDisplayNameAttribute to set
+	 */
+	public void setActiveDisplayNameAttribute(String activeDisplayNameAttribute) {
+		this.activeDisplayNameAttribute = activeDisplayNameAttribute;
 	}
 
 	/**
@@ -235,7 +255,7 @@ public class CalendarAccountUserDetailsImpl implements CalendarAccountUserDetail
 		StringBuilder display = new StringBuilder();
 		display.append(this.calendarAccount.getDisplayName());
 		display.append(" (");
-		display.append(this.calendarAccount.getCalendarUniqueId());
+		display.append(this.calendarAccount.getAttributeValue(activeDisplayNameAttribute));
 		display.append(")");
 		return display.toString();
 	}

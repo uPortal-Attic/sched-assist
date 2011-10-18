@@ -57,7 +57,7 @@ public class CalendarAccountUserDetailsServiceImpl implements
 	private VisitorDao visitorDao;
 	private OwnerDao ownerDao;
 	private List<String> administrators = new ArrayList<String>();
-	
+	private String activeDisplayNameAttribute;
 	protected final Log LOG = LogFactory.getLog(this.getClass());
 	/**
 	 * @param calendarAccountDao the calendarAccountDao to set
@@ -89,6 +89,12 @@ public class CalendarAccountUserDetailsServiceImpl implements
 		this.administrators = Arrays.asList(admins);
 	}
 	/**
+	 * @param activeDisplayNameAttribute the activeDisplayNameAttribute to set
+	 */
+	public void setActiveDisplayNameAttribute(String activeDisplayNameAttribute) {
+		this.activeDisplayNameAttribute = activeDisplayNameAttribute;
+	}
+	/**
 	 * @return the calendarAccountDao
 	 */
 	public ICalendarAccountDao getCalendarAccountDao() {
@@ -106,6 +112,12 @@ public class CalendarAccountUserDetailsServiceImpl implements
 	public OwnerDao getOwnerDao() {
 		return ownerDao;
 	}
+	/**
+	 * @return the activeDisplayNameAttribute
+	 */
+	public String getActiveDisplayNameAttribute() {
+		return activeDisplayNameAttribute;
+	}
 	/* (non-Javadoc)
 	 * @see org.springframework.security.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
 	 */
@@ -120,6 +132,7 @@ public class CalendarAccountUserDetailsServiceImpl implements
 			throw new UsernameNotFoundException("no calendar account found for " + username);
 		}
 		CalendarAccountUserDetailsImpl result = new CalendarAccountUserDetailsImpl(calendarAccount);
+		result.setActiveDisplayNameAttribute(this.activeDisplayNameAttribute);
 		checkForVisitorAndOwner(result);
 		
 		if(this.administrators.contains(username)) {
