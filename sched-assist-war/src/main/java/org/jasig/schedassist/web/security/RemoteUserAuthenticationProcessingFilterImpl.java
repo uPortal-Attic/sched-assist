@@ -33,15 +33,15 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
  * {@link AbstractAuthenticationProcessingFilter} implemented to inspect the REMOTE_USER environment
  * variable as the source for authentication.
  * 
- * This was developed against Pubcookie.
- * You need to add pubcookie protection around the url:
+ * This was developed against Pubcookie and will work for Shibboleth or cas
+ * You need to add protection around the url:
  * 
  * web application context + "/security_check"
  * 
- * Where web application context is the location of your app ("/sched-assist" by default).
+ * Where web application context is the location of your app ("/scheduling-assistant" by default).
  * 
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: PubcookieProcessingFilterImpl.java 2045 2010-04-30 15:55:52Z npblair $
+ * @author Nicholas Blair
+ * @version $Id: RemoteUserAuthenticationProcessingFilterImpl.java  $
  */
 public class RemoteUserAuthenticationProcessingFilterImpl extends AbstractAuthenticationProcessingFilter {
 

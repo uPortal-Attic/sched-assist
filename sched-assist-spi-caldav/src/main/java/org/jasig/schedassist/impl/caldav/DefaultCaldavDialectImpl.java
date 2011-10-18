@@ -29,10 +29,8 @@ import java.util.TimeZone;
 import javax.annotation.Resource;
 
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.ProdId;
-import net.fortuna.ical4j.model.property.Version;
 
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
@@ -40,6 +38,8 @@ import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.ICalendarAccount;
+import org.jasig.schedassist.model.IEventUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Class to encapsulate generation of the dialect between the scheduling assistant
@@ -62,6 +62,7 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 	private URI caldavHost;
 	private String accountHomePrefix = "/ucaldav/user/";
 	private String accountHomeSuffix = "/calendar/";
+	private IEventUtils eventUtils;
 	
 	private Log log = LogFactory.getLog(this.getClass());
 	
@@ -107,6 +108,14 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 	public void setCaldavHost(URI caldavHost) {
 		this.caldavHost = caldavHost;
 	}
+	/**
+	 * @param eventUtils the eventUtils to set
+	 */
+	@Autowired
+	public void setEventUtils(IEventUtils eventUtils) {
+		this.eventUtils = eventUtils;
+	}
+	
 	
 	/*
 	 * (non-Javadoc)
@@ -156,8 +165,9 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 	 * @see org.jasig.schedassist.impl.caldav.CaldavDialect#generateCreateAppointmentRequestEntity(net.fortuna.ical4j.model.component.VEvent)
 	 */
 	public RequestEntity generatePutAppointmentRequestEntity(VEvent event) {
+		final String requestEntityBody = this.eventUtils.wrapEventInCalendar(event).toString();
 		try {
-			StringRequestEntity requestEntity = new StringRequestEntity(wrapEventInCalendar(event).toString(), "text/calendar", "UTF-8");
+			StringRequestEntity requestEntity = new StringRequestEntity(requestEntityBody, "text/calendar", "UTF-8");
 			return requestEntity;
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException(e);
@@ -212,22 +222,6 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 		SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));
 		return df.format(date);
-	}
-	
-	/**
-	 * Wrap the event in a {@link Calendar}.
-	 * 
-	 * TODO duplicate of eventUtils function, wire in dependency
-	 * @param event
-	 * @return
-	 */
-	protected Calendar wrapEventInCalendar(VEvent event) {
-		ComponentList components = new ComponentList();
-		components.add(event);
-		Calendar result = new Calendar(components);
-		result.getProperties().add(Version.VERSION_2_0);
-		result.getProperties().add(PROD_ID);
-		return result;
 	}
 
 }

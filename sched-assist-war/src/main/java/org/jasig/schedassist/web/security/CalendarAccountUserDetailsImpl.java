@@ -235,7 +235,7 @@ public class CalendarAccountUserDetailsImpl implements CalendarAccountUserDetail
 		StringBuilder display = new StringBuilder();
 		display.append(this.calendarAccount.getDisplayName());
 		display.append(" (");
-		display.append(this.calendarAccount.getUsername());
+		display.append(this.calendarAccount.getCalendarUniqueId());
 		display.append(")");
 		return display.toString();
 	}

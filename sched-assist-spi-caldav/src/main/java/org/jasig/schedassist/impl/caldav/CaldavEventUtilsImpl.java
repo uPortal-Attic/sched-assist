@@ -22,16 +22,24 @@
  */
 package org.jasig.schedassist.impl.caldav;
 
+import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ParameterList;
+import net.fortuna.ical4j.model.TimeZone;
+import net.fortuna.ical4j.model.TimeZoneRegistry;
+import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.parameter.Cn;
 import net.fortuna.ical4j.model.parameter.Role;
 import net.fortuna.ical4j.model.property.Attendee;
+import net.fortuna.ical4j.model.property.DtEnd;
+import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.model.property.Organizer;
 import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Transp;
 import net.fortuna.ical4j.model.property.Uid;
 
+import org.apache.commons.lang.Validate;
 import org.jasig.schedassist.IAffiliationSource;
 import org.jasig.schedassist.model.AppointmentRole;
 import org.jasig.schedassist.model.AvailableBlock;
@@ -39,16 +47,31 @@ import org.jasig.schedassist.model.DefaultEventUtilsImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Subclass of {@link DefaultEventUtilsImpl} specific for 
  * caldav.
  * 
+ * The explicitSetTimeZone field is of significance. If set to true, one must also set
+ * the timeZone property. The {@link InitializingBean#afterPropertiesSet()} implementation
+ * on this class should be called to verify state (this is automatically called by the Spring IoC
+ * container; only call this method explicitly specifically if not being constructed by Spring).
+ * 
+ * When true and the timezone can be resolved, the behavior of {@link #wrapEventInCalendar(VEvent)} and
+ * {@link #constructAvailableAppointment(AvailableBlock, IScheduleOwner, IScheduleVisitor, String)} will change.
+ * 
+ * The explicitSetTimeZone and timeZone properties are encouraged when integrating with an Oracle Communications Suite 
+ * environment.
+ * 
  * @author Nicholas Blair, npblair@wisc.edu
  * @version $Id: CaldavEventUtilsImpl.java 51 2011-05-06 14:35:33Z nblair $
  */
-public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl {
+public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements InitializingBean {
 
+	private boolean explicitSetTimeZone = false;
+	private String timeZone;
+	private TimeZone _timeZone;
 	/**
 	 * 
 	 * @param affiliationSource
@@ -56,9 +79,49 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl {
 	public CaldavEventUtilsImpl(IAffiliationSource affiliationSource) {
 		super(affiliationSource);
 	}
+	/**
+	 * @return the explicitSetTimeZone
+	 */
+	public boolean isExplicitSetTimeZone() {
+		return explicitSetTimeZone;
+	}
+	/**
+	 * @param explicitSetTimeZone the explicitSetTimeZone to set
+	 */
+	public void setExplicitSetTimeZone(boolean explicitSetTimeZone) {
+		this.explicitSetTimeZone = explicitSetTimeZone;
+	}
+	/**
+	 * @return the timeZone
+	 */
+	public String getTimeZone() {
+		return timeZone;
+	}
+	/**
+	 * @param timeZone the timeZone to set
+	 */
+	public void setTimeZone(String timeZone) {
+		this.timeZone = timeZone;
+	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(isExplicitSetTimeZone()) {
+			Validate.notEmpty(this.timeZone, "timeZone field cannot be empty if explicitSetTimeZone is true");
+			TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
+			_timeZone = registry.getTimeZone(this.timeZone);
+			if(null == _timeZone) {
+				throw new IllegalStateException("no timezone found for " + timeZone);
+			}
+		}
+	}
 	/**
 	 * Calls the super implementation, and adds an {@link Organizer} and an {@link Uid}.
+	 * If the explicitSetTimeZone field is true and the corresponding timeZone can be resolved, 
+	 * the {@link DtStart} and {@link DtEnd} are modified to include the corresponding TZID parameter.
 	 * 
 	 * @see #constructOrganizer(ICalendarAccount)
 	 * @see #generateNewUid()
@@ -73,6 +136,13 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl {
 				eventDescription);
 		event.getProperties().add(constructOrganizer(owner.getCalendarAccount()));
 		event.getProperties().add(this.generateNewUid());
+		if(isExplicitSetTimeZone() && _timeZone != null) {
+			DtStart start = event.getStartDate();
+			start.setTimeZone(_timeZone);
+			
+			DtEnd end = event.getEndDate();
+			end.setTimeZone(_timeZone);
+		}
 		return event;
 	}
 
@@ -136,6 +206,22 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl {
 		VEvent reflection = super.convertBlockToReflectionEvent(block);
 		reflection.getProperties().add(this.generateNewUid());
 		return reflection;
+	}
+	/**
+	 * If the explicitSetTimeZone field is true and the corresponding timeZone can be resolved, 
+	 * the corresponding {@link VTimeZone} is added to the returned {@link Calendar}.
+	 * 
+	 * (non-Javadoc)
+	 * @see org.jasig.schedassist.model.DefaultEventUtilsImpl#wrapEventInCalendar(net.fortuna.ical4j.model.component.VEvent)
+	 */
+	@Override
+	public Calendar wrapEventInCalendar(VEvent event) {
+		Calendar calendar = super.wrapEventInCalendar(event);
+		if(isExplicitSetTimeZone() && this._timeZone != null) {
+			calendar.getComponents().add(this._timeZone.getVTimeZone());
+		}
+		
+		return calendar;
 	}
 
 }

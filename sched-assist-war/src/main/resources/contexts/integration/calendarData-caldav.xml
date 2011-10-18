@@ -45,6 +45,8 @@
 	<bean id="methodInterceptor" class="org.jasig.schedassist.impl.caldav.bedework.BedeworkHttpMethodInterceptorImpl"/>
 	<bean id="eventUtils" class="org.jasig.schedassist.impl.caldav.bedework.BedeworkEventUtilsImpl">
 		<constructor-arg ref="affiliationSource"/>
+		<property name="explicitSetTimeZone" value="${caldav.explicitSetTimeZone}"/>
+		<property name="timeZone" value="${caldav.systemTimeZone}"/>
 	</bean>
 	<!-- END: Bedework Specific beans -->
 	<!-- If using a CalDAV server other than Bedework, look in localOverridesContext.xml for other options -->

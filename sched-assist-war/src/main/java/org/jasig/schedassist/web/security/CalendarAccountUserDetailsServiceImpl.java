@@ -88,37 +88,72 @@ public class CalendarAccountUserDetailsServiceImpl implements
 		String [] admins = StringUtils.commaDelimitedListToStringArray(propertyValue);
 		this.administrators = Arrays.asList(admins);
 	}
-	
+	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
+	 * @return the visitorDao
+	 */
+	public VisitorDao getVisitorDao() {
+		return visitorDao;
+	}
+	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
 	/* (non-Javadoc)
 	 * @see org.springframework.security.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
 	 */
-	public UserDetails loadUserByUsername(final String username)
+	public final UserDetails loadUserByUsername(final String username)
 			throws UsernameNotFoundException, DataAccessException {
 		if(NONE_PROVIDED.equals(username)) {
 			LOG.debug("caught NONE_PROVIDED being passed into loadUserByUsername");
 			throw new UsernameNotFoundException(NONE_PROVIDED);
 		}
-		
-		
-		ICalendarAccount calendarAccount = calendarAccountDao.getCalendarAccount(username);
+		ICalendarAccount calendarAccount = getCalendarAccount(username);
 		if(null == calendarAccount) {
 			throw new UsernameNotFoundException("no calendar account found for " + username);
 		}
 		CalendarAccountUserDetailsImpl result = new CalendarAccountUserDetailsImpl(calendarAccount);
-		try {
-			IScheduleVisitor scheduleVisitor = visitorDao.toVisitor(calendarAccount);
-			result.setScheduleVisitor(scheduleVisitor);
-		} catch (NotAVisitorException e) {
-			LOG.debug(username + " is not a visitor");
-		}
-		
-		IScheduleOwner scheduleOwner = ownerDao.locateOwner(calendarAccount);
-		result.setScheduleOwner(scheduleOwner);
+		checkForVisitorAndOwner(result);
 		
 		if(this.administrators.contains(username)) {
 			result.setAdministrator(true);
 		}
 		return result;
 	}
+	
+	/**
+	 * 
+	 * @param value
+	 * @return
+	 */
+	protected ICalendarAccount getCalendarAccount(final String value) {
+		ICalendarAccount calendarAccount = calendarAccountDao.getCalendarAccount(value);
+		return calendarAccount;
+	}
 
+	/**
+	 * Mutate the {@link CalendarAccountUserDetailsImpl} argument, calling
+	 * {@link CalendarAccountUserDetailsImpl#setScheduleOwner(IScheduleOwner)} and 
+	 * {@link CalendarAccountUserDetailsImpl#setScheduleVisitor(IScheduleVisitor)} where appropriate.
+	 * 
+	 * @param accountUserDetails the instance to mutate
+	 */
+	protected void checkForVisitorAndOwner(CalendarAccountUserDetailsImpl accountUserDetails) {
+		try {
+			IScheduleVisitor scheduleVisitor = visitorDao.toVisitor(accountUserDetails.getCalendarAccount());
+			accountUserDetails.setScheduleVisitor(scheduleVisitor);
+		} catch (NotAVisitorException e) {
+			LOG.debug(accountUserDetails.getUsername() + " is not a visitor");
+		}
+		
+		IScheduleOwner scheduleOwner = ownerDao.locateOwner(accountUserDetails.getCalendarAccount());
+		accountUserDetails.setScheduleOwner(scheduleOwner);
+	}
 }

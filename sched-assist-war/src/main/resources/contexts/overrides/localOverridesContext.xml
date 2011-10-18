@@ -55,6 +55,8 @@
 	<bean id="methodInterceptor" class="org.jasig.schedassist.impl.caldav.NoopHttpMethodInterceptorImpl"/>
 	<bean id="eventUtils" class="org.jasig.schedassist.impl.caldav.CaldavEventUtilsImpl">
 		<constructor-arg ref="affiliationSource"/>
+		<property name="explicitSetTimeZone" value=${caldav.explicitSetTimeZone}"/>
+		<property name="timeZone" value="${caldav.systemTimeZone}"/>
 	</bean>
 	-->
 </beans>
