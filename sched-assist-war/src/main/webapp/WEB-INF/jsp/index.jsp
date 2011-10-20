@@ -82,7 +82,7 @@ background: transparent url(${externalIcon}) no-repeat center right;
 <p><spring:message code="resource.administrators"/>: <a class="ownerlink" href="<c:url value="/delegate-login.html"/>"><spring:message code="log.in.to.post.availability.resource"/></a></p>
 <br/>
 <p><spring:message code="learn.more"/>:<br/>
-<a class="external" href="http://www.doit.wisc.edu/calendaring/wisccal/scheduling-assistant.aspx">http://www.doit.wisc.edu/calendaring/wisccal/scheduling-assistant.aspx</a></p>
+<a class="external" href="<spring:message code="learn.more.link"/>"><spring:message code="learn.more.link"/></a></p>
 </div>
 
 <div id="contentclose">
