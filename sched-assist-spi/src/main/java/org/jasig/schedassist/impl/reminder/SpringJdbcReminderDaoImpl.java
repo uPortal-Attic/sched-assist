@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.jasig.schedassist.impl.reminder;
 
 import java.util.Date;
