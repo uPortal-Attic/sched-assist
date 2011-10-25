@@ -57,7 +57,7 @@ public class CalendarAccountUserDetailsServiceImpl implements
 	private VisitorDao visitorDao;
 	private OwnerDao ownerDao;
 	private List<String> administrators = new ArrayList<String>();
-	private String activeDisplayNameAttribute;
+	private String activeDisplayNameAttribute = "mail";
 	protected final Log LOG = LogFactory.getLog(this.getClass());
 	/**
 	 * @param calendarAccountDao the calendarAccountDao to set
