@@ -155,7 +155,7 @@ $(document).ready(function(){
 <form:input path="windowHoursStart" cssStyle="width: 2em;" maxlength="3"/>&nbsp;<spring:message code="earliest.appointment.is.suffix"/>
 <br/>
 <label for="windowWeeksEnd"><spring:message code="latest.appointment.is"/></label>&nbsp;
-<form:input path="windowWeeksEnd" cssStyle="width: 2em;" maxlength="1"/>&nbsp;<spring:message code="latest.appointment.is.suffix"/>
+<form:input path="windowWeeksEnd" cssStyle="width: 2em;" maxlength="2"/>&nbsp;<spring:message code="latest.appointment.is.suffix"/>
 <br/>
 <label for="enableMeetingLimit"><spring:message code="visitors.limited.meetings.confirm"/>:</label>&nbsp;
 <form:checkbox cssClass="enableMeetingLimit" path="enableMeetingLimit"/><br/>
