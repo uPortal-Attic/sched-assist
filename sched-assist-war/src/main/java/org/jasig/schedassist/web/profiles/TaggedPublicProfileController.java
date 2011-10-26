@@ -19,6 +19,8 @@
 
 package org.jasig.schedassist.web.profiles;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,8 +58,9 @@ public class TaggedPublicProfileController {
 	
 	@RequestMapping(value="/public/tags/{tag}", method = RequestMethod.GET)
 	public String displayProfileIdsByTag(final ModelMap model, @PathVariable("tag") String tag, 
-			@RequestParam(value="startIndex",required=false,defaultValue="0") int startIndex) {
-		List<PublicProfileId> profileIds = this.publicProfileDao.getPublicProfileIdsWithTag(tag);
+			@RequestParam(value="startIndex",required=false,defaultValue="0") int startIndex) throws UnsupportedEncodingException {
+		String decoded = decode(tag);
+		List<PublicProfileId> profileIds = this.publicProfileDao.getPublicProfileIdsWithTag(decoded);
 		if(profileIds.isEmpty()) {
 			// short circuit
 			return "profiles/public-listing";
@@ -95,5 +98,19 @@ public class TaggedPublicProfileController {
 		title.append(" - ");
 		title.append(endIndex);
 		return title.toString();
+	}
+	
+	/**
+	 * 
+	 * @param tag
+	 * @return
+	 */
+	private String decode(String tag) {
+		try {
+			String decoded = URLDecoder.decode(tag, "UTF-8");
+			return decoded;
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException("caught unexpected UnsupportedEncodingException for UTF-8", e);
+		}
 	}
 }

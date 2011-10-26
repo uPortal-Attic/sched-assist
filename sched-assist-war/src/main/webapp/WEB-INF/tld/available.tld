@@ -54,4 +54,14 @@
             &lt;c:if test="${available:isAdvisor(principal.calendarAccount)}"&gt;
         </example>
 	</function>
+	
+	<function>
+		<description>URL Encodes a String</description>
+		<name>urlEncode</name>
+		<function-class>org.jasig.schedassist.web.Utils</function-class>
+		<function-signature>java.lang.String urlEncode(java.lang.String value)</function-signature>
+		<example>
+            &lt;c:url test="/path/to/${available:urlEncode(someproperty)}"&gt;
+        </example>
+	</function>
 </taglib>

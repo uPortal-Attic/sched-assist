@@ -22,6 +22,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
 <%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="available" uri="/available" %>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
 <title><spring:message code="application.name"/> - <spring:message code="public.profiles" arguments="${titleSuffix}"/></title>
@@ -64,7 +65,7 @@ padding-left: 1em;
 <div class="tags">
 <span>Labels:&nbsp;</span>
 <c:forEach var="tag" items="${tags}" varStatus="status">
-<a href="<c:url value="/public/tags/${tag.tagDisplay}"/>" title="View other Public Profiles labeled '${tag.tagDisplay}'">${tag.tagDisplay}</a><c:if test="${not status.last}">,&nbsp;</c:if>
+<a href="<c:url value="/public/tags/${available:urlEncode(tag.tagDisplay)}"/>" title="View other Public Profiles labeled '${tag.tagDisplay}'">${tag.tagDisplay}</a><c:if test="${not status.last}">,&nbsp;</c:if>
 </c:forEach>
 </div>
 </c:if>
