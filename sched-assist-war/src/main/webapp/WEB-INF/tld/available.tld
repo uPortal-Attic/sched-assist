@@ -59,7 +59,7 @@
 		<description>URL Encodes a String</description>
 		<name>urlEncode</name>
 		<function-class>org.jasig.schedassist.web.Utils</function-class>
-		<function-signature>java.lang.String urlEncode(java.lang.String value)</function-signature>
+		<function-signature>java.lang.String urlEncode(java.lang.String)</function-signature>
 		<example>
             &lt;c:url test="/path/to/${available:urlEncode(someproperty)}"&gt;
         </example>
