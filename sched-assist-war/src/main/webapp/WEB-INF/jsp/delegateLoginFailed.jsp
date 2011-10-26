@@ -35,7 +35,7 @@
 <div id="content" class="main col">
 
 <div class="error">
-<strong><spring:message code="resource.login.failed.help"/></strong>
+<strong><spring:message code="resource.login.failed.help" htmlEscape="false"/></strong>
 <p>
 <spring:message code="resource.login.failed.help.more" htmlEscape="false"/>
 </p>

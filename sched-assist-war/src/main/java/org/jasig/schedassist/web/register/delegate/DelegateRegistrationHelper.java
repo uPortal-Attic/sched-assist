@@ -154,6 +154,7 @@ public class DelegateRegistrationHelper {
 		SecurityContext context = SecurityContextHolder.getContext();
 		Authentication authentication = context.getAuthentication();
 		DelegateCalendarAccountUserDetailsImpl currentUser = (DelegateCalendarAccountUserDetailsImpl) authentication.getPrincipal();
-		return !currentUser.isEnabled();
+		boolean result = !currentUser.isEnabled();
+		return result;
 	}
 }
