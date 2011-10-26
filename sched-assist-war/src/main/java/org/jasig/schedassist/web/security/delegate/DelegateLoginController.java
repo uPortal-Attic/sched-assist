@@ -22,7 +22,6 @@ package org.jasig.schedassist.web.security.delegate;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Simple {@link Controller} to display the delegate-login form.

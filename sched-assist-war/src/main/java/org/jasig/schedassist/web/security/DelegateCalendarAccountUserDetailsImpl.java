@@ -52,7 +52,7 @@ public class DelegateCalendarAccountUserDetailsImpl implements CalendarAccountUs
 	 * 
 	 * @param delegateCalendarAccount
 	 */
-	DelegateCalendarAccountUserDetailsImpl(IDelegateCalendarAccount delegateCalendarAccount) {
+	public DelegateCalendarAccountUserDetailsImpl(IDelegateCalendarAccount delegateCalendarAccount) {
 		this(delegateCalendarAccount, null);
 	}
 	
@@ -60,7 +60,7 @@ public class DelegateCalendarAccountUserDetailsImpl implements CalendarAccountUs
 	 * @param delegateCalendarAccount
 	 * @param delegateScheduleOwner
 	 */
-	DelegateCalendarAccountUserDetailsImpl(
+	public DelegateCalendarAccountUserDetailsImpl(
 			IDelegateCalendarAccount delegateCalendarAccount,
 			IScheduleOwner delegateScheduleOwner) {
 		this.delegateCalendarAccount = delegateCalendarAccount;

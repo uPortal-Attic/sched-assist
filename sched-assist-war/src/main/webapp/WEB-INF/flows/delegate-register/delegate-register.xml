@@ -31,9 +31,9 @@
 		<set name="flowScope.accountLocation" value="delegateRegistrationHelper.currentDelegateLocation()"/>
 	</on-start>
 	
-	<decision-state id="testEmailValidity">
+	<decision-state id="testAccountEligible">
 		<on-entry>
-			<evaluate expression="delegateRegistrationHelper.currentDelegateHasInvalidEmailAddress()" result="flowScope.invalidEmailAddress"/>
+			<evaluate expression="delegateRegistrationHelper.currentDelegateIsIneligible()" result="flowScope.invalidEmailAddress"/>
 		</on-entry>
 		<if test="invalidEmailAddress" then="registrationBlocked" else="setPreferences"/>
 	</decision-state>

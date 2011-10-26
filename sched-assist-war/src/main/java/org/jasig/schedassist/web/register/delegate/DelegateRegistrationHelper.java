@@ -148,14 +148,12 @@ public class DelegateRegistrationHelper {
 	
 	/**
 	 * 
-	 * @return true if the current authenticated delegate has an invalid email address
+	 * @return true if the current authenticated delegate has ineligible for service
 	 */
-	public boolean currentDelegateHasInvalidEmailAddress() {
+	public boolean currentDelegateIsIneligible() {
 		SecurityContext context = SecurityContextHolder.getContext();
 		Authentication authentication = context.getAuthentication();
 		DelegateCalendarAccountUserDetailsImpl currentUser = (DelegateCalendarAccountUserDetailsImpl) authentication.getPrincipal();
-		final String email = currentUser.getDelegateCalendarAccount().getEmailAddress();
-		// TODO develop a way to check oracle specific
-		return StringUtils.isBlank(email) /* || email.endsWith(OracleCalendarResourceAccount.ORACLE_INVALID_EMAIL_DOMAIN)*/;
+		return !currentUser.isEnabled();
 	}
 }
