@@ -96,6 +96,12 @@ $(document).ready(function(){
 <%@ include file="/WEB-INF/jsp/login-info.jsp" %>
 <div id="content" class="main col">
 
+<c:if test="${redirected}">
+<div class="alert" style="margin-bottom: 1em;">
+<p><spring:message code="attending.shortdescription"/>.</p>
+</div>
+</c:if>
+
 <div id="helpmesg" class="info">
 <c:choose>
 <c:when test="${command.multipleVisitors }">

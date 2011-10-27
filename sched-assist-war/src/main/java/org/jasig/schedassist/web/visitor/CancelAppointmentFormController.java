@@ -138,9 +138,11 @@ public class CancelAppointmentFormController {
 	 */
 	@RequestMapping(method=RequestMethod.GET)
 	protected String setupForm(final ModelMap model, @RequestParam(value="startTime",required=true) String startTimePhrase, 
-			@RequestParam(value="endTime",required=true) String endTimePhrase, @PathVariable("ownerIdentifier") String ownerIdentifier) throws ParseException, NotAVisitorException, OwnerNotFoundException, InputFormatException, SchedulingException {
+			@RequestParam(value="endTime",required=true) String endTimePhrase, @PathVariable("ownerIdentifier") String ownerIdentifier,
+			@RequestParam(value="r", required=false, defaultValue="false") boolean redirectedFromCreate) throws ParseException, NotAVisitorException, OwnerNotFoundException, InputFormatException, SchedulingException {
 		SimpleDateFormat dateFormat = CommonDateOperations.getDateTimeFormat();
 		Date time = dateFormat.parse(startTimePhrase);
+		model.put("redirected", redirectedFromCreate);
 		model.put("startTimePhrase", startTimePhrase);
 		model.put("startTime", time);
 		CalendarAccountUserDetailsImpl currentUser = (CalendarAccountUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

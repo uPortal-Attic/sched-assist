@@ -20,6 +20,7 @@
 
 package org.jasig.schedassist.web.visitor;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -39,6 +40,7 @@ import org.jasig.schedassist.impl.owner.PublicProfileDao;
 import org.jasig.schedassist.impl.visitor.NotAVisitorException;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.CommonDateOperations;
+import org.jasig.schedassist.model.IEventUtils;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
 import org.jasig.schedassist.model.InputFormatException;
@@ -81,6 +83,7 @@ public class CreateAppointmentFormController {
 	private AvailableScheduleDao availableScheduleDao;
 	private OwnerDao ownerDao;
 	private PublicProfileDao publicProfileDao;
+	private IEventUtils eventUtils;
 	
 	/**
 	 * @param schedulingAssistantService the schedulingAssistantService to set
@@ -116,6 +119,13 @@ public class CreateAppointmentFormController {
 	@Autowired
 	public void setPublicProfileDao(PublicProfileDao publicProfileDao) {
 		this.publicProfileDao = publicProfileDao;
+	}
+	/**
+	 * @param eventUtils the eventUtils to set
+	 */
+	@Autowired
+	public void setEventUtils(IEventUtils eventUtils) {
+		this.eventUtils = eventUtils;
 	}
 	/**
 	 * 
@@ -171,6 +181,26 @@ public class CreateAppointmentFormController {
 		if(null == targetBlock) {
 			throw new SchedulingException("requested time is not available");
 		} 
+		
+		VEvent event = schedulingAssistantService.getExistingAppointment(targetBlock, selectedOwner);
+		if(event != null) {
+			model.put("event", event);
+			if(this.eventUtils.isAttendingAsVisitor(event, visitor.getCalendarAccount())) {
+				// redirect the visitor to the cancel form 
+				StringBuilder redirect = new StringBuilder("redirect:cancel.html?r=true&startTime=");
+				SimpleDateFormat dateFormat = CommonDateOperations.getDateTimeFormat();
+				redirect.append(startTimePhrase);
+				redirect.append("&endTime=");
+				redirect.append(dateFormat.format(targetBlock.getEndTime()));
+				return redirect.toString();
+			}
+			
+			Integer visitorLimit = this.eventUtils.getEventVisitorLimit(event);
+			model.put("visitorLimit", visitorLimit);
+			if(this.eventUtils.getScheduleVisitorCount(event) >= visitorLimit) {
+				return "visitor/appointment-full";
+			}
+		}
 		CreateAppointmentFormBackingObject fbo = new CreateAppointmentFormBackingObject(targetBlock, selectedOwner.getPreferredMeetingDurations());
 		model.addAttribute(COMMAND_ATTR_NAME, fbo);
 		return "visitor/create-appointment-form";

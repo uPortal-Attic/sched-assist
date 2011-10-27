@@ -172,4 +172,14 @@ public interface IEventUtils {
 	 * @return
 	 */
 	Calendar wrapEventInCalendar(VEvent event);
+	
+	/**
+	 * If the event argument is an event created by the Scheduling Assistant, return the value of
+	 * it's {@link VisitorLimit} property.
+	 * If the event argument is not a Scheduling Assistant event, this method returns null.
+	 * 
+	 * @param event
+	 * @return the value of the {@link VisitorLimit} if the event is a scheduling assistant appointment; if not return null
+	 */
+	Integer getEventVisitorLimit(VEvent event);
 }

@@ -568,6 +568,24 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		}
 	}
 
+	
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.model.IEventUtils#getEventVisitorLimit(net.fortuna.ical4j.model.component.VEvent)
+	 */
+	@Override
+	public Integer getEventVisitorLimit(VEvent event) {
+		if(event == null) {
+			return null;
+		}
+		Property limit = event.getProperty(VisitorLimit.VISITOR_LIMIT);
+		if(limit != null) {
+			return Integer.parseInt(limit.getValue());
+		}
+		
+		return null;
+	}
+
+
 	/**
 	 * Temporary workaround for problem with RDATE class in ical4j not supporting VALUE=DATE type values.
 	 * 
