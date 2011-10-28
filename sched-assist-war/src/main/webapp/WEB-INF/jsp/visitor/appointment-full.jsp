@@ -23,7 +23,7 @@
 <%@ include file="/WEB-INF/jsp/includes.jsp" %>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title><spring:message code="application.name"/> - <spring:message code="appointment.created"/></title>
+<title><spring:message code="application.name"/> - <spring:message code="appointment.full"/></title>
 <%@ include file="/WEB-INF/jsp/themes/jasig/head-elements.jsp" %>
 <style type="text/css">
 #status p { margin-bottom: 1em; }
