@@ -52,6 +52,7 @@ This project includes:
   Resource Server Utilities under Apache License Version 2.0
   Rhino under Mozilla Public License version 1.1
   Scheduling Assistant API under Apache License Version 2.0
+  Scheduling Assistant Mocks under Apache License Version 2.0
   Scheduling Assistant SPI: CalDAV under Apache License Version 2.0
   Scheduling Assistant SPI: Common under Apache License Version 2.0
   Scheduling Assistant SPI: Relationship Providers under Apache License Version 2.0
