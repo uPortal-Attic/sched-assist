@@ -23,7 +23,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title>WiscCal Scheduling Assistant - Invitations Blocked Error</title>
+<title><spring:message code="application.name"/> - <spring:message code="invitations.blocked"/></title>
 <%@ include file="/WEB-INF/jsp/themes/jasig/head-elements.jsp" %>
 </head>
 <body>
@@ -31,13 +31,10 @@
 <%@ include file="/WEB-INF/jsp/login-info.jsp" %>
 <div id="content" class="main col">
 <div class="alert">
-<p><strong>The WiscCal Scheduling Assistant cannot create the appointment because your WiscCal account
-is configured not to accept any invitations.</strong></p>
+<p><strong><spring:message code="invitations.blocked.summary" htmlEscape="false"/></strong></p>
 <br/>
 <p>
-If you wish to use the WiscCal Scheduling Assistant, you will need to change this account setting.
-Please visit the <a href="http://kb.wisc.edu/helpdesk/page.php?id=12249">Help Desk document that describes how to change
-your Scheduling Access Rights</a>.
+<spring:message code="invitations.blocked.detailhelp" htmlEscape="false"/>
 </p>
 <a href="<c:url value="/"/>">&laquo;Return to Available Home</a>
 </div>    
