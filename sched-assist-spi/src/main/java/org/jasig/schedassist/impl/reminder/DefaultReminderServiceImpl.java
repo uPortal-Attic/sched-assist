@@ -40,6 +40,7 @@ import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.Reminders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.MailSender;
@@ -65,7 +66,7 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	private SchedulingAssistantService schedulingAssistantService;
 	private ICalendarAccountDao calendarAccountDao;
 	private MessageSource messageSource;
-	private String noReplyFromAddress = "no.reply.wisccal@doit.wisc.edu";
+	private String noReplyFromAddress;
 	private final Log LOG = LogFactory.getLog(this.getClass());
 	
 	/**
@@ -114,6 +115,7 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	/**
 	 * @param noReplyFromAddress the noReplyFromAddress to set
 	 */
+	@Value("${reminder.noReplyFromAddress}")
 	public void setNoReplyFromAddress(String noReplyFromAddress) {
 		this.noReplyFromAddress = noReplyFromAddress;
 	}
@@ -168,12 +170,35 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.impl.reminder.ReminderService#getReminders(org.jasig.schedassist.model.IScheduleOwner, org.jasig.schedassist.model.AvailableBlock)
+	 */
+	@Override
+	public List<IReminder> getReminders(IScheduleOwner owner,
+			AvailableBlock appointmentBlock) {
+		List<PersistedReminderImpl> persisted = reminderDao.getReminders(owner, appointmentBlock);
+		List<IReminder> reminders = new ArrayList<IReminder>();
+		int count = persisted.size();
+		if(count > 0) {
+			// get the event, owner from the first in the list and pass it into overloaded complete method
+			ReminderImpl first = complete(persisted.get(0));
+			reminders.add(first);
+			if(count > 1) {
+				// we've already added the first, iterate through the rest
+				List<PersistedReminderImpl> rest = persisted.subList(1, count);
+				for(PersistedReminderImpl p: rest) {
+					reminders.add(complete(p, first.getScheduleOwner(), first.getEvent()));
+				}
+			}
+		}
+		return reminders;
+	}
 	/**
 	 * Complete a {@link PersistedReminderImpl} by consulting this instance's
-	 * {@link OwnerDao}, {@link ICalendarAccountDao}, and P@link AvailableService}.
+	 * {@link OwnerDao}, {@link ICalendarAccountDao}, and {@link SchedulingAssistantService}.
 	 * 
 	 * @param p
-	 * @return
+	 * @return a complete {@link ReminderImpl}
 	 */
 	protected ReminderImpl complete(PersistedReminderImpl p) {
 		if(p == null) {
@@ -184,6 +209,28 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 		final VEvent event = this.schedulingAssistantService.getExistingAppointment(p.getTargetBlock(), scheduleOwner);
 				
 		ReminderImpl reminder = new ReminderImpl(p.getReminderId(), scheduleOwner, recipient, p.getSendTime(), event);
+		return reminder;
+	}
+	/**
+	 * Overloaded version of {@link #complete(PersistedReminderImpl)} that can skip the call
+	 * to {@link SchedulingAssistantService#getExistingAppointment(AvailableBlock, IScheduleOwner)} and
+	 * the call to {@link OwnerDao#locateOwnerByAvailableId(long)} (which
+	 * are intentionally never cached, where as the {@link ICalendarAccountDao} methods are).
+	 * 
+	 * This is really useful in {@link #getReminders(IScheduleOwner, AvailableBlock)} where all of the
+	 * returned values have the same event and schedule owner.
+	 * 
+	 * @param p
+	 * @param event
+	 * @return a complete {@link ReminderImpl}
+	 */
+	protected ReminderImpl complete(PersistedReminderImpl p, IScheduleOwner owner, VEvent event) {
+		if(p == null) {
+			return null;
+		}
+		final ICalendarAccount recipient = this.calendarAccountDao.getCalendarAccount(p.getRecipientId());
+				
+		ReminderImpl reminder = new ReminderImpl(p.getReminderId(), owner, recipient, p.getSendTime(), event);
 		return reminder;
 	}
 	/*

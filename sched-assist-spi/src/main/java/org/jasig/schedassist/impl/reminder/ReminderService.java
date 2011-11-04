@@ -55,11 +55,25 @@ public interface ReminderService {
 	void deleteEventReminder(IReminder reminder);
 	
 	/**
+	 * Retrieve the list of existing {@link IReminder}s for the {@link IScheduleOwner} and {@link AvailableBlock}.
+	 * If the {@link AvailableBlock} points to a single visitor (one on one) appointment, this method will return
+	 * at most 1 {@link IReminder}.
+	 * If the {@link AvailableBlock} points to a multiple visitor (group) appointment, this method may
+	 * return more than 1 {@link IReminder}.
+	 * 
+	 * @param owner
+	 * @param appointmentBlock
+	 * @return a possibly empty but never null {@link List} of {@link IReminder}s for the event
+	 */
+	List<IReminder> getReminders(IScheduleOwner owner, AvailableBlock appointmentBlock);
+	
+	/**
+	 * Retrieve the existing {@link IReminder}, or null if it doesn't exist.
 	 * 
 	 * @param owner
 	 * @param recipient
 	 * @param appointmentBlock
-	 * @return
+	 * @return the corresponding {@link IReminder} or null
 	 */
 	IReminder getReminder(IScheduleOwner owner, ICalendarAccount recipient, AvailableBlock appointmentBlock);
 	

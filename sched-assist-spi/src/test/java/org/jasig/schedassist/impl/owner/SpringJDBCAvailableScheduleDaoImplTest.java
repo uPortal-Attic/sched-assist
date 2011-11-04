@@ -355,6 +355,15 @@ public class SpringJDBCAvailableScheduleDaoImplTest extends
 		Assert.assertEquals(1, result.getVisitorLimit());
 		Assert.assertEquals(expectedStart, result.getStartTime());
 		Assert.assertEquals(expectedEnd, result.getEndTime());
+		// assert retrieveTargetBlock variant with endTime expected behavior
+		result = availableScheduleDao.retrieveTargetBlock(sampleOwners[0], expectedStart, expectedEnd);
+		Assert.assertNotNull(result);
+		Assert.assertEquals(1, result.getVisitorLimit());
+		Assert.assertEquals(expectedStart, result.getStartTime());
+		Assert.assertEquals(expectedEnd, result.getEndTime());
+		// try again with wrong end time
+		result = availableScheduleDao.retrieveTargetBlock(sampleOwners[0], expectedStart, DateUtils.addMinutes(expectedEnd, -1));
+		Assert.assertNull(result);
 		
 		expectedStart = CommonDateOperations.parseDateTimePhrase("20091102-1200");
 		expectedEnd = DateUtils.addMinutes(expectedStart, sampleOwners[0].getPreferredMeetingDurations().getMinLength());
@@ -446,6 +455,12 @@ public class SpringJDBCAvailableScheduleDaoImplTest extends
 		Date expectedStart = CommonDateOperations.parseDateTimePhrase("20091102-0900");
 		Date expectedEnd = DateUtils.addMinutes(expectedStart, owner.getPreferredMeetingDurations().getMaxLength());
 		result = availableScheduleDao.retrieveTargetDoubleLengthBlock(owner, expectedStart);
+		Assert.assertNotNull(result);
+		Assert.assertEquals(1, result.getVisitorLimit());
+		Assert.assertEquals(expectedStart, result.getStartTime());
+		Assert.assertEquals(expectedEnd, result.getEndTime());
+		// assert retrieveTargetBlock with endTime argument can return the expected double length block
+		result = availableScheduleDao.retrieveTargetBlock(owner, expectedStart, expectedEnd);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(1, result.getVisitorLimit());
 		Assert.assertEquals(expectedStart, result.getStartTime());

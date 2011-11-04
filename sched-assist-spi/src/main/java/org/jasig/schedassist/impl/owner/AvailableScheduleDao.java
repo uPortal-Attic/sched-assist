@@ -127,6 +127,17 @@ public interface AvailableScheduleDao {
 	AvailableBlock retrieveTargetBlock(IScheduleOwner owner, Date startDate);
 	
 	/**
+	 * Retrieve a single {@link AvailableBlock} from the {@link IScheduleOwner}'s
+	 * schedule that starts at the startDate parameter AND ENDs at the endDate parameter, if it exists.
+	 *  
+	 * @param owner
+	 * @param startDate
+	 * @param endDate
+	 * @return the corresponding {@link AvailableBlock} in the {@link IScheduleOwner}'s schedule, or null if doesn't exist
+	 */
+	AvailableBlock retrieveTargetBlock(IScheduleOwner owner, Date startDate, Date endDate);
+	
+	/**
 	 * Retrieve a single "double length" {@link AvailableBlock} from the {@link IScheduleOwner}'s
 	 * schedule that starts at the startDate parameter.
 	 * 

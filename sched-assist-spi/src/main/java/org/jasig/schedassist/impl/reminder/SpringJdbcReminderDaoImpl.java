@@ -124,6 +124,22 @@ class SpringJdbcReminderDaoImpl implements ReminderDao {
 	}
 	/*
 	 * (non-Javadoc)
+	 * @see org.jasig.schedassist.impl.reminder.ReminderDao#getReminders(org.jasig.schedassist.model.IScheduleOwner, org.jasig.schedassist.model.AvailableBlock)
+	 */
+	@Override
+	public List<PersistedReminderImpl> getReminders(IScheduleOwner owner,
+			AvailableBlock appointmentBlock) {
+		List<PersistedReminderImpl> persisted = this.simpleJdbcTemplate.query(
+				"select * from reminders where owner_id=? and event_start=? and event_end=?", 
+				new PersistedReminderImplRowMapper(), 
+				owner.getId(),
+				appointmentBlock.getStartTime(),
+				appointmentBlock.getEndTime());
+		
+		return persisted;
+	}
+	/*
+	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.impl.reminder.ReminderDao#getReminder(org.jasig.schedassist.model.IScheduleOwner, org.jasig.schedassist.model.ICalendarAccount, org.jasig.schedassist.model.AvailableBlock)
 	 */
 	@Override

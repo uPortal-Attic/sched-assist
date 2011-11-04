@@ -222,25 +222,10 @@ implements AvailableScheduleDao {
 	@Override
 	public AvailableBlock retrieveTargetBlock(final IScheduleOwner owner,
 			final Date startDate) {
+		SortedSet<AvailableBlock> expanded = retrieveBlocksForDayInternal(owner, startDate);
 		// truncate startDate to the second
 		final Date truncatedStart = DateUtils.truncate(startDate, Calendar.MINUTE);
-
-		// retrieve all blocks for the day.
-		Date startOfDay = DateUtils.truncate(startDate, Calendar.DATE);
-		Date endOfDay = DateUtils.addDays(startOfDay, 1);
-		List<PersistenceAvailableBlock> scheduleRows = this.simpleJdbcTemplate
-		.query("select * from schedules where owner_id = ? and start_time >= ? and end_time < ?", 
-				new PersistenceAvailableBlockRowMapper(), 
-				owner.getId(),
-				startOfDay,
-				endOfDay);
-		SortedSet<AvailableBlock> availableBlocks = new TreeSet<AvailableBlock>();
-		for(PersistenceAvailableBlock row : scheduleRows) {
-			availableBlocks.add(AvailableBlockBuilder.createBlock(row.getStartTime(), row.getEndTime(), row.getVisitorLimit(), row.getMeetingLocation()));
-		}
-
-		int ownerPreferredMinDuration = owner.getPreferredMeetingDurations().getMinLength();
-		SortedSet<AvailableBlock> expanded = AvailableBlockBuilder.expand(availableBlocks, ownerPreferredMinDuration);
+		
 		if(expanded.size() > 0) {
 			for(Iterator<AvailableBlock> expandedIterator = expanded.iterator(); expandedIterator.hasNext();) {
 				AvailableBlock block = expandedIterator.next();
@@ -248,38 +233,67 @@ implements AvailableScheduleDao {
 					// always return preferred minimum length block
 					return block;
 				}
+				if(block.getStartTime().after(truncatedStart)) {
+					// iterated past the target block, can short circuit and say we didn't find it
+					return null;
+				}
 			}
 		}
 		// block not found, return null
 		return null;
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.impl.owner.AvailableScheduleDao#retrieveTargetBlock(org.jasig.schedassist.model.IScheduleOwner, java.util.Date, java.util.Date)
+	 */
+	@Override
+	public AvailableBlock retrieveTargetBlock(IScheduleOwner owner,
+			Date startDate, Date endDate) {
+		SortedSet<AvailableBlock> expanded = retrieveBlocksForDayInternal(owner, startDate);
+		// truncate startDate and endDate to the second
+		final Date truncatedStart = DateUtils.truncate(startDate, Calendar.MINUTE);
+		final Date truncatedEnd = DateUtils.truncate(endDate, Calendar.MINUTE);
+		
+		if(expanded.size() > 0) {
+			for(Iterator<AvailableBlock> expandedIterator = expanded.iterator(); expandedIterator.hasNext();) {
+				AvailableBlock block = expandedIterator.next();
+				if(block.getStartTime().equals(truncatedStart)) {
+					if(block.getEndTime().equals(truncatedEnd)) {
+						return block;
+					}
+					// start time matches but end time doesn't
+					// check to see if the next block has matching end
+					if(expandedIterator.hasNext()) {
+						AvailableBlock nextBlock = expandedIterator.next();
+						if(nextBlock.getEndTime().equals(truncatedEnd)) {
+							// start and end represent a double length block, combine and return
+							AvailableBlock combined = AvailableBlockBuilder.createBlock(block.getStartTime(), nextBlock.getEndTime(), block.getVisitorLimit(), block.getMeetingLocation());
+							return combined;
+						}
+					}
+				}
+				
+				if(block.getStartTime().after(truncatedStart)) {
+					// iterated past the target block, can short circuit and say we didn't find it
+					return null;
+				}
+			}
+		}
+		// block not found, return null
+		return null;
+	}
 	/*
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.impl.owner.AvailableScheduleDao#retrieveTargetDoubleLengthBlock(org.jasig.schedassist.model.IScheduleOwner, java.util.Date)
 	 */
 	@Override
 	public AvailableBlock retrieveTargetDoubleLengthBlock(IScheduleOwner owner,
-			Date startDate) {
+			Date startDate) {		
+		SortedSet<AvailableBlock> expanded = retrieveBlocksForDayInternal(owner, startDate);
 		// truncate startDate to the second
 		final Date truncatedStart = DateUtils.truncate(startDate, Calendar.MINUTE);
 
-		// retrieve all blocks for the day.
-		Date startOfDay = DateUtils.truncate(startDate, Calendar.DATE);
-		Date endOfDay = DateUtils.addDays(startOfDay, 1);
-		List<PersistenceAvailableBlock> scheduleRows = this.simpleJdbcTemplate
-		.query("select * from schedules where owner_id = ? and start_time >= ? and end_time < ?", 
-				new PersistenceAvailableBlockRowMapper(), 
-				owner.getId(),
-				startOfDay,
-				endOfDay);
-		SortedSet<AvailableBlock> availableBlocks = new TreeSet<AvailableBlock>();
-		for(PersistenceAvailableBlock row : scheduleRows) {
-			availableBlocks.add(AvailableBlockBuilder.createBlock(row.getStartTime(), row.getEndTime(), row.getVisitorLimit(), row.getMeetingLocation()));
-		}
-
-		int ownerPreferredMinDuration = owner.getPreferredMeetingDurations().getMinLength();
-		SortedSet<AvailableBlock> expanded = AvailableBlockBuilder.expand(availableBlocks, ownerPreferredMinDuration);
 		if(expanded.size() > 0) {
 			for(Iterator<AvailableBlock> expandedIterator = expanded.iterator(); expandedIterator.hasNext();) {
 				AvailableBlock block = expandedIterator.next();
@@ -291,12 +305,44 @@ implements AvailableScheduleDao {
 						return combined;
 					} 
 				} 
+				
+				if(block.getStartTime().after(truncatedStart)) {
+					// iterated past the target block, can short circuit and say we didn't find it
+					return null;
+				}
 			}
 		}
 		// block not found, return null
 		return null;
 	}
 
+	/**
+	 * {@link AvailableBlock}s are combined before storage. The purpose of this method is to provide a consistent mechanism
+	 * for retrieving the block data for a specific day and expand them to the owner's preferred min duration.
+	 * 
+	 * @param owner
+	 * @param referenceDay
+	 * @return a possibly empty but never null {@link SortedSet} of {@link AvailableBlock}s with minimum preferred duration for the specified owner and calendar day.
+	 */
+	protected SortedSet<AvailableBlock> retrieveBlocksForDayInternal(IScheduleOwner owner, Date referenceDay) {
+		// retrieve all blocks for the day.
+		Date startOfDay = DateUtils.truncate(referenceDay, Calendar.DATE);
+		Date endOfDay = DateUtils.addDays(startOfDay, 1);
+		List<PersistenceAvailableBlock> scheduleRows = this.simpleJdbcTemplate.query(
+				"select * from schedules where owner_id = ? and start_time >= ? and end_time < ?", 
+				new PersistenceAvailableBlockRowMapper(), 
+				owner.getId(),
+				startOfDay,
+				endOfDay);
+		SortedSet<AvailableBlock> availableBlocks = new TreeSet<AvailableBlock>();
+		for(PersistenceAvailableBlock row : scheduleRows) {
+			availableBlocks.add(AvailableBlockBuilder.createBlock(row.getStartTime(), row.getEndTime(), row.getVisitorLimit(), row.getMeetingLocation()));
+		}
+
+		int ownerPreferredMinDuration = owner.getPreferredMeetingDurations().getMinLength();
+		SortedSet<AvailableBlock> expanded = AvailableBlockBuilder.expand(availableBlocks, ownerPreferredMinDuration);
+		return expanded;
+	}
 	/**
 	 * Remove blocks from the schedules table from all owners that have endTimes prior
 	 * to "<daysPrior argument> before today".

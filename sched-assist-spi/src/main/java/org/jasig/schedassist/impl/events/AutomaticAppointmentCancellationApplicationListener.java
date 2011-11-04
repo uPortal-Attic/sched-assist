@@ -31,8 +31,15 @@ import net.fortuna.ical4j.model.property.Attendee;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.impl.events.AutomaticAppointmentCancellationEvent.Reason;
+import org.jasig.schedassist.impl.owner.OwnerDao;
+import org.jasig.schedassist.impl.reminder.IReminder;
+import org.jasig.schedassist.impl.reminder.ReminderService;
+import org.jasig.schedassist.model.AvailableBlock;
+import org.jasig.schedassist.model.AvailableBlockBuilder;
 import org.jasig.schedassist.model.ICalendarAccount;
+import org.jasig.schedassist.model.IScheduleOwner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -52,7 +59,9 @@ ApplicationListener<AutomaticAppointmentCancellationEvent> {
 	
 	private Log LOG = LogFactory.getLog(this.getClass());
 	private MailSender mailSender;
-	private String noReplyFromAddress = "no.reply.wisccal@doit.wisc.edu";
+	private OwnerDao ownerDao;
+	private ReminderService reminderService;
+	private String noReplyFromAddress;
 	
 	/**
 	 * @param mailSender the mailSender to set
@@ -62,8 +71,23 @@ ApplicationListener<AutomaticAppointmentCancellationEvent> {
 		this.mailSender = mailSender;
 	}
 	/**
+	 * @param ownerDao the ownerDao to set
+	 */
+	@Autowired
+	public void setOwnerDao(OwnerDao ownerDao) {
+		this.ownerDao = ownerDao;
+	}
+	/**
+	 * @param reminderService the reminderService to set
+	 */
+	@Autowired
+	public void setReminderService(ReminderService reminderService) {
+		this.reminderService = reminderService;
+	}
+	/**
 	 * @param noReplyFromAddress the noReplyFromAddress to set
 	 */
+	@Value("${reminder.noReplyFromAddress}")
 	public void setNoReplyFromAddress(String noReplyFromAddress) {
 		this.noReplyFromAddress = noReplyFromAddress;
 	}
@@ -76,6 +100,8 @@ ApplicationListener<AutomaticAppointmentCancellationEvent> {
 	public void onApplicationEvent(AutomaticAppointmentCancellationEvent event) {
 		ICalendarAccount owner = event.getOwner();
 		VEvent vevent = event.getEvent();
+		
+		deleteEventReminder(owner, vevent);
 		
 		PropertyList attendeeList = vevent.getProperties(Attendee.ATTENDEE);
 		
@@ -95,7 +121,6 @@ ApplicationListener<AutomaticAppointmentCancellationEvent> {
 		
 		if(!EmailNotificationApplicationListener.isEmailAddressValid(owner.getEmailAddress())) {
 			message.setFrom(noReplyFromAddress);
-			
 		} else {
 			message.setFrom(owner.getEmailAddress());
 		}		
@@ -107,6 +132,36 @@ ApplicationListener<AutomaticAppointmentCancellationEvent> {
 		LOG.debug("message successfully sent");
 	}
 
+	/**
+	 * 
+	 * @param ownerAccount
+	 * @param event
+	 */
+	protected void deleteEventReminder(ICalendarAccount ownerAccount, VEvent event) {
+		if(ownerAccount == null || event == null) {
+			return;
+		}
+		// locateOwner is not going to return null here
+		// reminders are deleted in cascade when an owner unregisters, nor would the application be evaluating a non-owner's calendar data for automatic cancellation
+		IScheduleOwner owner = ownerDao.locateOwner(ownerAccount);
+		// intentionally uses the AvailableBlockBuilder directly and avoids the AvailableScheduleDao
+		// avoids the problem if the owner deleted the block from their schedule after the visitor creates the event but before the reminder is sent
+		AvailableBlock appointmentBlock = AvailableBlockBuilder.createBlock(event.getStartDate().getDate(), event.getEndDate().getDate());
+		List<IReminder> reminders = reminderService.getReminders(owner, appointmentBlock);
+		
+		if(reminders.size() == 1) {
+			IReminder reminder = reminders.get(0);
+			reminderService.deleteEventReminder(reminder);
+			LOG.info("successfully deleted reminder " + reminder + " for automatically cancelled event " + event + ", owner=" + ownerAccount);
+		} else if (reminders.size() > 1){
+			// AutomaticAppointmentCancellationEvents are only raised for single visitor appointments (one on one)
+			// if this branch is entered, it's due to the bug identified in SA-28
+			LOG.error("BUG (SA-28): deleting multiple reminders found for single visitor appointment: " + event + ", owner " + owner + ", reminders " + reminders);
+			for(IReminder reminder: reminders) {
+				reminderService.deleteEventReminder(reminder);
+			}
+		}	
+	}
 	/**
 	 * 
 	 * @param event

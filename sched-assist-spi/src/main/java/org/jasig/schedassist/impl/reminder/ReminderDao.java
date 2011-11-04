@@ -56,9 +56,28 @@ interface ReminderDao {
 	 */
 	void deleteEventReminder(IReminder reminder);
 
+	/**
+	 * 
+	 * @return
+	 */
 	List<PersistedReminderImpl> getPendingReminders();
 
+	/**
+	 * 
+	 * @param owner
+	 * @param recipient
+	 * @param appointmentBlock
+	 * @return
+	 */
 	PersistedReminderImpl getReminder(IScheduleOwner owner,
 			ICalendarAccount recipient, AvailableBlock appointmentBlock);
+	
+	/**
+	 * 
+	 * @param owner
+	 * @param appointmentBlock
+	 * @return
+	 */
+	List<PersistedReminderImpl> getReminders(IScheduleOwner owner, AvailableBlock appointmentBlock);
 
 }

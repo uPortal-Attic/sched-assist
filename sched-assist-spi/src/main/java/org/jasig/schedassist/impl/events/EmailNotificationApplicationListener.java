@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.mail.MailSender;
@@ -56,7 +57,7 @@ public class EmailNotificationApplicationListener implements
 	private Log LOG = LogFactory.getLog(this.getClass());
 	private MailSender mailSender;
 	private MessageSource messageSource;
-	private String noReplyFromAddress = "no.reply.wisccal@doit.wisc.edu";
+	private String noReplyFromAddress;
 	/**
 	 * @param mailSender the mailSender to set
 	 */
@@ -74,6 +75,7 @@ public class EmailNotificationApplicationListener implements
 	/**
 	 * @param noReplyFromAddress the noReplyFromAddress to set
 	 */
+	@Value("${reminder.noReplyFromAddress}")
 	public void setNoReplyFromAddress(String noReplyFromAddress) {
 		this.noReplyFromAddress = noReplyFromAddress;
 	}
