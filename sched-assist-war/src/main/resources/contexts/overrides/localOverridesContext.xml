@@ -47,7 +47,26 @@
 		<qualifier value="reminders"/>
 	</bean>
 	-->
-	
+	<!-- 
+	 |  This example shows how override the sequences when configuring the Scheduling Assistant to use a PostgreSQL database.
+	 +-->
+	<!--
+	<bean id="ownerIdSequence" class="org.springframework.jdbc.support.incrementer.PostgreSQLSequenceMaxValueIncrementer">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="incrementerName" value="ownerid_seq"/>
+		<qualifier value="owners"/>
+	</bean>
+	<bean id="eventIdSequence" class="org.springframework.jdbc.support.incrementer.PostgreSQLSequenceMaxValueIncrementer">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="incrementerName" value="eventid_seq"/>
+		<qualifier value="statistics"/>
+	</bean>
+	<bean id="reminderIdSequence" class="org.springframework.jdbc.support.incrementer.PostgreSQLSequenceMaxValueIncrementer">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="incrementerName" value="reminderid_seq"/>
+		<qualifier value="reminders"/>
+	</bean>
+	-->
 	<!-- 
 	 | If using a different Caldav server uncomment the following 2 beans.
 	 -->
