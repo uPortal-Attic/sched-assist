@@ -24,7 +24,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import net.fortuna.ical4j.model.Parameter;
+import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.parameter.PartStat;
 import net.fortuna.ical4j.model.property.Location;
 import net.fortuna.ical4j.model.property.Summary;
 
@@ -36,6 +39,7 @@ import org.jasig.schedassist.impl.events.EmailNotificationApplicationListener;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.ICalendarAccount;
+import org.jasig.schedassist.model.IEventUtils;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.Reminders;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +65,7 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	
 	private ReminderDao reminderDao;
 	private MailSender mailSender;
-	
+	private IEventUtils eventUtils;
 	private OwnerDao ownerDao;
 	private SchedulingAssistantService schedulingAssistantService;
 	private ICalendarAccountDao calendarAccountDao;
@@ -82,6 +86,13 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	@Autowired
 	public void setMailSender(MailSender mailSender) {
 		this.mailSender = mailSender;
+	}
+	/**
+	 * @param eventUtils the eventUtils to set
+	 */
+	@Autowired
+	public void setEventUtils(IEventUtils eventUtils) {
+		this.eventUtils = eventUtils;
 	}
 	/**
 	 * @param ownerDao the ownerDao to set
@@ -267,10 +278,10 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	 * @param reminder
 	 */
 	protected void sendEmail(IReminder reminder) {
-		final IScheduleOwner owner = reminder.getScheduleOwner();
-		final ICalendarAccount recipient = reminder.getRecipient();
-		final VEvent event = reminder.getEvent();
-		if(null != owner && null != recipient && null != event) {
+		if(shouldSend(reminder)) {
+			final IScheduleOwner owner = reminder.getScheduleOwner();
+			final ICalendarAccount recipient = reminder.getRecipient();
+			final VEvent event = reminder.getEvent();
 			Reminders reminderPrefs = owner.getRemindersPreference();
 			final boolean includeOwner = reminderPrefs.isIncludeOwner();
 			
@@ -300,8 +311,47 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 			}
 			
 		} else {
-			LOG.debug("skipping send email for reminder with null elements: " + reminder);
+			LOG.debug("skipping sendEmail for reminder that should not be sent: " + reminder);
 		}
+	}
+	
+	/**
+	 * Verify that this reminder is still valid:
+	 * <ul>
+	 * <li>Owner and recipient exist.</li>
+	 * <li>event still exists.</li>
+	 * <li>recipient is attending the event.</li>
+	 * </ul>
+	 * @param reminder
+	 * @return true if this reminder should be sent.
+	 */
+	protected boolean shouldSend(IReminder reminder) {
+		final IScheduleOwner owner = reminder.getScheduleOwner();
+		if(owner == null) {
+			LOG.debug("owner null, should not send " + reminder);
+			return false;
+		}
+		final ICalendarAccount recipient = reminder.getRecipient();
+		if(recipient == null) {
+			LOG.debug("recipient null, should not send " + reminder);
+			return false;
+		}
+		final VEvent event = reminder.getEvent();
+		if(event == null) {
+			LOG.debug("event null, should not send " + reminder);
+			return false;
+		}
+	
+		boolean recipientAttending = this.eventUtils.isAttendingAsVisitor(event, recipient);
+		if(!recipientAttending) {
+			LOG.debug("recipient not attending, should not send " + reminder);
+			return false;
+		}
+		Property attendee = this.eventUtils.getAttendeeForUserFromEvent(event, recipient);
+		Parameter partstat = attendee.getParameter(PartStat.PARTSTAT);
+		boolean participating = PartStat.ACCEPTED.equals(partstat);
+		LOG.debug("last check is participation, value is " + participating + " for " + reminder);
+		return participating;
 	}
 	
 	/**

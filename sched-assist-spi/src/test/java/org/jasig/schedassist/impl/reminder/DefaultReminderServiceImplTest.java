@@ -33,21 +33,27 @@ import java.util.Locale;
 import javax.mail.internet.InternetAddress;
 
 import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.Parameter;
+import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.parameter.PartStat;
 import net.fortuna.ical4j.model.property.Location;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
+import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.jasig.schedassist.SchedulingAssistantService;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
 import org.jasig.schedassist.model.CommonDateOperations;
+import org.jasig.schedassist.model.DefaultEventUtilsImpl;
 import org.jasig.schedassist.model.InputFormatException;
 import org.jasig.schedassist.model.mock.MockCalendarAccount;
 import org.jasig.schedassist.model.mock.MockScheduleOwner;
+import org.jasig.schedassist.model.mock.MockScheduleVisitor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.support.StaticMessageSource;
@@ -118,7 +124,7 @@ public class DefaultReminderServiceImplTest {
 	public void testPersistedReminderWithInvalidEmailAddress() throws InputFormatException {
 		java.util.Date now = new java.util.Date();
 		java.util.Date later = DateUtils.addHours(now, 1);
-		
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		AvailableBlock targetBlock = AvailableBlockBuilder.createBlock(now, later);
 		
 		PersistedReminderImpl persisted = new PersistedReminderImpl();
@@ -135,10 +141,10 @@ public class DefaultReminderServiceImplTest {
 		
 		MockCalendarAccount account = new MockCalendarAccount();
 		account.setDisplayName("Some Person");
+		account.setEmailAddress("somebodyelse@nowhere.com");
 		MockScheduleOwner owner = new MockScheduleOwner(account, 1L);
-		VEvent event = new VEvent(new Date(CommonDateOperations.parseDateTimePhrase("20110830-1200")), 
-				new Date(CommonDateOperations.parseDateTimePhrase("20110830-1300")), 
-				"some summary");
+		AvailableBlock block = AvailableBlockBuilder.createBlock(new Date(), DateUtils.addMinutes(new Date(), 30));
+		VEvent event = eventUtils.constructAvailableAppointment(block, owner, new MockScheduleVisitor(recipient), "test event");
 		
 		ReminderDao reminderDao = mock(ReminderDao.class);
 		OwnerDao ownerDao = mock(OwnerDao.class);
@@ -167,8 +173,56 @@ public class DefaultReminderServiceImplTest {
 		reminderService.setOwnerDao(ownerDao);
 		reminderService.setReminderDao(reminderDao);
 		reminderService.setSchedulingAssistantService(schedAssistService);
+		
+		reminderService.setEventUtils(eventUtils);
+		List<IReminder> pendingCheck = reminderService.getPendingReminders();
+		Assert.assertEquals(1, pendingCheck.size());
+		Assert.assertTrue(reminderService.shouldSend(pendingCheck.get(0)));
 		reminderService.processPendingReminders();
 		
 		verify(reminderDao, times(1)).deleteEventReminder(isA(ReminderImpl.class));
+	}
+	
+	@Test
+	public void testShouldSend() {
+		IReminder reminder = mock(IReminder.class);
+		
+		DefaultReminderServiceImpl reminderService = new DefaultReminderServiceImpl();
+		Assert.assertFalse(reminderService.shouldSend(reminder));
+		MockCalendarAccount account = new MockCalendarAccount();
+		account.setDisplayName("Some Person");
+		account.setEmailAddress("someone@nowhere.com");
+		MockScheduleOwner owner = new MockScheduleOwner(account, 1L);
+		when(reminder.getScheduleOwner()).thenReturn(owner);
+		Assert.assertFalse(reminderService.shouldSend(reminder));
+		
+		MockCalendarAccount recipient = new MockCalendarAccount();
+		recipient.setDisplayName("Some Visitor");
+		recipient.setEmailAddress("bogus@nowhere.com");
+		MockScheduleVisitor visitor = new MockScheduleVisitor(recipient);
+		when(reminder.getRecipient()).thenReturn(recipient);
+		Assert.assertFalse(reminderService.shouldSend(reminder));
+		
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
+		reminderService.setEventUtils(eventUtils);
+		AvailableBlock block = AvailableBlockBuilder.createBlock(new Date(), DateUtils.addMinutes(new Date(), 30));
+		VEvent event = eventUtils.constructAvailableAppointment(block, owner, visitor, "test event");
+		
+		when(reminder.getEvent()).thenReturn(event);
+		// owner, visitor set, event exists and visitor attending - return true!
+		Assert.assertTrue(reminderService.shouldSend(reminder));
+		
+		// just change the participation status for the attendee
+		Property attendee = eventUtils.getAttendeeForUserFromEvent(event, recipient);
+		Parameter partstat = attendee.getParameter(PartStat.PARTSTAT);
+		attendee.getParameters().remove(partstat);
+		attendee.getParameters().add(PartStat.DECLINED);
+		// no longer attending, should return false
+		Assert.assertFalse(reminderService.shouldSend(reminder));
+		
+		// and remove the attendee altogether
+		event.getProperties().remove(attendee);
+		
+		Assert.assertFalse(reminderService.shouldSend(reminder));
 	}
 }
