@@ -121,6 +121,19 @@ public final class SchedulingAssistantServiceImpl implements SchedulingAssistant
 		return result;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.SchedulingAssistantService#getExistingAppointment(org.jasig.schedassist.model.AvailableBlock, org.jasig.schedassist.model.IScheduleOwner, org.jasig.schedassist.model.IScheduleVisitor)
+	 */
+	@Override
+	public VEvent getExistingAppointment(AvailableBlock targetBlock,
+			IScheduleOwner owner, IScheduleVisitor visitor) {
+		VEvent event = getExistingAppointment(targetBlock, owner);		
+		if(event != null && this.eventUtils.isAttendingAsVisitor(event, visitor.getCalendarAccount())) {
+			return event;
+		}
+		
+		return null;
+	}
 	/*
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.SchedulingAssistantService#getVisibleSchedule(org.jasig.schedassist.model.IScheduleVisitor, org.jasig.schedassist.model.IScheduleOwner)

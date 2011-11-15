@@ -81,6 +81,18 @@ public interface SchedulingAssistantService {
 	VEvent getExistingAppointment(AvailableBlock targetBlock, IScheduleOwner owner);
 	
 	/**
+	 * Return the {@link VEvent} for an existing Scheduling Assistant Appointment at the times
+	 * specified by the targetBlock in the {@link IScheduleOwner}'s schedule with the specified
+	 * {@link IScheduleVisitor} in attendance.
+	 * 
+	 * @param targetBlock
+	 * @param owner
+	 * @param visitor
+	 * @return the existing scheduling assistant appointment, or null if no appointment exists, or the visitor is not in attendance
+	 */
+	VEvent getExistingAppointment(AvailableBlock targetBlock, IScheduleOwner owner, IScheduleVisitor visitor);
+	
+	/**
 	 * Schedule an available appointment for {@link IScheduleVisitor}/{@link IScheduleOwner} within
 	 * the times specified in the {@link AvailableBlock}. 
 	 * 
