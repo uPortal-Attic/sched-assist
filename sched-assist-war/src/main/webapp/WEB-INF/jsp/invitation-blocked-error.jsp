@@ -36,7 +36,7 @@
 <p>
 <spring:message code="invitations.blocked.detailhelp" htmlEscape="false"/>
 </p>
-<a href="<c:url value="/"/>">&laquo;Return to Available Home</a>
+<a href="view.html">&laquo;<spring:message code="return.to.schedule"/></a>, or <a href="<c:url value="/"/>">&laquo;<spring:message code="return.to.home"/></a>
 </div>    
 </div> <!--  content -->
 
