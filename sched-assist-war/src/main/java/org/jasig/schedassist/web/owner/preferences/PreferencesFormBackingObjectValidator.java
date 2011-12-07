@@ -33,7 +33,7 @@ import org.springframework.validation.Validator;
  */
 public class PreferencesFormBackingObjectValidator implements Validator {
 
-	private int noteboardMaxLength = 400;
+	private int noteboardMaxLength = 500;
 	/* (non-Javadoc)
 	 * @see org.springframework.validation.Validator#supports(java.lang.Class)
 	 */

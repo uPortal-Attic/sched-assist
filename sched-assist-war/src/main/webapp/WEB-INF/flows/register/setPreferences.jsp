@@ -45,7 +45,7 @@ $(document).ready(function(){
 		imageBlank: '<c:url value="/img/lightbox-0.5/lightbox-blank.gif"/>'
 	});
 	$('#noteboard').jqEasyCounter({
-		'maxChars': 400,
+		'maxChars': 500,
 		'maxCharsWarning': 375,
 		'msgFontSize': '12px',
 		'msgFontColor': '#000',
