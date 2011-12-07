@@ -47,6 +47,7 @@ import org.jasig.schedassist.model.InputFormatException;
 import org.jasig.schedassist.model.PublicProfile;
 import org.jasig.schedassist.model.Relationship;
 import org.jasig.schedassist.model.VisibleSchedule;
+import org.jasig.schedassist.model.VisibleWindow;
 import org.jasig.schedassist.web.security.CalendarAccountUserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -166,6 +167,14 @@ public class CreateAppointmentFormController {
 			throw new OwnerNotFoundException("no owner found for " + ownerIdentifier);
 		}
 		model.put("owner", selectedOwner);
+		Date startTime = CommonDateOperations.parseDateTimePhrase(startTimePhrase);
+		validateChosenStartTime(selectedOwner.getPreferredVisibleWindow(), startTime);
+		
+		AvailableBlock targetBlock = availableScheduleDao.retrieveTargetBlock(selectedOwner, startTime);
+		if(null == targetBlock) {
+			throw new SchedulingException("requested time is not available");
+		} 
+		
 		if(selectedOwner.hasMeetingLimit()) {
 			VisibleSchedule sched = schedulingAssistantService.getVisibleSchedule(visitor, selectedOwner);
 			int attendingCount = sched.getAttendingCount();
@@ -175,12 +184,6 @@ public class CreateAppointmentFormController {
 				return "redirect:view.html";
 			}
 		}
-		
-		Date startTime = CommonDateOperations.parseDateTimePhrase(startTimePhrase);
-		AvailableBlock targetBlock = availableScheduleDao.retrieveTargetBlock(selectedOwner, startTime);
-		if(null == targetBlock) {
-			throw new SchedulingException("requested time is not available");
-		} 
 		
 		VEvent event = schedulingAssistantService.getExistingAppointment(targetBlock, selectedOwner);
 		if(event != null) {
@@ -242,6 +245,8 @@ public class CreateAppointmentFormController {
 			throw new OwnerNotFoundException("no owner found for " + ownerIdentifier);
 		}
 		
+		validateChosenStartTime(selectedOwner.getPreferredVisibleWindow(), fbo.getTargetBlock().getStartTime());
+		
 		AvailableBlock finalAppointmentBlock = fbo.getTargetBlock();
 		if(fbo.isDoubleLengthAvailable()) {
 			// check if selected meeting duration matches meeting durations maxLength
@@ -261,6 +266,18 @@ public class CreateAppointmentFormController {
 		return "visitor/create-appointment-success";
 	}
 
+	/**
+	 * Verify the startTime argument is within the window; throws a {@link ScheduleException} if not.
+	 * 
+	 * @param window
+	 * @param startTime
+	 * @throws SchedulingException
+	 */
+	protected void validateChosenStartTime(VisibleWindow window, Date startTime) throws SchedulingException {
+		if(startTime.before(window.calculateCurrentWindowStart()) || startTime.after(window.calculateCurrentWindowEnd())) {
+			throw new SchedulingException("requested time is no longer within visible window");
+		}
+	}
 	/**
 	 * 
 	 * @param visitor

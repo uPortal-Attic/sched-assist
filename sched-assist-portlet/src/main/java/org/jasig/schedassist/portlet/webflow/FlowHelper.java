@@ -43,13 +43,13 @@ import org.jasig.schedassist.model.Preferences;
 import org.jasig.schedassist.model.Relationship;
 import org.jasig.schedassist.model.VisibleSchedule;
 import org.jasig.schedassist.model.VisibleScheduleRequestConstraints;
+import org.jasig.schedassist.model.VisibleWindow;
 import org.jasig.schedassist.portlet.EventCancellation;
 import org.jasig.schedassist.portlet.PortletSchedulingAssistantService;
 import org.jasig.schedassist.portlet.ScheduleOwnerNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
 import org.springframework.webflow.context.ExternalContext;
 import org.springframework.webflow.core.collection.MutableAttributeMap;
 import org.springframework.webflow.execution.RequestContext;
@@ -297,6 +297,7 @@ public class FlowHelper {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("enter constructCreateAppointmentFormBackingObject, start: " + startDateTime + ", owner: " + owner);
 		}
+		validateChosenStartTime(owner.getPreferredVisibleWindow(), startDateTime);
 		AvailableBlock targetBlock = this.schedulingAssistantService.getTargetBlock(owner, startDateTime);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("getTargetBlock, startTime= " + startDateTime + " returns " + targetBlock);
@@ -319,6 +320,7 @@ public class FlowHelper {
 	public VEvent createAppointment(CreateAppointmentFormBackingObject fbo, IScheduleOwner owner) throws SchedulingException {
 		final String visitorUsername = getCurrentVisitorUsername();
 		AvailableBlock targetBlock = fbo.getTargetBlock();
+		validateChosenStartTime(owner.getPreferredVisibleWindow(), targetBlock.getStartTime());
 		if(fbo.isDoubleLengthAvailable()) {
 			LOG.debug("entering doubleLengthAvailable test");
         	// check if selected meeting duration matches meeting durations maxLength
@@ -333,6 +335,19 @@ public class FlowHelper {
 		}
 		VEvent event = this.schedulingAssistantService.scheduleAppointment(visitorUsername, owner.getId(), targetBlock, fbo.getReason());
 		return event;
+	}
+	
+	/**
+	 * Verify the startTime argument is within the window; throws a {@link ScheduleException} if not.
+	 * 
+	 * @param window
+	 * @param startTime
+	 * @throws SchedulingException
+	 */
+	protected void validateChosenStartTime(VisibleWindow window, Date startTime) throws SchedulingException {
+		if(startTime.before(window.calculateCurrentWindowStart()) || startTime.after(window.calculateCurrentWindowEnd())) {
+			throw new SchedulingException("requested time is no longer within visible window");
+		}
 	}
 
 	/**
