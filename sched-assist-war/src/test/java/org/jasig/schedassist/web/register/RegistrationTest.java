@@ -93,7 +93,7 @@ public class RegistrationTest {
 	public void validateLargeNoteboard() throws Exception {
 		Registration registration = new Registration();
 		StringBuilder noteboard = new StringBuilder();
-		for(int i = 0; i < 401; i++) {
+		for(int i = 0; i < 501; i++) {
 			noteboard.append("a");
 		}
 		registration.setNoteboard(noteboard.toString());
@@ -106,7 +106,7 @@ public class RegistrationTest {
 		Assert.assertTrue(context.getMessageContext().hasErrorMessages());		
 		Message [] messages= context.getMessageContext().getAllMessages();
 		Assert.assertEquals(1, messages.length);
-		Assert.assertEquals("Noteboard is too long (401 characters); maximum length is 400 characters.", messages[0].getText());
+		Assert.assertEquals("Noteboard is too long (501 characters); maximum length is 500 characters.", messages[0].getText());
 	}
 	
 	/**

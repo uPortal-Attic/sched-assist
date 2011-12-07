@@ -102,7 +102,7 @@ public class PreferencesFormBackingObjectValidatorTest {
 		fbo.setLocation("My Office");
 		// build a noteboard with 201 characters.
 		StringBuilder noteboard = new StringBuilder();
-		for(int i = 0; i < 401; i++) {
+		for(int i = 0; i < 501; i++) {
 			noteboard.append("a");
 		}
 		fbo.setNoteboard(noteboard.toString());
