@@ -19,6 +19,11 @@
 
 package org.jasig.schedassist.model;
 
+import java.util.Calendar;
+import java.util.Date;
+
+import org.apache.commons.lang.time.DateUtils;
+
 /**
  * Class to represent the {@link IScheduleOwner}'s preferences
  * for schedule visibility.
@@ -70,7 +75,28 @@ public final class VisibleWindow {
 	public int getWindowWeeksEnd() {
 		return windowWeeksEnd;
 	}
-	
+	/**
+	 * This method uses the current system time and this instance's
+	 * windowHoursStart field to return a {@link Date} that represents
+	 * the timestamp of the start of the Window relative to "now."
+	 * 
+	 * @return
+	 */
+	public Date calculateCurrentWindowStart() {
+		Date start = DateUtils.addHours(new Date(), this.windowHoursStart);
+		return DateUtils.truncate(start, Calendar.MINUTE);
+	}
+	/**
+	 * This method uses the current system time and this instance's
+	 * windowWeeksEnd field to return a {@link Date} that represents
+	 * the timestamp of the end of the Window relative to "now."
+	 * 
+	 * @return
+	 */
+	public Date calculateCurrentWindowEnd() {
+		Date end = DateUtils.addWeeks(new Date(), this.windowWeeksEnd);
+		return DateUtils.truncate(end, Calendar.MINUTE);
+	}
 	/**
 	 * Static method to generate a {@link VisibleWindow} from
 	 * it's {@link String} storage format.
