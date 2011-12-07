@@ -201,45 +201,43 @@ public class CaldavIntegrationTest {
 		owner1.setPreference(Preferences.LOCATION, "meeting room 1b");
 		MockScheduleVisitor visitor1 = new MockScheduleVisitor(visitorCalendarAccount1);
 
-		VEvent event = this.calendarDataDao.createAppointment(visitor1, owner1, block, "testGroupAppointmentWorkflow");
-		Assert.assertNotNull(event);
-		event = this.calendarDataDao.getExistingAppointment(owner1, block);
-		Assert.assertNotNull(event);
-		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, event.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
-		Assert.assertEquals(2, Integer.parseInt(event.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
-		Assert.assertEquals(2, event.getProperties(Attendee.ATTENDEE).size());
-		Property visitorAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, visitor1.getCalendarAccount());
+		VEvent original = this.calendarDataDao.createAppointment(visitor1, owner1, block, "testGroupAppointmentWorkflow");
+		Assert.assertNotNull(original);
+		VEvent lookup1= this.calendarDataDao.getExistingAppointment(owner1, block);
+		Assert.assertNotNull(lookup1);
+		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookup1.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
+		Assert.assertEquals(2, Integer.parseInt(lookup1.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
+		Assert.assertEquals(2, lookup1.getProperties(Attendee.ATTENDEE).size());
+		Property visitorAttendee = this.eventUtils.getAttendeeForUserFromEvent(lookup1, visitor1.getCalendarAccount());
 		Assert.assertNotNull(visitorAttendee);
 		Assert.assertEquals(AppointmentRole.VISITOR, visitorAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
-		Property ownerAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, owner1.getCalendarAccount());
+		Property ownerAttendee = this.eventUtils.getAttendeeForUserFromEvent(lookup1, owner1.getCalendarAccount());
 		Assert.assertNotNull(ownerAttendee);
 		Assert.assertEquals(AppointmentRole.OWNER, ownerAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
 
-		VEvent lookupResult = this.calendarDataDao.getExistingAppointment(owner1, block);
-		Assert.assertNotNull(lookupResult);
-		Assert.assertEquals(ical4jstart, lookupResult.getStartDate().getDate());
-		Assert.assertEquals(ical4jend, lookupResult.getEndDate().getDate());
-		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookupResult.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
-		Assert.assertEquals(2, Integer.parseInt(lookupResult.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
-		Assert.assertEquals(2, lookupResult.getProperties(Attendee.ATTENDEE).size());
+		Assert.assertEquals(ical4jstart, lookup1.getStartDate().getDate());
+		Assert.assertEquals(ical4jend, lookup1.getEndDate().getDate());
+		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookup1.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
+		Assert.assertEquals(2, Integer.parseInt(lookup1.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
+		Assert.assertEquals(2, lookup1.getProperties(Attendee.ATTENDEE).size());
 
 
 		MockScheduleVisitor visitor2 = new MockScheduleVisitor(visitorCalendarAccount2);
 
 		// make 2nd visitor join
 		try {
-			this.calendarDataDao.joinAppointment(visitor2, owner1, lookupResult);
+			this.calendarDataDao.joinAppointment(visitor2, owner1, lookup1);
 		} catch (SchedulingException e) {
 			Assert.fail("caught SchedulingException when visitor2 attempts join: " + e);
 		}
-		lookupResult = this.calendarDataDao.getExistingAppointment(owner1, block);
-		Assert.assertNotNull(lookupResult);
-		Assert.assertEquals(ical4jstart, lookupResult.getStartDate().getDate());
-		Assert.assertEquals(ical4jend, lookupResult.getEndDate().getDate());
-		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookupResult.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
-		Assert.assertEquals(2, Integer.parseInt(lookupResult.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
-		Assert.assertEquals(3, lookupResult.getProperties(Attendee.ATTENDEE).size());
-		PropertyList attendeeList = lookupResult.getProperties(Attendee.ATTENDEE);
+		VEvent lookup2 = this.calendarDataDao.getExistingAppointment(owner1, block);
+		Assert.assertNotNull(lookup2);
+		Assert.assertEquals(ical4jstart, lookup2.getStartDate().getDate());
+		Assert.assertEquals(ical4jend, lookup2.getEndDate().getDate());
+		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookup2.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
+		Assert.assertEquals(2, Integer.parseInt(lookup2.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
+		Assert.assertEquals(3, lookup2.getProperties(Attendee.ATTENDEE).size());
+		PropertyList attendeeList = lookup2.getProperties(Attendee.ATTENDEE);
 		for(Object o : attendeeList) {
 			Attendee attendee = (Attendee) o;
 			Parameter participationStatus = attendee.getParameter(PartStat.PARTSTAT);
@@ -258,18 +256,18 @@ public class CaldavIntegrationTest {
 
 		// now make visitor1 leave the appointment
 		try {
-			this.calendarDataDao.leaveAppointment(visitor1, owner1, lookupResult);
+			this.calendarDataDao.leaveAppointment(visitor1, owner1, lookup2);
 		} catch (SchedulingException e) {
 			Assert.fail("caught SchedulingException when visitor1 attempts leave: " + e);
 		}
-		lookupResult = this.calendarDataDao.getExistingAppointment(owner1, block);
-		Assert.assertNotNull(lookupResult);
-		Assert.assertEquals(ical4jstart, lookupResult.getStartDate().getDate());
-		Assert.assertEquals(ical4jend, lookupResult.getEndDate().getDate());
-		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookupResult.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
-		Assert.assertEquals(2, Integer.parseInt(lookupResult.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
-		Assert.assertEquals(2, lookupResult.getProperties(Attendee.ATTENDEE).size());
-		attendeeList = lookupResult.getProperties(Attendee.ATTENDEE);
+		VEvent lookup3 = this.calendarDataDao.getExistingAppointment(owner1, block);
+		Assert.assertNotNull(lookup3);
+		Assert.assertEquals(ical4jstart, lookup3.getStartDate().getDate());
+		Assert.assertEquals(ical4jend, lookup3.getEndDate().getDate());
+		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookup3.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
+		Assert.assertEquals(2, Integer.parseInt(lookup3.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
+		Assert.assertEquals(2, lookup3.getProperties(Attendee.ATTENDEE).size());
+		attendeeList = lookup3.getProperties(Attendee.ATTENDEE);
 		for(Object o : attendeeList) {
 			Attendee attendee = (Attendee) o;
 			Parameter participationStatus = attendee.getParameter(PartStat.PARTSTAT);
@@ -286,7 +284,7 @@ public class CaldavIntegrationTest {
 			}
 		}
 
-		this.calendarDataDao.cancelAppointment(visitor2, owner1, lookupResult);
+		this.calendarDataDao.cancelAppointment(visitor2, owner1, lookup3);
 		VEvent lookupResultAfterCancel = this.calendarDataDao.getExistingAppointment(owner1, block);
 		Assert.assertNull(lookupResultAfterCancel);
 	}
