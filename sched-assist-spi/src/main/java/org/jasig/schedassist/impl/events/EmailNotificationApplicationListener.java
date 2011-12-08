@@ -22,6 +22,7 @@ package org.jasig.schedassist.impl.events;
 import java.text.SimpleDateFormat;
 
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.Description;
 import net.fortuna.ical4j.model.property.Location;
 import net.fortuna.ical4j.model.property.Summary;
 
@@ -58,6 +59,7 @@ public class EmailNotificationApplicationListener implements
 	private MailSender mailSender;
 	private MessageSource messageSource;
 	private String noReplyFromAddress;
+	private boolean useOriginalEventDescription = false;
 	/**
 	 * @param mailSender the mailSender to set
 	 */
@@ -79,7 +81,18 @@ public class EmailNotificationApplicationListener implements
 	public void setNoReplyFromAddress(String noReplyFromAddress) {
 		this.noReplyFromAddress = noReplyFromAddress;
 	}
-
+	/**
+	 * @param useOriginalEventDescription the useOriginalEventDescription to set
+	 */
+	public void setUseOriginalEventDescription(boolean useOriginalEventDescription) {
+		this.useOriginalEventDescription = useOriginalEventDescription;
+	}
+	/**
+	 * @return the useOriginalEventDescription
+	 */
+	public boolean isUseOriginalEventDescription() {
+		return useOriginalEventDescription;
+	}
 	/* (non-Javadoc)
 	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
 	 */
@@ -155,9 +168,18 @@ public class EmailNotificationApplicationListener implements
 		}
 	}
 	/**
+	 * Construct the body of the email message sent on Create/Join events.
+	 * Depends on the {@link MessageSource}.
+	 * 
+	 * If {@link #isUseOriginalEventDescription()} is true, the {@link String} eventDescription argument will be used;
+	 * if false the {@link Description} from the {@link VEvent} will be used.
+	 * Setting it to true is useful if the deployer is overriding the IEventUtils implementation to add data to the description
+	 * that they don't want sent in the email notification.
 	 * 
 	 * @param event
-	 * @return
+	 * @param eventDescription
+	 * @param owner
+	 * @return the body of the message as a {@link String}
 	 */
 	protected String createMessageBody(final VEvent event, String eventDescription, IScheduleOwner owner) {
 		StringBuilder messageBody = new StringBuilder();
@@ -183,8 +205,17 @@ public class EmailNotificationApplicationListener implements
 			messageBody.append(this.messageSource.getMessage("notify.email.location", new String [] { location.getValue() }, null));
 		}
 		messageBody.append(NEWLINE);
-		if(StringUtils.isNotBlank(eventDescription)) {
-			messageBody.append(this.messageSource.getMessage("notify.email.reason", new String [] { eventDescription }, null));
+		
+		String descriptionToUse = eventDescription;
+		if(!isUseOriginalEventDescription()) {
+			Description description = event.getDescription();
+			if(description != null && StringUtils.isNotBlank(description.getValue())) {
+				descriptionToUse = description.getValue();
+			}
+		}
+		
+		if(StringUtils.isNotBlank(descriptionToUse)) {
+			messageBody.append(this.messageSource.getMessage("notify.email.reason", new String [] { descriptionToUse }, null));
 			messageBody.append(NEWLINE);
 		}
 		messageBody.append(NEWLINE);
@@ -192,10 +223,15 @@ public class EmailNotificationApplicationListener implements
 		return messageBody.toString();
 	}
 	
+	
 	/**
+	 * Construct the body of the email message sent on Cancel/Leave events.
+	 * Depends on the {@link MessageSource}.
 	 * 
 	 * @param event
-	 * @return
+	 * @param cancelReason
+	 * @param owner
+	 * @return the body of the message as a {@link String}
 	 */
 	protected String cancelMessageBody(final VEvent event, final String cancelReason, final IScheduleOwner owner) {
 		StringBuilder messageBody = new StringBuilder();

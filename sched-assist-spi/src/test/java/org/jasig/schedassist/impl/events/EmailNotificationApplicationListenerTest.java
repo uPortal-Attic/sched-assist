@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.Description;
 import net.fortuna.ical4j.model.property.Location;
 
 import org.apache.commons.logging.Log;
@@ -99,12 +100,46 @@ public class EmailNotificationApplicationListenerTest {
 		Date endDate = CommonDateOperations.getDateTimeFormat().parse("20090512-1400");
 		VEvent event = new VEvent(new net.fortuna.ical4j.model.DateTime(startDate), 
 				new net.fortuna.ical4j.model.DateTime(endDate), "test appointment with student name");
+		event.getProperties().add(new Description("test appointment"));
 		event.getProperties().add(new Location("some office"));
 		MockCalendarAccount account = new MockCalendarAccount();
 		account.setDisplayName("Some Person");
 		MockScheduleOwner owner = new MockScheduleOwner(account, 1L);
 		
 		EmailNotificationApplicationListener listener = new EmailNotificationApplicationListener();
+		listener.setMessageSource(messageSource);
+		// default value for #isUseOriginalEventDescription (false) causes String argument to be ignored
+		String messageBody = listener.createMessageBody(event, "not used", owner);
+		LOG.debug("testCreateMessageBodyWithDescription: " + messageBody);
+		Assert.assertTrue(messageBody.contains("Notify meeting with Some Person"));
+		Assert.assertTrue(messageBody.contains("Title: test appointment with student name"));
+		Assert.assertTrue(messageBody.contains("Location: some office"));
+		Assert.assertTrue(messageBody.contains("Tue, May 12, 2009"));
+		Assert.assertTrue(messageBody.contains("Time: 1:00 PM to 2:00 PM"));
+		Assert.assertTrue(messageBody.contains("Footer - link"));
+		Assert.assertTrue(messageBody.contains("Reason: test appointment"));
+	}
+	
+	/**
+	 * Verify expected output for {@link EmailNotificationApplicationListener#createMessageBody(VEvent)}
+	 * when {@link EmailNotificationApplicationListener#isUseOriginalEventDescription()} is true.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testCreateMessageBodyWithOriginalDescription() throws Exception {
+		Date startDate = CommonDateOperations.getDateTimeFormat().parse("20090512-1300");
+		Date endDate = CommonDateOperations.getDateTimeFormat().parse("20090512-1400");
+		VEvent event = new VEvent(new net.fortuna.ical4j.model.DateTime(startDate), 
+				new net.fortuna.ical4j.model.DateTime(endDate), "test appointment with student name");
+		event.getProperties().add(new Description("test appointment (modified by eventutils)"));
+		event.getProperties().add(new Location("some office"));
+		MockCalendarAccount account = new MockCalendarAccount();
+		account.setDisplayName("Some Person");
+		MockScheduleOwner owner = new MockScheduleOwner(account, 1L);
+		
+		EmailNotificationApplicationListener listener = new EmailNotificationApplicationListener();
+		listener.setUseOriginalEventDescription(true);
 		listener.setMessageSource(messageSource);
 		
 		String messageBody = listener.createMessageBody(event, "test appointment", owner);
