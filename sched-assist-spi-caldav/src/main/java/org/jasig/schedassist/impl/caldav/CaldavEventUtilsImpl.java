@@ -48,6 +48,7 @@ import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Subclass of {@link DefaultEventUtilsImpl} specific for 
@@ -88,6 +89,7 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements Initi
 	/**
 	 * @param explicitSetTimeZone the explicitSetTimeZone to set
 	 */
+	@Value("caldav.explicitSetTimeZone:false")
 	public void setExplicitSetTimeZone(boolean explicitSetTimeZone) {
 		this.explicitSetTimeZone = explicitSetTimeZone;
 	}
@@ -100,6 +102,7 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements Initi
 	/**
 	 * @param timeZone the timeZone to set
 	 */
+	@Value("caldav.systemTimeZone:America/Chicago")
 	public void setTimeZone(String timeZone) {
 		this.timeZone = timeZone;
 	}
