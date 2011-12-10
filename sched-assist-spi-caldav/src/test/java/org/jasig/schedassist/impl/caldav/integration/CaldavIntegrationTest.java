@@ -95,7 +95,7 @@ public class CaldavIntegrationTest {
 	@Qualifier("visitor2")
 	private MockCalendarAccount visitorCalendarAccount2;
 	
-	@Value("reflectionEnabled")
+	@Value("reflectionEnabled:false")
 	private String reflectionEnabled;
 
 	private Log log = LogFactory.getLog(this.getClass());

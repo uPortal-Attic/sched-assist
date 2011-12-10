@@ -59,7 +59,7 @@ public class EmailNotificationApplicationListener implements
 	private MailSender mailSender;
 	private MessageSource messageSource;
 	private String noReplyFromAddress;
-	private boolean useOriginalEventDescription = false;
+	private boolean useOriginalEventDescription;
 	/**
 	 * @param mailSender the mailSender to set
 	 */
@@ -84,6 +84,7 @@ public class EmailNotificationApplicationListener implements
 	/**
 	 * @param useOriginalEventDescription the useOriginalEventDescription to set
 	 */
+	@Value("${notify.useOriginalEventDescription:false}")
 	public void setUseOriginalEventDescription(boolean useOriginalEventDescription) {
 		this.useOriginalEventDescription = useOriginalEventDescription;
 	}
