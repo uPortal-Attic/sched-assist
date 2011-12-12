@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jasig.sched-assist</groupId>
 	<artifactId>sched-assist</artifactId>
-	<version>1.0.6</version>
+	<version>1.0.7-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Scheduling Assistant Parent</name>
 	<description>The root project definition for the Scheduling Assistant project.</description>
@@ -28,9 +28,9 @@
 		<url>https://issues.jasig.org/browse/SA</url>
 	</issueManagement>
 	<scm>
-        <connection>scm:svn:https://source.jasig.org/sa/sched-assist/tags/sched-assist-1.0.6</connection>
-        <developerConnection>scm:svn:https://source.jasig.org/sa/sched-assist/tags/sched-assist-1.0.6</developerConnection>
-        <url>https://developer.jasig.org/source/browse/jasigsvn/sa/sched-assist/tags/sched-assist-1.0.6</url>
+        <connection>scm:svn:https://source.jasig.org/sa/sched-assist/branches/rel-1-0-patches</connection>
+        <developerConnection>scm:svn:https://source.jasig.org/sa/sched-assist/branches/rel-1-0-patches</developerConnection>
+        <url>https://developer.jasig.org/source/browse/jasigsvn/sa/sched-assist/branches/rel-1-0-patches</url>
     </scm>
 	
 	<developers>
