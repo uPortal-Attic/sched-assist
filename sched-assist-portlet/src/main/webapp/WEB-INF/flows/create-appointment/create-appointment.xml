@@ -29,10 +29,16 @@
 	<input name="targetStartDateTime"/>
 	<input name="currentWeekStart"/>
 	
-	<on-start>
-		<set name="flowScope.createAppointmentFormBackingObject" value="flowHelper.constructCreateAppointmentFormBackingObject(targetOwner, targetStartDateTime)"></set>
-	</on-start>
+	<action-state id="time-available">
+		<evaluate expression="flowHelper.validateChosenStartTime(targetOwner.preferredVisibleWindow, targetStartDateTime)"/>
+		<transition on="yes" to="showCreateForm"/>
+    	<transition on="no" to="time-unavailable"/>
+	</action-state>
+	
 	<view-state id="showCreateForm" model="createAppointmentFormBackingObject" view="create-appointment-form.jsp">
+		<on-entry>
+			<set name="flowScope.createAppointmentFormBackingObject" value="flowHelper.constructCreateAppointmentFormBackingObject(targetOwner, targetStartDateTime)"></set>
+		</on-entry>
 		<transition on="schedule-return" to="schedule-return" bind="false"/>
 		<transition on="submit-create" to="createAppointment"/>
     </view-state>
