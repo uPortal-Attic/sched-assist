@@ -25,7 +25,6 @@ package org.jasig.schedassist.portlet.webflow;
 import java.util.Date;
 
 import org.apache.commons.lang.time.DateUtils;
-import org.jasig.schedassist.SchedulingException;
 import org.jasig.schedassist.model.InputFormatException;
 import org.jasig.schedassist.model.VisibleWindow;
 import org.junit.Assert;
@@ -44,32 +43,20 @@ public class FlowHelperTest {
 		FlowHelper flowHelper = new FlowHelper();
 		
 		VisibleWindow window = VisibleWindow.fromKey("1,1");
-		try {
-			Date now = new Date();
-			flowHelper.validateChosenStartTime(window, now);
-			Assert.fail("expected SchedulingException not thrown");
-		} catch (SchedulingException e) {
-			// expected, success
-		}
+		Date now = new Date();
+		Assert.assertEquals(FlowHelper.NO, flowHelper.validateChosenStartTime(window, now));
+		// make sure it doesn't work in the past either
+		Assert.assertEquals(FlowHelper.NO,flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), -1)));
 		
-		try {
-			flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 2));
-		} catch (SchedulingException e) {
-			Assert.fail("expected SchedulingException not thrown for date 1 hour after window start");
-		}
+		Assert.assertEquals(FlowHelper.YES,flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 2)));
+		Assert.assertEquals(FlowHelper.YES,flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 167)));
 		
-		try {
-			flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 167));
-		} catch (SchedulingException e) {
-			Assert.fail("expected SchedulingException not thrown for date 1 hour before window end");
-		}
+		// still good 1 minute before window end
+		Assert.assertEquals(FlowHelper.YES,flowHelper.validateChosenStartTime(window, DateUtils.addMinutes(DateUtils.addHours(new Date(), 168), -1)));
 		
-		try {
-			flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 169));
-			Assert.fail("expected SchedulingException not thrown for date 1 hour after window end");
-		} catch (SchedulingException e) {
-			// expected, success
-		}
+		Assert.assertEquals(FlowHelper.NO,flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 168)));
+		Assert.assertEquals(FlowHelper.NO,flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 169)));
+
 
 	}
 }

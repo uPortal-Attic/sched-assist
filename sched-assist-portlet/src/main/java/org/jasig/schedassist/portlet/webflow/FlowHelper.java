@@ -64,6 +64,8 @@ import org.springframework.webflow.execution.RequestContextHolder;
 @Service("flowHelper")
 public class FlowHelper {
 
+	protected static final String YES = "yes";
+	protected static final String NO = "no";
 	private Log LOG = LogFactory.getLog(this.getClass());
 	private PortletSchedulingAssistantService schedulingAssistantService;
 	private String availableWebBaseUrl;
@@ -236,13 +238,13 @@ public class FlowHelper {
 		if(owner.hasMeetingLimit()) {
 			VisibleSchedule schedule = this.schedulingAssistantService.getVisibleSchedule(visitorUsername, owner.getId());
 			if(owner.isExceedingMeetingLimit(schedule.getAttendingCount())) {
-				return "yes";
+				return YES;
 			} else {
-				return "no";
+				return NO;
 			}
 		} else {
 			// owner doesn't limit number of meetings, simply return no
-			return "no";
+			return NO;
 		}
 	}
 	
@@ -297,7 +299,7 @@ public class FlowHelper {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("enter constructCreateAppointmentFormBackingObject, start: " + startDateTime + ", owner: " + owner);
 		}
-		validateChosenStartTime(owner.getPreferredVisibleWindow(), startDateTime);
+		// can skip call to validateChosenStartTime as the flow will enforce the check
 		AvailableBlock targetBlock = this.schedulingAssistantService.getTargetBlock(owner, startDateTime);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("getTargetBlock, startTime= " + startDateTime + " returns " + targetBlock);
@@ -320,7 +322,9 @@ public class FlowHelper {
 	public VEvent createAppointment(CreateAppointmentFormBackingObject fbo, IScheduleOwner owner) throws SchedulingException {
 		final String visitorUsername = getCurrentVisitorUsername();
 		AvailableBlock targetBlock = fbo.getTargetBlock();
-		validateChosenStartTime(owner.getPreferredVisibleWindow(), targetBlock.getStartTime());
+		if(NO.equals(validateChosenStartTime(owner.getPreferredVisibleWindow(), targetBlock.getStartTime()))) {
+			throw new SchedulingException("requested time is no longer within visible window");
+		}
 		if(fbo.isDoubleLengthAvailable()) {
 			LOG.debug("entering doubleLengthAvailable test");
         	// check if selected meeting duration matches meeting durations maxLength
@@ -338,16 +342,19 @@ public class FlowHelper {
 	}
 	
 	/**
-	 * Verify the startTime argument is within the window; throws a {@link ScheduleException} if not.
+	 * Verify the startTime argument is within the window; return {@link #NO} if not.
 	 * 
 	 * @param window
 	 * @param startTime
-	 * @throws SchedulingException
+	 * @return {@link #YES} for valid, {@link #NO} for invalid
 	 */
-	protected void validateChosenStartTime(VisibleWindow window, Date startTime) throws SchedulingException {
+	public String validateChosenStartTime(VisibleWindow window, Date startTime)  {
 		if(startTime.before(window.calculateCurrentWindowStart()) || startTime.after(window.calculateCurrentWindowEnd())) {
-			throw new SchedulingException("requested time is no longer within visible window");
+			LOG.debug("selected startTime (" + startTime + ") is no longer within window " + window.getKey());
+			return NO;
 		}
+		
+		return YES;
 	}
 
 	/**
