@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.jasig.schedassist.RelationshipDao;
 import org.jasig.schedassist.impl.owner.NotRegisteredException;
-import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.Relationship;
 import org.jasig.schedassist.web.security.CalendarAccountUserDetails;

@@ -21,6 +21,7 @@
 package org.jasig.schedassist.web.security;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -39,8 +40,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * {@link UserDetailsService} for person {@link ICalendarAccount}s.
@@ -83,7 +82,6 @@ public class CalendarAccountUserDetailsServiceImpl implements
 	/**
 	 * @param administrators the administrators to set
 	 */
-	@SuppressWarnings("unchecked")
 	public void setAdministratorListProperty(String propertyValue) {
 		String [] admins = StringUtils.commaDelimitedListToStringArray(propertyValue);
 		this.administrators = Arrays.asList(admins);
