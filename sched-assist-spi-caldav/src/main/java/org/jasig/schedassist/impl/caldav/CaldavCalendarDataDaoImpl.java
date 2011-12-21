@@ -125,7 +125,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	private CaldavDialect caldavDialect;
 	private HttpMethodInterceptor methodInterceptor = new NoopHttpMethodInterceptorImpl();
 	private boolean cancelUpdatesVisitorCalendar = false;
-	private final boolean reflectionEnabled = Boolean.parseBoolean(System.getProperty("org.jasig.schedassist.impl.caldav.reflectionEnabled", "false"));
+	private boolean reflectionEnabled = false;
 	private ApplicationEventPublisher applicationEventPublisher;
 
 	/**
@@ -184,6 +184,13 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	@Value("${caldav.cancelUpdatesVisitorCalendar:false}")
 	public void setCancelUpdatesVisitorCalendar(String cancelUpdatesVisitorCalendar) {
 		this.cancelUpdatesVisitorCalendar = Boolean.parseBoolean(cancelUpdatesVisitorCalendar);
+	}
+	/**
+	 * @param reflectionEnabled the reflectionEnabled to set
+	 */
+	@Value("${caldav.reflectionEnabled:false}")
+	public void setReflectionEnabled(boolean reflectionEnabled) {
+		this.reflectionEnabled = reflectionEnabled;
 	}
 	/**
 	 * Injects the {@link Credentials} and {@link AuthScope} into the

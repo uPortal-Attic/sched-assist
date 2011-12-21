@@ -20,6 +20,7 @@
 package org.jasig.schedassist.impl.caldav.integration;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -32,6 +33,8 @@ import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.PartStat;
 import net.fortuna.ical4j.model.property.Attendee;
+import net.fortuna.ical4j.model.property.DtStart;
+import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.Summary;
 import net.fortuna.ical4j.model.property.Transp;
 
@@ -95,7 +98,7 @@ public class CaldavIntegrationTest {
 	@Qualifier("visitor2")
 	private MockCalendarAccount visitorCalendarAccount2;
 	
-	@Value("reflectionEnabled:false")
+	@Value("${caldav.reflectionEnabled:false}")
 	private String reflectionEnabled;
 
 	private Log log = LogFactory.getLog(this.getClass());
@@ -301,7 +304,7 @@ public class CaldavIntegrationTest {
 			MockScheduleOwner owner1 = new MockScheduleOwner(ownerCalendarAccount1, 1);
 
 			Date start = CommonDateOperations.parseDatePhrase("20110919");
-			Date end = DateUtils.addDays(start, 11);
+			Date end = DateUtils.addDays(start, 12);
 
 			Set<AvailableBlock> availableBlocks = AvailableBlockBuilder.createBlocks("9:00 AM", "3:00 PM", "MWF", start, end);
 			AvailableSchedule schedule = new AvailableSchedule(availableBlocks);
@@ -314,10 +317,29 @@ public class CaldavIntegrationTest {
 			Assert.assertTrue(event.getProperties().contains(AvailabilityReflection.TRUE));
 			Assert.assertEquals("Available 9:00 AM - 3:00 PM", event.getSummary().getValue());
 			Assert.assertTrue(event.getProperties().contains(Transp.TRANSPARENT));
-
+			DtStart dtstart = event.getStartDate();
+			Assert.assertEquals(net.fortuna.ical4j.model.parameter.Value.DATE, dtstart.getParameter(net.fortuna.ical4j.model.parameter.Value.VALUE));
+			Assert.assertEquals("20110919", dtstart.getValue());
+			
+			PropertyList rdates = event.getProperties(RDate.RDATE);
+			Assert.assertEquals(5, rdates.size());
+			Set<String> rdateValues = new HashSet<String>();
+			for(Object o: rdates) {
+				Property rdate = (Property) o;
+				Assert.assertEquals(net.fortuna.ical4j.model.parameter.Value.DATE, rdate.getParameter(net.fortuna.ical4j.model.parameter.Value.VALUE));
+				rdateValues.add(rdate.getValue());
+			}
+			
+			Assert.assertTrue(rdateValues.contains("20110921"));
+			Assert.assertTrue(rdateValues.contains("20110923"));
+			Assert.assertTrue(rdateValues.contains("20110926"));
+			Assert.assertTrue(rdateValues.contains("20110928"));
+			Assert.assertTrue(rdateValues.contains("20110930"));
+			
 			this.calendarDataDao.purgeAvailableScheduleReflections(owner1, start, end);
 			results = this.calendarDataDao.peekAtAvailableScheduleReflections(owner1, start, end);
 			Assert.assertEquals(0, results.size());
+			
 		} else {
 			log.debug("testReflectAvailabilitySchedule disabled");
 		}
