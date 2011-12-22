@@ -51,10 +51,7 @@
 	<!-- END: Bedework Specific beans -->
 	<!-- If using a CalDAV server other than Bedework, look in localOverridesContext.xml for other options -->
 	
-	<bean id="caldavAdminCredentials" class="org.apache.commons.httpclient.UsernamePasswordCredentials">
-    	<constructor-arg index="0"><value>${caldav.admin.username}</value></constructor-arg>
-    	<constructor-arg index="1"><value>${caldav.admin.password}</value></constructor-arg>
-    </bean>
+	<bean id="caldavCredentialsProvider" class="org.jasig.schedassist.impl.caldav.DefaultHttpCredentialsProviderImpl"/>
     <bean id="caldavAdminAuthScope" class="org.apache.commons.httpclient.auth.AuthScope">
     	<constructor-arg index="0"><value>${caldav.admin.authscope.host}</value></constructor-arg>
     	<constructor-arg index="1"><value>${caldav.admin.authscope.port}</value></constructor-arg>
