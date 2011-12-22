@@ -20,7 +20,6 @@
 
 package org.jasig.schedassist.web.owner.schedule;
 
-import java.util.Date;
 
 
 /**

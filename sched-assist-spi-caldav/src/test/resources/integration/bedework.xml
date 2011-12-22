@@ -43,5 +43,6 @@
 		<property name="explicitSetTimeZone" value="${caldav.explicitSetTimeZone}"/>
 		<property name="timeZone" value="${caldav.systemTimeZone}"/>
 	</bean>
-      
+    
+    <bean id="caldavCredentialsProvider" class="org.jasig.schedassist.impl.caldav.DefaultHttpCredentialsProviderImpl"/>
 </beans>

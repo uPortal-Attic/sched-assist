@@ -78,4 +78,12 @@
 		<property name="timeZone" value="${caldav.systemTimeZone}"/>
 	</bean>
 	-->
+	
+	<!-- 
+	 | If using Oracle Communications Suite, override the credentialsProvider with this
+	 | implementation that supports Oracle Comm's "proxy authentication" 
+	 -->
+	 <!--  
+	 <bean id="caldavCredentialsProvider" class="org.jasig.schedassist.impl.caldav.oracle.OracleCommsProxyAuthHttpCredentialsProviderImpl"/>
+	 -->
 </beans>
