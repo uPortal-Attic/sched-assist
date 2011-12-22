@@ -76,7 +76,6 @@ import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
 import org.jasig.schedassist.model.SchedulingAssistantAppointment;
 import org.jasig.schedassist.model.VisitorLimit;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -88,7 +87,7 @@ import org.springframework.stereotype.Service;
  * Requires the following be provided (via setter injection):
  * <ul>
  * <li>{@link HttpClient} instance.</li>
- * <li>{@link Credentials} and {@link AuthScope} for authentication; will need authorization to alter any account's calendar.</li>
+ * <li>{@link HttpCredentialsProvider} for authentication.</li>
  * <li>{@link CaldavDialect} instance.</li>
  * <li>A String containing the value of the <i>caldav.cancelUpdatesVisitorCalendar property</i> (false by default).</li>
  * </ul>
@@ -109,17 +108,17 @@ import org.springframework.stereotype.Service;
  * @version $Id: CaldavCalendarDataDaoImpl.java 50 2011-05-05 21:07:25Z nblair $
  */
 @Service
-public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, InitializingBean {
+public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 
-	private static final String CONTENT_LENGTH_HEADER = "Content-Length";
-	private static final Header IF_NONE_MATCH_HEADER = new Header("If-None-Match", "*");
-	private static final Header ICALENDAR_CONTENT_TYPE_HEADER = new Header("Content-Type", "text/calendar");
-	private static final String IF_MATCH_HEADER = "If-Match";
+	static final String CONTENT_LENGTH_HEADER = "Content-Length";
+	static final Header IF_NONE_MATCH_HEADER = new Header("If-None-Match", "*");
+	static final Header ICALENDAR_CONTENT_TYPE_HEADER = new Header("Content-Type", "text/calendar");
+	static final String IF_MATCH_HEADER = "If-Match";
 
 	private static final Header DEPTH_HEADER = new Header("Depth", "1");
 	protected final Log log = LogFactory.getLog(this.getClass());
 	private HttpClient httpClient;
-	private Credentials caldavAdminCredentials;
+	private HttpCredentialsProvider credentialsProvider;
 	private AuthScope caldavAdminAuthScope;
 	private IEventUtils eventUtils = new CaldavEventUtilsImpl(new NullAffiliationSourceImpl());
 	private CaldavDialect caldavDialect;
@@ -136,11 +135,17 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		this.httpClient = httpClient;
 	}
 	/**
-	 * @param caldavAdminCredentials the caldavAdminCredentials to set
+	 * @return the httpClient
+	 */
+	public HttpClient getHttpClient() {
+		return httpClient;
+	}
+	/**
+	 * @param credentialsProvider the credentialsProvider to set
 	 */
 	@Autowired
-	public void setCaldavAdminCredentials(Credentials caldavAdminCredentials) {
-		this.caldavAdminCredentials = caldavAdminCredentials;
+	public void setCredentialsProvider(HttpCredentialsProvider credentialsProvider) {
+		this.credentialsProvider = credentialsProvider;
 	}
 	/**
 	 * @param caldavAdminAuthScope the caldavAdminAuthScope to set
@@ -148,6 +153,12 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	@Autowired
 	public void setCaldavAdminAuthScope(AuthScope caldavAdminAuthScope) {
 		this.caldavAdminAuthScope = caldavAdminAuthScope;
+	}
+	/**
+	 * @return the caldavAdminAuthScope
+	 */
+	public AuthScope getCaldavAdminAuthScope() {
+		return caldavAdminAuthScope;
 	}
 	/**
 	 * @param eventUtils the eventUtils to set
@@ -171,6 +182,12 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		this.methodInterceptor = methodInterceptor;
 	}
 	/**
+	 * @return the methodInterceptor
+	 */
+	public HttpMethodInterceptor getMethodInterceptor() {
+		return methodInterceptor;
+	}
+	/**
 	 * @param applicationEventPublisher the applicationEventPublisher to set
 	 */
 	@Autowired
@@ -192,21 +209,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	public void setReflectionEnabled(boolean reflectionEnabled) {
 		this.reflectionEnabled = reflectionEnabled;
 	}
-	/**
-	 * Injects the {@link Credentials} and {@link AuthScope} into the
-	 * {@link HttpClient}'s {@link HttpState}.
-	 * This task is performed in afterPropertiesSet because {@link HttpState#setCredentials(AuthScope, Credentials)}'s
-	 * method signature is not supported by Spring's DI.
-	 * 
-	 * @see HttpState#setCredentials(AuthScope, Credentials)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		httpClient.getState().setCredentials(
-				caldavAdminAuthScope,
-				caldavAdminCredentials); 
-	}
+	
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.ICalendarDataDao#getCalendar(org.jasig.schedassist.model.ICalendarAccount, java.util.Date, java.util.Date)
 	 */
@@ -313,7 +316,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		HttpMethod toExecute = methodInterceptor.doWithMethod(method, calendarAccount);
 		
 		try {
-			int statusCode = this.httpClient.executeMethod(toExecute);
+			int statusCode = this.httpClient.executeMethod(null, toExecute, constructProxyAuthHttpState(calendarAccount));
 			log.debug("deleteCalendar status code: " + statusCode);
 			if(statusCode == HttpStatus.SC_NO_CONTENT) {
 				return statusCode;
@@ -498,7 +501,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 				}
 				HttpMethod toExecute = methodInterceptor.doWithMethod(method,owner.getCalendarAccount());
 				try {
-					int statusCode = this.httpClient.executeMethod(toExecute);
+					int statusCode = this.httpClient.executeMethod(null, toExecute, constructProxyAuthHttpState(owner.getCalendarAccount()));
 					log.debug("cancelAppointment status code: " + statusCode);
 					if(statusCode == HttpStatus.SC_NO_CONTENT) {
 						return;
@@ -589,7 +592,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		}
 		HttpMethod toExecute = methodInterceptor.doWithMethod(method,calendarAccount);
 		try {
-			int statusCode = this.httpClient.executeMethod(toExecute);
+			int statusCode = this.httpClient.executeMethod(null, toExecute, constructProxyAuthHttpState(calendarAccount));
 			log.debug("getCalendarsInternal status code: " + statusCode);
 			if(statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_MULTI_STATUS) {
 				InputStream content = method.getResponseBodyAsStream();
@@ -763,7 +766,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		if(log.isDebugEnabled()) {
 			log.debug("putNewEvent executing " + methodToString(method) + " for " + eventOwner);
 		}
-		int statusCode = this.httpClient.executeMethod(toExecute);
+		int statusCode = this.httpClient.executeMethod(null, toExecute, constructProxyAuthHttpState(eventOwner));
 		if(log.isDebugEnabled()) {
 			InputStream content = method.getResponseBodyAsStream();
 			log.debug("putNewEvent response body: " + IOUtils.toString(content));
@@ -791,7 +794,8 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		if(log.isDebugEnabled()) {
 			log.debug("putExistingEvent executing " + methodToString(method) + " for " + eventOwner);
 		}
-		int statusCode = this.httpClient.executeMethod(toExecute);
+		int statusCode = this.httpClient.executeMethod(null, toExecute, constructProxyAuthHttpState(eventOwner));
+		// can't log the response stream here like we do in putNewEvent - since there is no response for event overwrites!
 		return statusCode;
 	}
 	/**
@@ -891,12 +895,26 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		return calendarWithURI;
 	}
 	/**
+	 * Construct a {@link HttpState} that we can pass into {@link HttpClient#executeMethod(org.apache.commons.httpclient.HostConfiguration, HttpMethod, HttpState)}
+	 * that will sufficiently implement proxy-auth.
+	 * 
+	 * @param account
+	 * @return
+	 */
+	protected HttpState constructProxyAuthHttpState(ICalendarAccount account) {
+		HttpState state = new HttpState();
+		
+		Credentials credentials = this.credentialsProvider.getCredentials(account);
+		state.setCredentials(getCaldavAdminAuthScope(), credentials);
+		return state;
+	}
+	/**
 	 * 
 	 * @param uri
 	 * @param event
 	 * @return
 	 */
-	private PutMethod constructPutMethod(String uri, VEvent event) {
+	PutMethod constructPutMethod(String uri, VEvent event) {
 		PutMethod method = new PutMethod(uri);
 		method.addRequestHeader(ICALENDAR_CONTENT_TYPE_HEADER);
 		RequestEntity requestEntity = caldavDialect.generatePutAppointmentRequestEntity(event);
@@ -910,7 +928,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	 * @param calendar
 	 * @return
 	 */
-	private VEvent extractSchedulingAssistantAppointment(CalendarWithURI calendar) {
+	VEvent extractSchedulingAssistantAppointment(CalendarWithURI calendar) {
 		ComponentList events = calendar.getCalendar().getComponents(VEvent.VEVENT);
 		Validate.isTrue(events.size() == 1, "expecting calendar with single event");
 		return (VEvent) events.get(0);
@@ -922,7 +940,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	 * @param method
 	 * @return
 	 */
-	private String methodToString(HttpMethod method) {
+	String methodToString(HttpMethod method) {
 		StringBuilder result = new StringBuilder();
 		result.append(method.getName());
 		result.append(" ");
