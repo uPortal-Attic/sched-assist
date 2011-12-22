@@ -316,7 +316,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 		HttpMethod toExecute = methodInterceptor.doWithMethod(method, calendarAccount);
 		
 		try {
-			int statusCode = this.httpClient.executeMethod(null, toExecute, constructProxyAuthHttpState(calendarAccount));
+			int statusCode = this.httpClient.executeMethod(null, toExecute, constructHttpState(calendarAccount));
 			log.debug("deleteCalendar status code: " + statusCode);
 			if(statusCode == HttpStatus.SC_NO_CONTENT) {
 				return statusCode;
@@ -501,7 +501,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 				}
 				HttpMethod toExecute = methodInterceptor.doWithMethod(method,owner.getCalendarAccount());
 				try {
-					int statusCode = this.httpClient.executeMethod(null, toExecute, constructProxyAuthHttpState(owner.getCalendarAccount()));
+					int statusCode = this.httpClient.executeMethod(null, toExecute, constructHttpState(owner.getCalendarAccount()));
 					log.debug("cancelAppointment status code: " + statusCode);
 					if(statusCode == HttpStatus.SC_NO_CONTENT) {
 						return;
@@ -592,7 +592,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 		}
 		HttpMethod toExecute = methodInterceptor.doWithMethod(method,calendarAccount);
 		try {
-			int statusCode = this.httpClient.executeMethod(null, toExecute, constructProxyAuthHttpState(calendarAccount));
+			int statusCode = this.httpClient.executeMethod(null, toExecute, constructHttpState(calendarAccount));
 			log.debug("getCalendarsInternal status code: " + statusCode);
 			if(statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_MULTI_STATUS) {
 				InputStream content = method.getResponseBodyAsStream();
@@ -766,7 +766,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 		if(log.isDebugEnabled()) {
 			log.debug("putNewEvent executing " + methodToString(method) + " for " + eventOwner);
 		}
-		int statusCode = this.httpClient.executeMethod(null, toExecute, constructProxyAuthHttpState(eventOwner));
+		int statusCode = this.httpClient.executeMethod(null, toExecute, constructHttpState(eventOwner));
 		if(log.isDebugEnabled()) {
 			InputStream content = method.getResponseBodyAsStream();
 			log.debug("putNewEvent response body: " + IOUtils.toString(content));
@@ -794,7 +794,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 		if(log.isDebugEnabled()) {
 			log.debug("putExistingEvent executing " + methodToString(method) + " for " + eventOwner);
 		}
-		int statusCode = this.httpClient.executeMethod(null, toExecute, constructProxyAuthHttpState(eventOwner));
+		int statusCode = this.httpClient.executeMethod(null, toExecute, constructHttpState(eventOwner));
 		// can't log the response stream here like we do in putNewEvent - since there is no response for event overwrites!
 		return statusCode;
 	}
@@ -895,13 +895,16 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 		return calendarWithURI;
 	}
 	/**
-	 * Construct a {@link HttpState} that we can pass into {@link HttpClient#executeMethod(org.apache.commons.httpclient.HostConfiguration, HttpMethod, HttpState)}
-	 * that will sufficiently implement proxy-auth.
+	 * Construct a {@link HttpState} that we can pass into 
+	 * {@link HttpClient#executeMethod(org.apache.commons.httpclient.HostConfiguration, HttpMethod, HttpState)}.
+	 * 
+	 * Depends on the configured {@link HttpCredentialsProvider} for {@link Credentials} to 
+	 * set in the returned {@link HttpState}.
 	 * 
 	 * @param account
-	 * @return
+	 * @return a {@link HttpState} to be used to execute a {@link HttpMethod}.
 	 */
-	protected HttpState constructProxyAuthHttpState(ICalendarAccount account) {
+	protected HttpState constructHttpState(ICalendarAccount account) {
 		HttpState state = new HttpState();
 		
 		Credentials credentials = this.credentialsProvider.getCredentials(account);

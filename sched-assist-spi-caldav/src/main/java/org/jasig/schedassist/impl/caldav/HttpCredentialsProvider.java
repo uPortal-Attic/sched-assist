@@ -22,11 +22,22 @@ import org.apache.commons.httpclient.Credentials;
 import org.jasig.schedassist.model.ICalendarAccount;
 
 /**
- *
+ * Interface used to define a source for HTTP {@link Credentials}.
+ * 
  * @author Nicholas Blair
  * @version $Id: HttpCredentialsProvider.java $
  */
 public interface HttpCredentialsProvider {
 
+	/**
+	 * Return a {@link Credentials} that can be used when performing caldav operations against
+	 * the provided {@link ICalendarAccount}.
+	 * 
+	 * Implementations may not all use the {@link ICalendarAccount}; some return the same set of
+	 * credentials for all inputs.
+	 * 
+	 * @param account
+	 * @return a never null {@link Credentials} that the data dao can use to interact with the CalDAV server
+	 */
 	Credentials getCredentials(ICalendarAccount account);
 }
