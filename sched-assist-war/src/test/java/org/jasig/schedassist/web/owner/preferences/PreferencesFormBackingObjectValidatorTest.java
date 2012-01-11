@@ -22,6 +22,10 @@ package org.jasig.schedassist.web.owner.preferences;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 
@@ -31,8 +35,69 @@ import org.springframework.validation.Errors;
  * @author Nicholas Blair, nblair@doit.wisc.edu
  * @version $Id: PreferencesFormBackingObjectValidatorTest.java 3039 2011-02-03 14:55:17Z npblair $
  */
+@ContextConfiguration(locations={"classpath:preferences-bean-simulation.xml"})
+@RunWith(SpringJUnit4ClassRunner.class)
 public class PreferencesFormBackingObjectValidatorTest {
 
+	@Autowired
+	private PreferencesFormBackingObjectValidator validator;
+	
+	@Test
+	public void testAfterPropertiesSet() {
+		try {
+			validator.afterPropertiesSet();
+		} catch (Exception e) {
+			Assert.fail("default properties caused Exception in afterPropertiesSet: " + e);
+		}
+		
+		validator.setLocationMaxLength(513);
+		try {
+			validator.afterPropertiesSet();
+			Assert.fail("expected Exception in afterPropertiesSet not thrown for locationMaxLength beyond hard limit");
+		} catch (Exception e) {
+			// expected
+		}
+		
+		validator.setLocationMaxLength(511);
+		validator.setTitlePrefixMaxLength(513);
+		try {
+			validator.afterPropertiesSet();
+			Assert.fail("expected Exception in afterPropertiesSet not thrown for titlePrefixMaxLength beyond hard limit");
+		} catch (Exception e) {
+			// expected
+		}
+		validator.setTitlePrefixMaxLength(511);
+		validator.setNoteboardMaxLength(513);
+		try {
+			validator.afterPropertiesSet();
+			Assert.fail("expected Exception in afterPropertiesSet not thrown for noteboardMaxLength beyond hard limit");
+		} catch (Exception e) {
+			// expected
+		}
+		validator.setNoteboardMaxLength(511);
+		validator.setMaxMeetingLength(721);
+		try {
+			validator.afterPropertiesSet();
+			Assert.fail("expected Exception in afterPropertiesSet not thrown for maxMeetingLength beyond hard limit");
+		} catch (Exception e) {
+			// expected
+		}
+		validator.setMaxMeetingLength(719);
+		validator.setMinMeetingLength(9);
+		try {
+			validator.afterPropertiesSet();
+			Assert.fail("expected Exception in afterPropertiesSet not thrown for minMeetingLength under hard limit");
+		} catch (Exception e) {
+			// expected
+		}
+		validator.setMinMeetingLength(10);
+		try {
+			validator.afterPropertiesSet();
+		} catch (Exception e) {
+			Assert.fail("final afterPropertiesSet invocation caused Exception: " + e);
+		}
+		
+	}
 	/**
 	 * Test valid input, assert no errors.
 	 * 
@@ -47,7 +112,7 @@ public class PreferencesFormBackingObjectValidatorTest {
 		fbo.setNoteboard("My noteboard text.");
 		fbo.setTitlePrefix("Meeting title");
 		Errors errors = new BindException(fbo, "command");
-		PreferencesFormBackingObjectValidator validator = new PreferencesFormBackingObjectValidator();
+		
 		validator.validate(fbo, errors);
 		
 		Assert.assertEquals(0, errors.getAllErrors().size());
@@ -62,7 +127,7 @@ public class PreferencesFormBackingObjectValidatorTest {
 	public void testEmptyFields() throws Exception {
 		PreferencesFormBackingObject fbo = new PreferencesFormBackingObject();
 		Errors errors = new BindException(fbo, "command");
-		PreferencesFormBackingObjectValidator validator = new PreferencesFormBackingObjectValidator();
+		
 		validator.validate(fbo, errors);
 		Assert.assertEquals(4, errors.getAllErrors().size());
 		Assert.assertEquals("meetingLength.required", errors.getFieldError("meetingLength").getCode());
@@ -84,7 +149,7 @@ public class PreferencesFormBackingObjectValidatorTest {
 		fbo.setNoteboard("My noteboard text.");
 		fbo.setTitlePrefix("Meeting title");
 		Errors errors = new BindException(fbo, "command");
-		PreferencesFormBackingObjectValidator validator = new PreferencesFormBackingObjectValidator();
+		
 		validator.validate(fbo, errors);
 		Assert.assertEquals(1, errors.getAllErrors().size());
 		Assert.assertEquals("meetingLength.invalid", errors.getFieldError("meetingLength").getCode());
@@ -102,13 +167,13 @@ public class PreferencesFormBackingObjectValidatorTest {
 		fbo.setLocation("My Office");
 		// build a noteboard with 201 characters.
 		StringBuilder noteboard = new StringBuilder();
-		for(int i = 0; i < 501; i++) {
+		for(int i = 0; i < PreferencesFormBackingObjectValidator.COLUMN_HARD_LIMIT + 1; i++) {
 			noteboard.append("a");
 		}
 		fbo.setNoteboard(noteboard.toString());
 		fbo.setTitlePrefix("Meeting title");
 		Errors errors = new BindException(fbo, "command");
-		PreferencesFormBackingObjectValidator validator = new PreferencesFormBackingObjectValidator();
+		
 		validator.validate(fbo, errors);
 		Assert.assertEquals(1, errors.getAllErrors().size());
 		Assert.assertEquals("noteboard.toolarge", errors.getFieldError("noteboard").getCode());
@@ -126,7 +191,7 @@ public class PreferencesFormBackingObjectValidatorTest {
 		fbo.setTitlePrefix("Meeting title");
 		fbo.setNoteboard("Valid noteboard");
 		Errors errors = new BindException(fbo, "command");
-		PreferencesFormBackingObjectValidator validator = new PreferencesFormBackingObjectValidator();
+		
 		
 		fbo.setMeetingLimitValue(1);
 		Assert.assertTrue(fbo.isEnableMeetingLimit());
@@ -169,7 +234,7 @@ public class PreferencesFormBackingObjectValidatorTest {
 		
 		fbo.setTitlePrefix("Meeting title");
 		Errors errors = new BindException(fbo, "command");
-		PreferencesFormBackingObjectValidator validator = new PreferencesFormBackingObjectValidator();
+		
 		validator.validate(fbo, errors);
 		
 		Assert.assertEquals(0, errors.getAllErrors().size());

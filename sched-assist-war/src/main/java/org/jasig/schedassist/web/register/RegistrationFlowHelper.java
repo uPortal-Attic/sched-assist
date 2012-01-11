@@ -36,6 +36,7 @@ import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.InputFormatException;
 import org.jasig.schedassist.model.Preferences;
+import org.jasig.schedassist.web.owner.preferences.PreferencesFormBackingObjectValidator;
 import org.jasig.schedassist.web.security.CalendarAccountUserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -56,6 +57,7 @@ public class RegistrationFlowHelper {
 	private AvailableScheduleDao availableScheduleDao;
 	private AvailableScheduleReflectionService reflectionService;
 	private IAffiliationSource affiliationSource;
+	private PreferencesFormBackingObjectValidator preferencesValidator;
 	/**
 	 * @param ownerDao the ownerDao to set
 	 */
@@ -84,6 +86,22 @@ public class RegistrationFlowHelper {
 	@Autowired
 	public void setAffiliationSource(IAffiliationSource affiliationSource) {
 		this.affiliationSource = affiliationSource;
+	}
+	/**
+	 * @param preferencesValidator the preferencesValidator to set
+	 */
+	@Autowired
+	public void setPreferencesValidator(
+			PreferencesFormBackingObjectValidator preferencesValidator) {
+		this.preferencesValidator = preferencesValidator;
+	}
+	
+	/**
+	 * 
+	 * @return a new {@link Registration} instance
+	 */
+	public Registration newRegistrationInstance() {
+		return new Registration(preferencesValidator);
 	}
 	/**
 	 * Invoke methods on the {@link OwnerDao} and {@link AvailableScheduleDao} to complete

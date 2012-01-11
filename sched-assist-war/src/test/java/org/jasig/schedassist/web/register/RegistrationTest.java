@@ -22,6 +22,7 @@ package org.jasig.schedassist.web.register;
 
 import java.util.ArrayList;
 
+import org.jasig.schedassist.web.owner.preferences.PreferencesFormBackingObjectValidator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.binding.mapping.impl.DefaultMappingResults;
@@ -37,14 +38,14 @@ import org.springframework.webflow.validation.DefaultValidationContext;
  * @version $Id: RegistrationTest.java 2988 2011-01-27 16:57:45Z npblair $
  */
 public class RegistrationTest {
-
+	
 	/**
 	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void validateDefaultPreferences() throws Exception {
-		Registration registration = new Registration();
+		Registration registration = new Registration(new PreferencesFormBackingObjectValidator());
 		
 		// noteboard is only field that must be set
 		registration.setNoteboard("Some noteboard value");
@@ -71,7 +72,7 @@ public class RegistrationTest {
 	 */
 	@Test
 	public void validateEmptyNoteboard() throws Exception {
-		Registration registration = new Registration();
+		Registration registration = new Registration(new PreferencesFormBackingObjectValidator());
 		
 		
 		ValidationContext context = new DefaultValidationContext(new MockRequestContext(), 
@@ -91,9 +92,10 @@ public class RegistrationTest {
 	 */
 	@Test
 	public void validateLargeNoteboard() throws Exception {
-		Registration registration = new Registration();
+		Registration registration = new Registration(new PreferencesFormBackingObjectValidator());
 		StringBuilder noteboard = new StringBuilder();
-		for(int i = 0; i < 501; i++) {
+		final int pastLimit = PreferencesFormBackingObjectValidator.COLUMN_HARD_LIMIT + 1;
+		for(int i = 0; i < pastLimit; i++) {
 			noteboard.append("a");
 		}
 		registration.setNoteboard(noteboard.toString());
@@ -106,7 +108,7 @@ public class RegistrationTest {
 		Assert.assertTrue(context.getMessageContext().hasErrorMessages());		
 		Message [] messages= context.getMessageContext().getAllMessages();
 		Assert.assertEquals(1, messages.length);
-		Assert.assertEquals("Noteboard is too long (501 characters); maximum length is 500 characters.", messages[0].getText());
+		Assert.assertEquals("Noteboard is too long (" + pastLimit + " characters); maximum length is 500 characters.", messages[0].getText());
 	}
 	
 	/**
@@ -115,7 +117,7 @@ public class RegistrationTest {
 	 */
 	@Test
 	public void validateControlSchedule() throws Exception {
-		Registration registration = new Registration();
+		Registration registration = new Registration(new PreferencesFormBackingObjectValidator());
 		registration.setStartTimePhrase("9:00 AM");
 		registration.setEndTimePhrase("10:00 AM");
 		registration.setDaysOfWeekPhrase("MWF");
@@ -133,7 +135,7 @@ public class RegistrationTest {
 	
 	@Test
 	public void testValidateStartEndDateDifference() throws Exception {
-		Registration registration = new Registration();
+		Registration registration = new Registration(new PreferencesFormBackingObjectValidator());
 		registration.setStartTimePhrase("9:00 AM");
 		registration.setEndTimePhrase("10:00 AM");
 		registration.setDaysOfWeekPhrase("MWF");
@@ -153,7 +155,7 @@ public class RegistrationTest {
 	
 	@Test
 	public void testValidateMinimumTimeDifference() throws Exception {
-		Registration registration = new Registration();
+		Registration registration = new Registration(new PreferencesFormBackingObjectValidator());
 		registration.setStartTimePhrase("9:00 AM");
 		registration.setEndTimePhrase("9:10 AM");
 		registration.setDaysOfWeekPhrase("MWF");

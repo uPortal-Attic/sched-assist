@@ -74,6 +74,16 @@ public class Registration implements Serializable {
 	
 	private boolean scheduleSet = false;
 	
+	private final PreferencesFormBackingObjectValidator preferencesValidator;
+	
+	/**
+	 * @param preferencesValidator
+	 */
+	public Registration(
+			PreferencesFormBackingObjectValidator preferencesValidator) {
+		this.preferencesValidator = preferencesValidator;
+	}
+
 	/**
 	 * @return the location
 	 */
@@ -418,9 +428,9 @@ public class Registration implements Serializable {
 		MessageContext messages = context.getMessageContext();
 		
 		PreferencesFormBackingObject command = this.toPreferencesFormBackingObject();
-		PreferencesFormBackingObjectValidator validator = new PreferencesFormBackingObjectValidator();
+		
 		BeanPropertyBindingResult errors = new BeanPropertyBindingResult(command, "registration");
-		validator.validate(command, errors);
+		preferencesValidator.validate(command, errors);
 		
 		if(errors.hasErrors()) {
 			for(FieldError error: errors.getFieldErrors()){
