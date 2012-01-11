@@ -140,12 +140,12 @@ public class PreferencesFormBackingObjectValidator implements Validator, Initial
 		
 		// meeting duration
 		if(StringUtils.isBlank(fbo.getMeetingLength())) {
-			errors.rejectValue("meetingLength", "meetingLength.required", "Meeting Length field must not be empty.");
+			errors.rejectValue("meetingLength", "meetingLength.required", "Meeting Duration field must not be empty.");
 		} else {
 			try {
 				int meetingLength = Integer.parseInt(fbo.getMeetingLength());
 				if(meetingLength < minMeetingLength || meetingLength > maxMeetingLength) {
-					errors.rejectValue("meetingLength", "meetingLength.outofbounds", "Meeting Length must be greater than " + minMeetingLength + " minutes and less than " + maxMeetingLength + " minutes.");
+					errors.rejectValue("meetingLength", "meetingLength.outofbounds", "Meeting Duration must be greater than or equal to " + minMeetingLength + " minutes and less than or equal to " + maxMeetingLength + " minutes.");
 				}
 			} catch (NumberFormatException e) {
 				errors.rejectValue("meetingLength", "meetingLength.invalid", "Invalid value for meeting duration.");
