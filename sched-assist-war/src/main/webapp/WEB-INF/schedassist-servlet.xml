@@ -34,6 +34,7 @@
         	http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.0.xsd">
     
 	<context:component-scan base-package="org.jasig.schedassist.web"/>
+	<context:property-placeholder location="classpath:/scheduling-assistant.properties"/>
 	
 	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
 		<property name="alwaysUseFullPath" value="true"/>

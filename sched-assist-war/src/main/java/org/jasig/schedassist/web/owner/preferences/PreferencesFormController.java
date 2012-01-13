@@ -59,6 +59,7 @@ public class PreferencesFormController {
 	private OwnerDao ownerDao;
 	private AvailableScheduleDao availableScheduleDao;
 	private AvailableScheduleReflectionService reflectionService;
+	private PreferencesFormBackingObjectValidator validator;
 	
 	/**
 	 * @param ownerDao the ownerDao to set
@@ -82,14 +83,20 @@ public class PreferencesFormController {
 	public void setAvailableScheduleDao(AvailableScheduleDao availableScheduleDao) {
 		this.availableScheduleDao = availableScheduleDao;
 	}
-	
+	/**
+	 * @param validator the validator to set
+	 */
+	@Autowired
+	public void setValidator(PreferencesFormBackingObjectValidator validator) {
+		this.validator = validator;
+	}
 	/**
 	 * 
 	 * @param binder
 	 */
 	@InitBinder("command")
     protected void initBinder(WebDataBinder binder) {
-        binder.setValidator(new PreferencesFormBackingObjectValidator());
+        binder.setValidator(this.validator);
     }
 	/**
 	 * 
