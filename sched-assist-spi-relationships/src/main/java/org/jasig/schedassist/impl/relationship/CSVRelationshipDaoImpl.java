@@ -34,7 +34,6 @@ import org.jasig.schedassist.impl.visitor.VisitorDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
-import org.jasig.schedassist.model.Preferences;
 import org.jasig.schedassist.model.Relationship;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -158,20 +157,14 @@ public class CSVRelationshipDaoImpl implements RelationshipDao {
 			}
 			IScheduleOwner owner = ownerDao.locateOwner(calUser);
 			if(null != owner) {
-				String preferenceValue = owner.getPreference(Preferences.ADVISOR_SHARE_WITH_STUDENTS);
-				boolean sharedWithStudents = Boolean.valueOf(preferenceValue);
-				if(sharedWithStudents) {
-					Relationship relationship = new Relationship();
-					relationship.setOwner(owner);
-					relationship.setVisitor(visitor);
-					relationship.setDescription(record.getRelationshipDescription());
-					results.add(relationship);
+				Relationship relationship = new Relationship();
+				relationship.setOwner(owner);
+				relationship.setVisitor(visitor);
+				relationship.setDescription(record.getRelationshipDescription());
+				results.add(relationship);
 
-					if(LOG.isDebugEnabled()) {
-						LOG.debug("found relationship " + relationship);
-					}
-				} else if(LOG.isDebugEnabled()) {
-					LOG.debug("owner assigned, but not sharing with students for " + record);
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("found relationship " + relationship);
 				}
 			} else {
 				LOG.debug("owner assigned, but not registered as owner for " + record);
