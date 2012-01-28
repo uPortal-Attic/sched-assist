@@ -101,8 +101,8 @@ body {
 	width: 70px;
 	height: 104px;
 	position: absolute;
-	/*top: -22px;*/
-	left: 5px;
+	left: 7px;
+  	top: 7px;
 	z-index: 100;
 }
 
