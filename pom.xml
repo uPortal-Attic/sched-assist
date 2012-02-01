@@ -53,8 +53,8 @@
 		<ehcache-spring-annotations.version>1.1.2</ehcache-spring-annotations.version>
 		<hsqldb.version>1.8.0.10</hsqldb.version>
 		<httpclient.version>3.1</httpclient.version>
-		<ical4j.version>1.0.2</ical4j.version>
-		<jasig.resourceserver.version>1.0.14</jasig.resourceserver.version>
+		<ical4j.version>1.0.3</ical4j.version>
+		<jasig.resourceserver.version>1.0.24</jasig.resourceserver.version>
 		<javamail.version>1.4.1</javamail.version>
 		<junit.version>4.8.2</junit.version>
 		<log4j.version>1.2.16</log4j.version>
