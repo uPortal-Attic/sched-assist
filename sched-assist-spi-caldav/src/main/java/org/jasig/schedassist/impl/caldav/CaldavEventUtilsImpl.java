@@ -89,7 +89,7 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements Initi
 	/**
 	 * @param explicitSetTimeZone the explicitSetTimeZone to set
 	 */
-	@Value("caldav.explicitSetTimeZone:false")
+	@Value("${caldav.explicitSetTimeZone}:false")
 	public void setExplicitSetTimeZone(boolean explicitSetTimeZone) {
 		this.explicitSetTimeZone = explicitSetTimeZone;
 	}
@@ -102,7 +102,7 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements Initi
 	/**
 	 * @param timeZone the timeZone to set
 	 */
-	@Value("caldav.systemTimeZone:America/Chicago")
+	@Value("${caldav.systemTimeZone}:America/Chicago")
 	public void setTimeZone(String timeZone) {
 		this.timeZone = timeZone;
 	}
