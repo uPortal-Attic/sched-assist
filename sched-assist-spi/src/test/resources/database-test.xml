@@ -34,7 +34,8 @@
 		<!-- exclude default authorization, so can be overriden with test version -->
 		<context:exclude-filter type="assignable" expression="org.jasig.schedassist.impl.owner.DefaultOwnerAuthorizationImpl"/>
 	</context:component-scan>
-	 
+	<context:property-placeholder location="classpath:/scheduling-assistant-tests.properties"/>
+	
 	<bean class="org.jasig.schedassist.impl.owner.AlwaysTrueOwnerAuthorizationImpl"/>
 	
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.SingleConnectionDataSource">

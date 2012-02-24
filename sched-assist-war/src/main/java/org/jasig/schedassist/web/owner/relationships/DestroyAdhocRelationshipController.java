@@ -32,6 +32,7 @@ import org.jasig.schedassist.model.IScheduleVisitor;
 import org.jasig.schedassist.web.security.CalendarAccountUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -52,6 +53,22 @@ public class DestroyAdhocRelationshipController {
 	private ICalendarAccountDao calendarAccountDao;
 	private VisitorDao visitorDao;
 	private MutableRelationshipDao mutableRelationshipDao;
+	private String identifyingAttributeName = "uid";
+	/**
+	 * 
+	 * @param identifyingAttributeName
+	 */
+	@Value("${users.visibleIdentifierAttributeName:uid}")
+	public void setIdentifyingAttributeName(String identifyingAttributeName) {
+		this.identifyingAttributeName = identifyingAttributeName;
+	}
+	/**
+	 * 
+	 * @return the attribute used to commonly uniquely identify an account
+	 */
+	public String getIdentifyingAttributeName() {
+		return identifyingAttributeName;
+	}
 	/**
 	 * @param calendarAccountDao the calendarAccountDao to set
 	 */
@@ -106,7 +123,7 @@ public class DestroyAdhocRelationshipController {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		IScheduleOwner owner = currentUser.getScheduleOwner();
 		
-		ICalendarAccount visitorUser = calendarAccountDao.getCalendarAccount(fbo.getVisitorUsername());
+		ICalendarAccount visitorUser = calendarAccountDao.getCalendarAccount(identifyingAttributeName, fbo.getVisitorUsername());
 		if(null == visitorUser) {
 			throw new CalendarAccountNotFoundException(fbo.getVisitorUsername() + " does not exist or is not eligible for WiscCal");
 		}

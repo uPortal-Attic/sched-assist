@@ -32,6 +32,7 @@ import org.jasig.schedassist.model.Relationship;
 import org.jasig.schedassist.web.security.CalendarAccountUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -48,7 +49,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping(value={"/owner/authorized-visitors.json", "/delegate/authorized-visitors.json"})
 public class AdhocRelationshipsDataController {
 	private RelationshipDao relationshipDao;
-
+	private String identifyingAttributeName = "uid";
 	/**
 	 * @param relationshipDao the relationshipDao to set
 	 */
@@ -57,6 +58,22 @@ public class AdhocRelationshipsDataController {
 		this.relationshipDao = relationshipDao;
 	}
 
+	/**
+	 * 
+	 * @param identifyingAttributeName
+	 */
+	@Value("${users.visibleIdentifierAttributeName:uid}")
+	public void setIdentifyingAttributeName(String identifyingAttributeName) {
+		this.identifyingAttributeName = identifyingAttributeName;
+	}
+	/**
+	 * 
+	 * @return the attribute used to commonly uniquely identify an account
+	 */
+	public String getIdentifyingAttributeName() {
+		return identifyingAttributeName;
+	}
+	
 	/**
 	 * 
 	 * @param request
@@ -93,7 +110,7 @@ public class AdhocRelationshipsDataController {
 		AdhocRelationshipVisitorDataBean result = new AdhocRelationshipVisitorDataBean();
 		result.setDescription(relationship.getDescription());
 		result.setFullName(relationship.getVisitor().getCalendarAccount().getDisplayName());
-		result.setUsername(relationship.getVisitor().getCalendarAccount().getUsername());
+		result.setUsername(relationship.getVisitor().getCalendarAccount().getAttributeValue(identifyingAttributeName));
 		return result;
 	}
 	/**
@@ -142,6 +159,12 @@ public class AdhocRelationshipsDataController {
 		 */
 		public void setDescription(String description) {
 			this.description = description;
+		}
+		@Override
+		public String toString() {
+			return "AdhocRelationshipVisitorDataBean [username=" + username
+					+ ", fullName=" + fullName + ", description=" + description
+					+ "]";
 		}
 	}
 }

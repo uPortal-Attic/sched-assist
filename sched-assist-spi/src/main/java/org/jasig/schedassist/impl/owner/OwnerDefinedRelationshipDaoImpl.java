@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
@@ -36,6 +37,7 @@ import org.jasig.schedassist.model.IScheduleVisitor;
 import org.jasig.schedassist.model.Relationship;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -56,69 +58,83 @@ public class OwnerDefinedRelationshipDaoImpl implements MutableRelationshipDao {
 	private ICalendarAccountDao calendarAccountDao;
 	private OwnerDao ownerDao;
 	private VisitorDao visitorDao;
+	private String identifyingAttributeName = "uid";
 
 	/**
 	 * 
 	 * @param dataSource
 	 */
-	@Autowired(required=true)
+	@Autowired
 	public void setDataSource(DataSource dataSource) {
 		this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
 	}
 	/**
 	 * @param calendarAccountDao the calendarAccountDao to set
 	 */
-	@Autowired(required=true)
+	@Autowired
 	public void setCalendarAccountDao(@Qualifier("composite") ICalendarAccountDao calendarAccountDao) {
 		this.calendarAccountDao = calendarAccountDao;
 	}
 	/**
 	 * @param ownerDao the ownerDao to set
 	 */
-	@Autowired(required=true)
+	@Autowired
 	public void setOwnerDao(OwnerDao ownerDao) {
 		this.ownerDao = ownerDao;
 	}
 	/**
 	 * @param visitorDao the visitorDao to set
 	 */
-	@Autowired(required=true)
+	@Autowired
 	public void setVisitorDao(VisitorDao visitorDao) {
 		this.visitorDao = visitorDao;
 	}
-
+	/**
+	 * 
+	 * @param identifyingAttributeName
+	 */
+	@Value("${users.visibleIdentifierAttributeName:uid}")
+	public void setIdentifyingAttributeName(String identifyingAttributeName) {
+		this.identifyingAttributeName = identifyingAttributeName;
+	}
+	/**
+	 * 
+	 * @return the attribute used to commonly uniquely identify an account
+	 */
+	public String getIdentifyingAttributeName() {
+		return identifyingAttributeName;
+	}
 	/*
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.RelationshipDao#forOwner(org.jasig.schedassist.model.IScheduleOwner)
 	 */
 	@Override
 	public List<Relationship> forOwner(final IScheduleOwner owner) {
+		final String ownerIdentifier = getIdentifyingAttribute(owner.getCalendarAccount());
+		
 		List<OwnerDefinedRelationship> relationships = this.simpleJdbcTemplate.query(
 				"select * from owner_adhoc_authz where owner_username = ?", 
 				new OwnerDefinedRelationshipRowMapper(), 
-				owner.getCalendarAccount().getUsername());
+				ownerIdentifier);
 
 		List<Relationship> results = new ArrayList<Relationship>();
 		for(OwnerDefinedRelationship stored : relationships) {
-			ICalendarAccount calendarUser = calendarAccountDao.getCalendarAccount(stored.getVisitorUsername());
+			ICalendarAccount calendarUser = calendarAccountDao.getCalendarAccount(identifyingAttributeName, stored.getVisitorUsername());
 			if(null == calendarUser) {
-				LOG.warn("calendarUser not found for owner in " + stored);
+				LOG.info("calendarAccount not found for owner in " + stored);
 				continue;
 			}
 			try {
 				IScheduleVisitor visitor = visitorDao.toVisitor(calendarUser);
-				if(null != owner) {
-					Relationship relationship = new Relationship();
-					relationship.setOwner(owner);
-					relationship.setVisitor(visitor);
-					relationship.setDescription(stored.getRelationship());
+				
+				Relationship relationship = new Relationship();
+				relationship.setOwner(owner);
+				relationship.setVisitor(visitor);
+				relationship.setDescription(stored.getRelationship());
 
-					results.add(relationship);
-				} else {
-					LOG.warn("owner not registered for record " + stored);
-				}
+				results.add(relationship);
 			} catch (NotAVisitorException e) {
-				LOG.warn("calendarUser found but not a visitor " + stored);
+				LOG.info("calendarAccount found but not a visitor " + stored);
 			}
 		}
 		return results;
@@ -130,16 +146,17 @@ public class OwnerDefinedRelationshipDaoImpl implements MutableRelationshipDao {
 	 */
 	@Override
 	public List<Relationship> forVisitor(final IScheduleVisitor visitor) {
+		final String visitorIdentifier = getIdentifyingAttribute(visitor.getCalendarAccount());
 		List<OwnerDefinedRelationship> relationships = this.simpleJdbcTemplate.query(
 				"select * from owner_adhoc_authz where visitor_username = ?", 
 				new OwnerDefinedRelationshipRowMapper(), 
-				visitor.getCalendarAccount().getUsername());
+				visitorIdentifier);
 
 		List<Relationship> results = new ArrayList<Relationship>();
 		for(OwnerDefinedRelationship stored : relationships) {
-			ICalendarAccount calendarUser = calendarAccountDao.getCalendarAccount(stored.getOwnerUsername());
+			ICalendarAccount calendarUser = calendarAccountDao.getCalendarAccount(identifyingAttributeName, stored.getOwnerUsername());
 			if(null == calendarUser) {
-				LOG.warn("calendarUser not found for owner in " + stored);
+				LOG.info("calendarAccount not found for owner in " + stored);
 				continue;
 			}
 
@@ -152,7 +169,7 @@ public class OwnerDefinedRelationshipDaoImpl implements MutableRelationshipDao {
 
 				results.add(relationship);
 			} else {
-				LOG.warn("owner not registered for record " + stored);
+				LOG.warn("no ScheduleOwner registered for record " + stored);
 			}
 		}
 		return results;
@@ -165,20 +182,22 @@ public class OwnerDefinedRelationshipDaoImpl implements MutableRelationshipDao {
 	@Override
 	public Relationship createRelationship(IScheduleOwner owner, IScheduleVisitor visitor,
 			String relationship) {
-		OwnerDefinedRelationship stored = internalRetrieveRelationship(owner.getCalendarAccount().getUsername(), visitor.getCalendarAccount().getUsername());	
+		final String ownerIdentifier = getIdentifyingAttribute(owner.getCalendarAccount());
+		final String visitorIdentifier = getIdentifyingAttribute(visitor.getCalendarAccount());
+		OwnerDefinedRelationship stored = internalRetrieveRelationship(ownerIdentifier, visitorIdentifier);	
 		if(null == stored) {
 			this.simpleJdbcTemplate.update(
 					"insert into owner_adhoc_authz (owner_username, relationship, visitor_username) values (?, ?, ?)",
-					owner.getCalendarAccount().getUsername(),
+					ownerIdentifier,
 					relationship,
-					visitor.getCalendarAccount().getUsername());
-			LOG.info("stored owner defined relationship: " + owner.getCalendarAccount().getUsername() + ", " + relationship + ", " + visitor.getCalendarAccount().getUsername());
+					visitorIdentifier);
+			LOG.info("stored owner defined relationship: " + owner + ", " + relationship + ", " + visitor);
 		} else {
 			this.simpleJdbcTemplate.update("update owner_adhoc_authz set relationship = ? where owner_username = ? and visitor_username = ?",
 					relationship,
-					owner.getCalendarAccount().getUsername(),
-					visitor.getCalendarAccount().getUsername());
-			LOG.debug("proposed authorization already stored for " + visitor + ", updated relationship description");
+					ownerIdentifier,
+					visitorIdentifier);
+			LOG.info("relationship already exists for " + owner + " and " + visitor + ", updated description");
 		}
 		Relationship result = new Relationship();
 		result.setOwner(owner);
@@ -193,9 +212,25 @@ public class OwnerDefinedRelationshipDaoImpl implements MutableRelationshipDao {
 	 */
 	@Override
 	public void destroyRelationship(IScheduleOwner owner, IScheduleVisitor visitor) {
-		internalDeleteRelationship(owner.getCalendarAccount().getUsername(), visitor.getCalendarAccount().getUsername());
+		final String ownerIdentifier = getIdentifyingAttribute(owner.getCalendarAccount());
+		final String visitorIdentifier = getIdentifyingAttribute(visitor.getCalendarAccount());
+		internalDeleteRelationship(ownerIdentifier, visitorIdentifier);
 	}
 
+	/**
+	 * 
+	 * @param account
+	 * @return the value of {@link OwnerDefinedRelationshipDaoImpl#getIdentifyingAttributeName()} for the account
+	 * @throws IllegalStateException if the account does not have a value for that attribute.
+	 */
+	protected String getIdentifyingAttribute(ICalendarAccount account) {
+		final String ownerIdentifier = account.getAttributeValue(identifyingAttributeName);
+		if(StringUtils.isBlank(ownerIdentifier)) {
+			LOG.error(identifyingAttributeName + " attribute not present for calendarAccount " + account + "; this scenario suggests either a problem with the account, or a deployment configuration problem. Please set the 'users.visibleIdentifierAttributeName' appropriately.");
+			throw new IllegalStateException(identifyingAttributeName + " attribute not present for calendarAccount " + account);
+		}
+		return ownerIdentifier;
+	}
 	/**
 	 * 
 	 * @param ownerUsername

@@ -54,5 +54,10 @@ public class CalendarUserSearchFormBackingObject {
 	public void setReturnForAutocomplete(boolean returnForAutocomplete) {
 		this.returnForAutocomplete = returnForAutocomplete;
 	}
+	@Override
+	public String toString() {
+		return "CalendarUserSearchFormBackingObject [searchText=" + searchText
+				+ ", returnForAutocomplete=" + returnForAutocomplete + "]";
+	}
 	
 }

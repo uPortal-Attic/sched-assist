@@ -87,7 +87,7 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 	 */
 	@Test
 	public void testCreatePublicProfile()  {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = null;
 		try {
@@ -122,7 +122,7 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 	 */
 	@Test
 	public void testCreatePublicProfileWithTags()  {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = null;
 		try {
@@ -187,7 +187,7 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 	
 	@Test
 	public void testCreatePublicProfileTwice()  {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = null;
 		try {
@@ -227,7 +227,7 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 	 */
 	@Test
 	public void testUpdatePublicProfileDescription()  {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = null;
 		try {
@@ -267,7 +267,7 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 	 */
 	@Test
 	public void testRemovePublicProfile() {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = null;
 		try {
@@ -307,7 +307,7 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 	 */
 	@Test
 	public void testRemovePublicProfileWithTags() {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = null;
 		try {
@@ -355,7 +355,7 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 	
 	@Test
 	public void testGetPublicProfileIds() {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = null;
 		try {
@@ -367,7 +367,7 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 		Assert.assertEquals(1, owner1.getId());
 		owner1 = ownerDao.updatePreference(owner1, Preferences.NOTEBOARD, "test1 noteboard");
 		
-		ICalendarAccount user2 = this.calendarAccountDao.getCalendarAccount("username2");
+		ICalendarAccount user2 = this.calendarAccountDao.getCalendarAccount("user2");
 		Assert.assertNotNull(user2);
 		IScheduleOwner owner2 = null;
 		try {
@@ -379,7 +379,7 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 		Assert.assertEquals(2, owner2.getId());
 		owner2 = ownerDao.updatePreference(owner2, Preferences.NOTEBOARD, "test2 noteboard");
 		
-		ICalendarAccount user3 = this.calendarAccountDao.getCalendarAccount("username3");
+		ICalendarAccount user3 = this.calendarAccountDao.getCalendarAccount("user3");
 		Assert.assertNotNull(user3);
 		IScheduleOwner owner3 = null;
 		try {

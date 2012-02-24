@@ -91,7 +91,11 @@
 	<bean id="userAccountDetailsService"
 		class="org.jasig.schedassist.web.security.CalendarAccountUserDetailsServiceImpl">
 		<property name="administratorListProperty" value="${administrators.list}"/>
-		<property name="activeDisplayNameAttribute" value="mail"/>
+		<property name="identifyingAttributeName" value="uid"/>
+		<property name="activeDisplayNameAttribute" value="uid"/>
+		<!--  
+		<property name="identifyingAttributeName" value="${users.visibleIdentifierAttributeName}"/>
+		-->
 	</bean>
 
 	<bean id="delegateAccountDetailsService"

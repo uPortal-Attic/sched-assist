@@ -33,6 +33,7 @@ import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
 import org.jasig.schedassist.web.security.CalendarAccountUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -58,6 +59,22 @@ public class CreateAdhocRelationshipFormController {
 	private ICalendarAccountDao calendarAccountDao;
 	private VisitorDao visitorDao;
 	private MutableRelationshipDao mutableRelationshipDao;
+	private String identifyingAttributeName = "uid";
+	/**
+	 * 
+	 * @param identifyingAttributeName
+	 */
+	@Value("${users.visibleIdentifierAttributeName:uid}")
+	public void setIdentifyingAttributeName(String identifyingAttributeName) {
+		this.identifyingAttributeName = identifyingAttributeName;
+	}
+	/**
+	 * 
+	 * @return the attribute used to commonly uniquely identify an account
+	 */
+	public String getIdentifyingAttributeName() {
+		return identifyingAttributeName;
+	}
 	/**
 	 * @param calendarAccountDao the calendarAccountDao to set
 	 */
@@ -114,7 +131,7 @@ public class CreateAdhocRelationshipFormController {
 	protected String createRelationship(@Valid @ModelAttribute("command") ModifyAdhocRelationshipFormBackingObject fbo, final ModelMap model) throws CalendarAccountNotFoundException, NotAVisitorException, NotRegisteredException {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		IScheduleOwner owner = currentUser.getScheduleOwner();
-		ICalendarAccount visitorUser = calendarAccountDao.getCalendarAccount(fbo.getVisitorUsername());
+		ICalendarAccount visitorUser = calendarAccountDao.getCalendarAccount(this.identifyingAttributeName, fbo.getVisitorUsername());
 		if(null == visitorUser) {
 			throw new CalendarAccountNotFoundException(fbo.getVisitorUsername() + " does not exist or is not eligible for WiscCal");
 		}

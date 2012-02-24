@@ -20,6 +20,7 @@
 package org.jasig.schedassist.impl.owner;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.jasig.schedassist.ICalendarAccountDao;
@@ -48,16 +49,27 @@ class MockCalendarAccountDao implements ICalendarAccountDao {
 	 * @param numberOfAccounts the number of mock accounts to create
 	 */
 	MockCalendarAccountDao(int numberOfAccounts) {
-		for(int i = 1; i <= numberOfAccounts; i++) {
+		for(int i = 0; i < numberOfAccounts; i++) {
 			MockCalendarAccount user = new MockCalendarAccount();
-			user.setUsername("username" + i);
+			user.setUsername("user" + i);
 			user.setCalendarUniqueId("10000:0000" + i);
+			user.setEligible(true);
 			user.setEmailAddress("email" + i + "@domain.com");
 			user.setDisplayName("First Last" + i);
 			user.setAttributeValue(CUSTOM_ATTRIBUTE_NAME, "custom"+i);
+			// set the 'mail' and 'username' attributes explicitly as some dao tests depend on it
+			user.setAttributeValue("mail", "email" + i + "@domain.com");
+			user.setAttributeValue("uid", "user" + i);
 			accounts.add(user);
 		}
-		
+	}
+	
+	/**
+	 * Initialize the dao with a pre-populated set of accounts.
+	 * @param accounts
+	 */
+	MockCalendarAccountDao(Collection<MockCalendarAccount> accounts) {
+		this.accounts.addAll(accounts);
 	}
 	/*
 	 * (non-Javadoc)
@@ -80,9 +92,10 @@ class MockCalendarAccountDao implements ICalendarAccountDao {
 	@Override
 	public ICalendarAccount getCalendarAccount(String attributeName,
 			String attributeValue) {
-		for(MockCalendarAccount a : accounts) {
-			if(a.getAttributeValue(attributeName).equals(attributeValue)) {
-				return a;
+		for(MockCalendarAccount current : accounts) {
+			final String currentValue = current.getAttributeValue(attributeName);
+			if(currentValue != null && currentValue.equals(attributeValue)) {
+				return current;
 			}
 		}
 		return null;
@@ -154,6 +167,14 @@ class MockCalendarAccountDao implements ICalendarAccountDao {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Add a {@link MockCalendarAccount} to this dao.
+	 * @param account
+	 */
+	public void addCalendarAccount(MockCalendarAccount account) {
+		accounts.add(account);
 	}
 
 }

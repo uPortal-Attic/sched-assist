@@ -121,8 +121,6 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 			String attributeValue) {
 		AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter(attributeName, attributeValue));
-		// make sure our results have usernames
-		filter.and(new LikeFilter(ldapAttributesKey.getUsernameAttributeName(), WILD));
 		return executeSearch(filter);
 	}
 

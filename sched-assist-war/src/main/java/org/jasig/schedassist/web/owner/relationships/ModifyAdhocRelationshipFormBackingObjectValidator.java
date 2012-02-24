@@ -38,7 +38,7 @@ import org.springframework.validation.Validator;
  */
 public class ModifyAdhocRelationshipFormBackingObjectValidator implements Validator {
 
-	private static final String VALID_USERNAME_REGEX = "[\\w\\d\\.\\-\\_]+";
+	private static final String VALID_USERNAME_REGEX = "[\\w\\d\\.\\-\\_@]+";
 	private static final Pattern VALID_USERNAME_PATTERN = Pattern.compile(VALID_USERNAME_REGEX);
 
 	private ICalendarAccountDao calendarAccountDao;

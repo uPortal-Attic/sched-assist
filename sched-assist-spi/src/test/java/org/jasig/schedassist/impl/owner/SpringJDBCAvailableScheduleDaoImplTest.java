@@ -36,11 +36,11 @@ import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
 import org.jasig.schedassist.model.AvailableSchedule;
 import org.jasig.schedassist.model.CommonDateOperations;
+import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.InputFormatException;
 import org.jasig.schedassist.model.MeetingDurations;
 import org.jasig.schedassist.model.Preferences;
-import org.jasig.schedassist.model.mock.MockCalendarAccount;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,17 +66,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class SpringJDBCAvailableScheduleDaoImplTest extends
 		AbstractJUnit4SpringContextTests {
 
+	@Autowired
 	private SpringJDBCAvailableScheduleDaoImpl availableScheduleDao;
 	private IScheduleOwner[] sampleOwners = new IScheduleOwner[5];
-	
-	/**
-	 * @param availableScheduleDao the availableScheduleDao to set
-	 */
 	@Autowired
-	public void setAvailableScheduleDao(
-			SpringJDBCAvailableScheduleDaoImpl availableScheduleDao) {
-		this.availableScheduleDao = availableScheduleDao;
-	}
+	private OwnerDao ownerDao;
+	@Autowired
+	private MockCalendarAccountDao calendarAccountDao;
 	
 	/**
 	 * 
@@ -594,14 +590,8 @@ public class SpringJDBCAvailableScheduleDaoImplTest extends
 		JdbcTemplate template = new JdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
 		template.execute(sql);
 		
-		OwnerDao ownerDao = (OwnerDao) this.applicationContext.getBean("ownerDao");
 		for(int i = 0; i < sampleOwners.length; i++) {
-			
-			MockCalendarAccount calendarAccount = new MockCalendarAccount();
-			calendarAccount.setUsername("user"+i);
-			calendarAccount.setCalendarUniqueId("10000:0000" + i);
-			calendarAccount.setEmailAddress("email"+ i + "@domain.com");
-			calendarAccount.setDisplayName("User Name" + i);
+			ICalendarAccount calendarAccount = this.calendarAccountDao.getCalendarAccount("user"+i);
 			sampleOwners[i] = ownerDao.register(calendarAccount);
 		}
 		// give 3rd owner a 17 minute meeting duration preference

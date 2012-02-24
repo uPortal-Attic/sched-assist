@@ -34,6 +34,7 @@ import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -56,7 +57,8 @@ public class CalendarAccountUserDetailsServiceImpl implements
 	private VisitorDao visitorDao;
 	private OwnerDao ownerDao;
 	private List<String> administrators = new ArrayList<String>();
-	private String activeDisplayNameAttribute = "mail";
+	private String identifyingAttributeName = "uid";
+	private String activeDisplayNameAttribute = "uid";
 	protected final Log LOG = LogFactory.getLog(this.getClass());
 	/**
 	 * @param calendarAccountDao the calendarAccountDao to set
@@ -87,10 +89,33 @@ public class CalendarAccountUserDetailsServiceImpl implements
 		this.administrators = Arrays.asList(admins);
 	}
 	/**
-	 * @param activeDisplayNameAttribute the activeDisplayNameAttribute to set
+	 * 
+	 * @param identifyingAttributeName
+	 */
+	@Value("${users.visibleIdentifierAttributeName:uid}")
+	public void setIdentifyingAttributeName(String identifyingAttributeName) {
+		this.identifyingAttributeName = identifyingAttributeName;
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public String getActiveDisplayNameAttribute() {
+		return activeDisplayNameAttribute;
+	}
+	/**
+	 * 
+	 * @param activeDisplayNameAttribute
 	 */
 	public void setActiveDisplayNameAttribute(String activeDisplayNameAttribute) {
 		this.activeDisplayNameAttribute = activeDisplayNameAttribute;
+	}
+	/**
+	 * 
+	 * @return the attribute used to commonly uniquely identify an account
+	 */
+	public String getIdentifyingAttributeName() {
+		return identifyingAttributeName;
 	}
 	/**
 	 * @return the calendarAccountDao
@@ -110,12 +135,7 @@ public class CalendarAccountUserDetailsServiceImpl implements
 	public OwnerDao getOwnerDao() {
 		return ownerDao;
 	}
-	/**
-	 * @return the activeDisplayNameAttribute
-	 */
-	public String getActiveDisplayNameAttribute() {
-		return activeDisplayNameAttribute;
-	}
+	
 	/* (non-Javadoc)
 	 * @see org.springframework.security.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
 	 */
@@ -125,7 +145,7 @@ public class CalendarAccountUserDetailsServiceImpl implements
 			LOG.debug("caught NONE_PROVIDED being passed into loadUserByUsername");
 			throw new UsernameNotFoundException(NONE_PROVIDED);
 		}
-		ICalendarAccount calendarAccount = getCalendarAccount(username);
+		ICalendarAccount calendarAccount = calendarAccountDao.getCalendarAccount(this.identifyingAttributeName, username);
 		if(null == calendarAccount) {
 			throw new UsernameNotFoundException("no calendar account found for " + username);
 		}
@@ -137,16 +157,6 @@ public class CalendarAccountUserDetailsServiceImpl implements
 			result.setAdministrator(true);
 		}
 		return result;
-	}
-	
-	/**
-	 * 
-	 * @param value
-	 * @return
-	 */
-	protected ICalendarAccount getCalendarAccount(final String value) {
-		ICalendarAccount calendarAccount = calendarAccountDao.getCalendarAccount(value);
-		return calendarAccount;
 	}
 
 	/**

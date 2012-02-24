@@ -76,7 +76,7 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 	 */
 	@Test
 	public void testRegister() throws Exception {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = ownerDao.register(user1);
 		Assert.assertNotNull(owner1);
@@ -85,10 +85,10 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 		Assert.assertEquals(Preferences.getDefaultPreferences(), ownerPrefs);
 		
 		// test lookup methods
-		Assert.assertEquals("username1", ownerDao.lookupUsername(1));
+		Assert.assertEquals("user1", ownerDao.lookupUsername(1));
 		Assert.assertEquals("10000:00001", ownerDao.lookupUniqueId(1));
 		
-		ICalendarAccount user2 = this.calendarAccountDao.getCalendarAccount("username2");
+		ICalendarAccount user2 = this.calendarAccountDao.getCalendarAccount("user2");
 		Assert.assertNotNull(user2);
 		IScheduleOwner owner2 = ownerDao.register(user2);
 		Assert.assertNotNull(owner2);
@@ -96,7 +96,7 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 		Map<Preferences, String> owner2Prefs = owner2.getPreferences();
 		Assert.assertEquals(Preferences.getDefaultPreferences(), owner2Prefs);
 		
-		Assert.assertEquals("username2", ownerDao.lookupUsername(2));
+		Assert.assertEquals("user2", ownerDao.lookupUsername(2));
 		Assert.assertEquals("10000:00002", ownerDao.lookupUniqueId(2));
 	}
 	
@@ -106,7 +106,7 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 	 */
 	@Test
 	public void testRegisterAndRemove() throws Exception {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = ownerDao.register(user1);
 		Assert.assertNotNull(owner1);
@@ -115,7 +115,7 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 		Assert.assertEquals(Preferences.getDefaultPreferences(), ownerPrefs);
 		
 		// test lookup methods
-		Assert.assertEquals("username1", ownerDao.lookupUsername(1));
+		Assert.assertEquals("user1", ownerDao.lookupUsername(1));
 		Assert.assertEquals("10000:00001", ownerDao.lookupUniqueId(1));
 		
 		ownerDao.removeAccount(owner1);
@@ -129,7 +129,7 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 	 */
 	@Test
 	public void testRegisterTwice() throws Exception {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = ownerDao.register(user1);
 		Assert.assertNotNull(owner1);
@@ -138,7 +138,7 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 		Assert.assertEquals(Preferences.getDefaultPreferences(), ownerPrefs);
 		
 		// test lookup methods
-		Assert.assertEquals("username1", ownerDao.lookupUsername(1));
+		Assert.assertEquals("user1", ownerDao.lookupUsername(1));
 		Assert.assertEquals("10000:00001", ownerDao.lookupUniqueId(1));
 		
 		// try to register again
@@ -152,7 +152,7 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 	 */
 	@Test
 	public void testUpdatePreference() throws Exception {
-		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("username1");
+		ICalendarAccount user1 = this.calendarAccountDao.getCalendarAccount("user1");
 		Assert.assertNotNull(user1);
 		IScheduleOwner owner1 = ownerDao.register(user1);
 		Assert.assertNotNull(owner1);
@@ -188,7 +188,7 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 	 */
 	@Test
 	public void testExternalUniqueIdChanges() throws IneligibleException {
-		ICalendarAccount user = this.calendarAccountDao.getCalendarAccount("username4");
+		ICalendarAccount user = this.calendarAccountDao.getCalendarAccount("user4");
 		Assert.assertNotNull(user);
 		IScheduleOwner owner = ownerDao.register(user);
 		Assert.assertNotNull(owner);
@@ -221,7 +221,7 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 	 */
 	@Test
 	public void testUsernameChanges() throws IneligibleException {
-		ICalendarAccount user = this.calendarAccountDao.getCalendarAccount("username5");
+		ICalendarAccount user = this.calendarAccountDao.getCalendarAccount("user5");
 		Assert.assertNotNull(user);
 		IScheduleOwner owner = ownerDao.register(user);
 		Assert.assertNotNull(owner);
@@ -256,7 +256,7 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 	 */
 	@Test
 	public void testLookupByIdUsernameChanged() throws Exception {
-		ICalendarAccount user = this.calendarAccountDao.getCalendarAccount("username6");
+		ICalendarAccount user = this.calendarAccountDao.getCalendarAccount("user6");
 		Assert.assertNotNull(user);
 		IScheduleOwner owner = ownerDao.register(user);
 		Assert.assertNotNull(owner);

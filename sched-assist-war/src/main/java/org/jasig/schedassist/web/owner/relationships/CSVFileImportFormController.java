@@ -47,6 +47,7 @@ import org.jasig.schedassist.web.security.CalendarAccountUserDetails;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -92,6 +93,22 @@ public class CSVFileImportFormController implements DisposableBean {
 	private MutableRelationshipDao mutableRelationshipDao;
 	private VisitorDao visitorDao;
 	private ICalendarAccountDao calendarAccountDao;
+	private String identifyingAttributeName = "uid";
+	/**
+	 * 
+	 * @param identifyingAttributeName
+	 */
+	@Value("${users.visibleIdentifierAttributeName:uid}")
+	public void setIdentifyingAttributeName(String identifyingAttributeName) {
+		this.identifyingAttributeName = identifyingAttributeName;
+	}
+	/**
+	 * 
+	 * @return the attribute used to commonly uniquely identify an account
+	 */
+	public String getIdentifyingAttributeName() {
+		return identifyingAttributeName;
+	}
 	/**
 	 * @param executorService the executorService to set
 	 */
@@ -139,7 +156,7 @@ public class CSVFileImportFormController implements DisposableBean {
 	protected String uploadFile(final ModelMap model, @RequestParam("file") final MultipartFile file, final HttpServletRequest request) throws NotRegisteredException {
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		IScheduleOwner owner = currentUser.getScheduleOwner();
-		FileImportCallable callable = new FileImportCallable(file, calendarAccountDao, visitorDao, owner, mutableRelationshipDao);
+		FileImportCallable callable = new FileImportCallable(file, calendarAccountDao, visitorDao, owner, mutableRelationshipDao, identifyingAttributeName);
 		Future<CSVFileImportResult> f = executorService.submit(callable);
 		request.getSession(true).setAttribute(IMPORT_FUTURE_NAME, f);
 
@@ -204,18 +221,21 @@ public class CSVFileImportFormController implements DisposableBean {
 		private IScheduleOwner scheduleOwner;
 		private MutableRelationshipDao mutableRelationshipDao;
 		private final ModifyAdhocRelationshipFormBackingObjectValidator validator;
+		private final String identifyingAttributeName;
 
 		/**
 		 * @param fileData
 		 */
 		public FileImportCallable(final MultipartFile file, final ICalendarAccountDao calendarAccountDao,
-				final VisitorDao visitorDao, final IScheduleOwner scheduleOwner, final MutableRelationshipDao mutableRelationshipDao) {
+				final VisitorDao visitorDao, final IScheduleOwner scheduleOwner, 
+				final MutableRelationshipDao mutableRelationshipDao, final String identifyingAttributeName) {
 			this.file = file;
 			this.visitorDao = visitorDao;
 			this.calendarAccountDao = calendarAccountDao;
 			this.scheduleOwner = scheduleOwner;
 			this.mutableRelationshipDao = mutableRelationshipDao;
 			validator = new ModifyAdhocRelationshipFormBackingObjectValidator(this.calendarAccountDao);
+			this.identifyingAttributeName = identifyingAttributeName;
 		}
 
 		/*
@@ -240,7 +260,7 @@ public class CSVFileImportFormController implements DisposableBean {
 						}
 					}
 				} else {
-					ICalendarAccount visitorUser = calendarAccountDao.getCalendarAccount(fbo.getVisitorUsername());
+					ICalendarAccount visitorUser = calendarAccountDao.getCalendarAccount(identifyingAttributeName, fbo.getVisitorUsername());
 					if(null == visitorUser) {
 						result.storeFailure(lineNumber, fbo.getVisitorUsername(), "Account not eligible for WiscCal");
 					}

@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -56,6 +57,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 public class CalendarUserSearchFormController {
 
 	private ICalendarAccountDao calendarAccountDao;
+	private String identifyingAttributeName = "uid";
 	/**
 	 * @param calendarAccountDao the calendarAccountDao to set
 	 */
@@ -63,7 +65,21 @@ public class CalendarUserSearchFormController {
 	public void setCalendarAccountDao(ICalendarAccountDao calendarAccountDao) {
 		this.calendarAccountDao = calendarAccountDao;
 	}
-
+	/**
+	 * 
+	 * @param identifyingAttributeName
+	 */
+	@Value("${users.visibleIdentifierAttributeName:uid}")
+	public void setIdentifyingAttributeName(String identifyingAttributeName) {
+		this.identifyingAttributeName = identifyingAttributeName;
+	}
+	/**
+	 * 
+	 * @return the attribute used to commonly uniquely identify an account
+	 */
+	public String getIdentifyingAttributeName() {
+		return identifyingAttributeName;
+	}
 	/**
 	 * If the qValue parameter is not blank, execute a search, and return
 	 * the autocomplete results view name.
@@ -89,6 +105,7 @@ public class CalendarUserSearchFormController {
 		}
 		List<ICalendarAccount> results = filterForEligible(matches);
 		model.addAttribute("results", results);
+		model.addAttribute("identifyingAttributeName", identifyingAttributeName);
 		return "owner-relationships/calendaruser-results-ac";
 	}
 	/**
@@ -108,6 +125,7 @@ public class CalendarUserSearchFormController {
 		}
 		List<ICalendarAccount> results = filterForEligible(matches);
 		model.addAttribute("results", results);
+		model.addAttribute("identifyingAttributeName", identifyingAttributeName);
 		return "owner-relationships/calendaruser-results";
 	}	
 

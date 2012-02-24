@@ -75,4 +75,11 @@ public class ModifyAdhocRelationshipFormBackingObject {
 		this.userSearchText = userSearchText;
 	}
 
+	@Override
+	public String toString() {
+		return "ModifyAdhocRelationshipFormBackingObject [userSearchText="
+				+ userSearchText + ", visitorUsername=" + visitorUsername
+				+ ", relationship=" + relationship + "]";
+	}
+
 }

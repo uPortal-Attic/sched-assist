@@ -25,6 +25,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +35,7 @@ import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.Preferences;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -57,6 +59,7 @@ public class SpringJDBCOwnerDaoImpl implements
 	private DataFieldMaxValueIncrementer ownerIdSequence;
 	private OwnerAuthorization ownerAuthorization;
 	private ICalendarAccountDao calendarAccountDao;
+	private String identifyingAttributeName = "uid";
 	
 	/**
 	 * @param dataSource the dataSource to set
@@ -85,6 +88,21 @@ public class SpringJDBCOwnerDaoImpl implements
 	@Autowired
 	public void setCalendarAccountDao(@Qualifier("composite") ICalendarAccountDao calendarAccountDao) {
 		this.calendarAccountDao = calendarAccountDao;
+	}
+	/**
+	 * 
+	 * @param identifyingAttributeName
+	 */
+	@Value("${users.visibleIdentifierAttributeName:uid}")
+	public void setIdentifyingAttributeName(String identifyingAttributeName) {
+		this.identifyingAttributeName = identifyingAttributeName;
+	}
+	/**
+	 * 
+	 * @return the attribute used to commonly uniquely identify an account
+	 */
+	public String getIdentifyingAttributeName() {
+		return identifyingAttributeName;
 	}
 
 	/*
@@ -252,6 +270,21 @@ public class SpringJDBCOwnerDaoImpl implements
 	
 	/**
 	 * 
+	 * @param account
+	 * @return the value of {@link #getIdentifyingAttributeName()} for the account
+	 * @throws IllegalStateException if the account does not have a value for that attribute.
+	 */
+	protected String getIdentifyingAttribute(ICalendarAccount account) {
+		final String ownerIdentifier = account.getAttributeValue(identifyingAttributeName);
+		if(StringUtils.isBlank(ownerIdentifier)) {
+			LOG.error(identifyingAttributeName + " attribute not present for calendarAccount " + account + "; this scenario suggests either a problem with the account, or a deployment configuration problem. Please set the 'users.visibleIdentifierAttributeName' appropriately.");
+			throw new IllegalStateException(identifyingAttributeName + " attribute not present for calendarAccount " + account);
+		}
+		return ownerIdentifier;
+	}
+	
+	/**
+	 * 
 	 * @param owner
 	 * @return
 	 */
@@ -272,11 +305,12 @@ public class SpringJDBCOwnerDaoImpl implements
 	 */
 	protected IScheduleOwner internalStoreAsOwner(final ICalendarAccount calendarUser) {
 		long newOwnerId = ownerIdSequence.nextLongValue();
+		final String visibleIdentifier = getIdentifyingAttribute(calendarUser);
 		int rows = this.simpleJdbcTemplate.update(
 				"insert into owners (internal_id, external_unique_id, username) values (?, ?, ?)", 
 				newOwnerId, 
 				calendarUser.getCalendarUniqueId(), 
-				calendarUser.getUsername());
+				visibleIdentifier);
 		DefaultScheduleOwnerImpl newOwner = new DefaultScheduleOwnerImpl(calendarUser, newOwnerId);
 		LOG.info("stored new owner: " + newOwner + "; rows updated: " + rows);
 		return newOwner;
@@ -290,12 +324,12 @@ public class SpringJDBCOwnerDaoImpl implements
 	 */
 	protected IScheduleOwner internalLookup(final ICalendarAccount calendarAccount) {
 		final String uniqueId = calendarAccount.getCalendarUniqueId();
-		final String username = calendarAccount.getUsername();
+		final String visibleIdentifier = getIdentifyingAttribute(calendarAccount);
 		List<PersistenceScheduleOwner> matching =  this.simpleJdbcTemplate.query(
 				"select * from owners where external_unique_id = ? or username = ?",
 				new PersistenceScheduleOwnerRowMapper(), 
 				uniqueId,
-				username);
+				visibleIdentifier);
 		PersistenceScheduleOwner internal = (PersistenceScheduleOwner) DataAccessUtils.singleResult(matching);
 		if(null != internal){
 			// verify the internal record matches calendarAccount
@@ -323,8 +357,9 @@ public class SpringJDBCOwnerDaoImpl implements
 	 * @return the {@link PersistenceScheduleOwner}, with any updates applied
 	 */
 	protected PersistenceScheduleOwner updateScheduleOwnerIfNecessary(ICalendarAccount calendarAccount, PersistenceScheduleOwner persisted) {
-		if(!persisted.getCalendarUniqueId().equals(calendarAccount.getCalendarUniqueId()) && persisted.getUsername().equals(calendarAccount.getUsername())) {
-			LOG.warn("PersistedScheduleOwner(username=" + persisted.getUsername() + ") has different calendarUniqueId than calendarAccount; persisted: " + persisted.getUsername() + ", new value: " + calendarAccount.getUsername());
+		final String accountVisibleIdentifier = getIdentifyingAttribute(calendarAccount);
+		if(!persisted.getCalendarUniqueId().equals(calendarAccount.getCalendarUniqueId()) && persisted.getUsername().equals(accountVisibleIdentifier)) {
+			LOG.warn("PersistedScheduleOwner(username=" + persisted.getUsername() + ") has different calendarUniqueId than calendarAccount; persisted: " + persisted.getUsername() + ", new value: " + accountVisibleIdentifier);
 			int rows = this.simpleJdbcTemplate.update("update owners set external_unique_id=? where username=?", 
 					calendarAccount.getCalendarUniqueId(),
 					calendarAccount.getUsername());
@@ -335,12 +370,12 @@ public class SpringJDBCOwnerDaoImpl implements
 				LOG.error("failed to persist calendarUniqueId update for " + calendarAccount + ", rows " + rows);
 				throw new ScheduleOwnerUpdateFailureException("failed to persist calendarUniqueId update for " + calendarAccount);
 			}
-		} else if (!persisted.getUsername().equals(calendarAccount.getUsername()) && persisted.getCalendarUniqueId().equals(calendarAccount.getCalendarUniqueId())) {
+		} else if (!persisted.getUsername().equals(accountVisibleIdentifier) && persisted.getCalendarUniqueId().equals(calendarAccount.getCalendarUniqueId())) {
 			final String oldUsername = persisted.getUsername();
-			final String newUsername = calendarAccount.getUsername();
-			LOG.warn("PersistedScheduleOwner(calendarUniqueId=" + persisted.getCalendarUniqueId() + ") has different username than calendarAccount; persisted: " + oldUsername + ", new value: " + newUsername);
+			
+			LOG.warn("PersistedScheduleOwner(calendarUniqueId=" + persisted.getCalendarUniqueId() + ") has different username than calendarAccount; persisted: " + oldUsername + ", new value: " + accountVisibleIdentifier);
 			int rows = this.simpleJdbcTemplate.update("update owners set username=? where external_unique_id=?", 
-					newUsername,
+					accountVisibleIdentifier,
 					calendarAccount.getCalendarUniqueId());
 			persisted.setUsername(calendarAccount.getUsername());
 			if(rows == 1) {
@@ -351,8 +386,8 @@ public class SpringJDBCOwnerDaoImpl implements
 			}
 			
 			rows = this.simpleJdbcTemplate.update("update owner_adhoc_authz set owner_username=? where owner_username=?",
-		 		newUsername,
-		 		oldUsername);
+					accountVisibleIdentifier,
+					oldUsername);
 		 	if(rows > 0) {
 		 		LOG.warn("updated " + rows + " rows in owner_adhoc_authz for " + persisted);
 		    }
@@ -378,7 +413,7 @@ public class SpringJDBCOwnerDaoImpl implements
 		if(null != internal){
 			
 			// ask calendarUserDao for more information
-			ICalendarAccount calendarAccount = calendarAccountDao.getCalendarAccount(internal.getUsername());
+			ICalendarAccount calendarAccount = calendarAccountDao.getCalendarAccount(this.identifyingAttributeName, internal.getUsername());
 			if(null == calendarAccount) {	
 				// try by uniqueId
 				calendarAccount = calendarAccountDao.getCalendarAccountFromUniqueId(internal.getCalendarUniqueId());
