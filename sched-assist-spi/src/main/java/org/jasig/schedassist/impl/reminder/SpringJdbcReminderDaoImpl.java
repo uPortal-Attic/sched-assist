@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 
 import net.fortuna.ical4j.model.component.VEvent;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.model.AvailableBlock;
@@ -33,6 +34,7 @@ import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer;
@@ -51,7 +53,7 @@ class SpringJdbcReminderDaoImpl implements ReminderDao {
 	private SimpleJdbcTemplate simpleJdbcTemplate;
 	private DataFieldMaxValueIncrementer reminderIdSequence;
 	private Log LOG = LogFactory.getLog(this.getClass());
-	
+	private String identifyingAttributeName = "uid";
 	/**
 	 * 
 	 * @param ds
@@ -68,6 +70,21 @@ class SpringJdbcReminderDaoImpl implements ReminderDao {
 			@Qualifier("reminders") DataFieldMaxValueIncrementer reminderIdSequence) {
 		this.reminderIdSequence = reminderIdSequence;
 	}
+	/**
+	 * 
+	 * @param identifyingAttributeName
+	 */
+	@Value("${users.visibleIdentifierAttributeName:uid}")
+	public void setIdentifyingAttributeName(String identifyingAttributeName) {
+		this.identifyingAttributeName = identifyingAttributeName;
+	}
+	/**
+	 * 
+	 * @return the attribute used to commonly uniquely identify an account
+	 */
+	public String getIdentifyingAttributeName() {
+		return identifyingAttributeName;
+	}
 	/*
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.impl.reminder.ReminderDao#createEventReminder(org.jasig.schedassist.model.IScheduleOwner, org.jasig.schedassist.model.ICalendarAccount, org.jasig.schedassist.model.AvailableBlock, net.fortuna.ical4j.model.component.VEvent, java.util.Date)
@@ -76,12 +93,12 @@ class SpringJdbcReminderDaoImpl implements ReminderDao {
 	@Transactional
 	public IReminder createEventReminder(IScheduleOwner owner,
 			ICalendarAccount recipient, AvailableBlock appointmentBlock, VEvent event, Date sendTime) {
-		
+		final String recipientIdentifier = getIdentifyingAttribute(recipient);
 		long newReminderId = this.reminderIdSequence.nextLongValue();
 		int rows = this.simpleJdbcTemplate.update("insert into reminders (reminder_id,owner_id,recipient,event_start,event_end,send_time) values (?,?,?,?,?,?)",
 				newReminderId,
 				owner.getId(),
-				recipient.getUsername(),
+				recipientIdentifier,
 				appointmentBlock.getStartTime(),
 				appointmentBlock.getEndTime(),
 				sendTime);
@@ -145,15 +162,31 @@ class SpringJdbcReminderDaoImpl implements ReminderDao {
 	@Override
 	public PersistedReminderImpl getReminder(IScheduleOwner owner,
 			ICalendarAccount recipient, AvailableBlock appointmentBlock) {
+		final String recipientIdentifier = getIdentifyingAttribute(recipient);
 		List<PersistedReminderImpl> persisted = this.simpleJdbcTemplate.query(
 				"select * from reminders where owner_id=? and recipient=? and event_start=? and event_end=?", 
 				new PersistedReminderImplRowMapper(), 
 				owner.getId(),
-				recipient.getUsername(),
+				recipientIdentifier,
 				appointmentBlock.getStartTime(),
 				appointmentBlock.getEndTime());
 		
 		PersistedReminderImpl p = DataAccessUtils.singleResult(persisted);
 		return p;
+	}
+	
+	/**
+	 * 
+	 * @param account
+	 * @return the value of {@link #getIdentifyingAttributeName()} for the account
+	 * @throws IllegalStateException if the account does not have a value for that attribute.
+	 */
+	protected String getIdentifyingAttribute(ICalendarAccount account) {
+		final String ownerIdentifier = account.getAttributeValue(identifyingAttributeName);
+		if(StringUtils.isBlank(ownerIdentifier)) {
+			LOG.error(identifyingAttributeName + " attribute not present for calendarAccount " + account + "; this scenario suggests either a problem with the account, or a deployment configuration problem. Please set the 'users.visibleIdentifierAttributeName' appropriately.");
+			throw new IllegalStateException(identifyingAttributeName + " attribute not present for calendarAccount " + account);
+		}
+		return ownerIdentifier;
 	}
 }
