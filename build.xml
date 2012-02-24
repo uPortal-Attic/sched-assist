@@ -135,7 +135,7 @@
 			<condition property="do.abort">
 				<equals arg1="n" arg2="${confirmed}" />
 			</condition>
-			<fail if="do.abort">hsql-rebuilde aborted.</fail>
+			<fail if="do.abort">hsql-rebuild aborted.</fail>
 
 			<java classname="org.jasig.schedassist.impl.InitializeSchedulingAssistantDatabase" fork="true" dir=".">
 				<!-- firstRun=false will trigger drop ddl commands -->
