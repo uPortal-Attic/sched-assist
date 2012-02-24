@@ -41,9 +41,9 @@
     Import either "bedework.xml" or "default-caldav.xml" or "oracle-comms.xml" 
     One or the other, never more than 1 of the 3.
      -->
-    <import resource="integration/oracle-comms.xml"/>
-    <!--  
     <import resource="integration/bedework.xml"/>
+    <!--  
+    <import resource="integration/oracle-comms.xml"/>
     <import resource="integration/default-caldav.xml"/>
     -->
     
