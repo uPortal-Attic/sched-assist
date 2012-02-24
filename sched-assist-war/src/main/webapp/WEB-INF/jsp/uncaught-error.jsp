@@ -23,7 +23,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title>WiscCal Scheduling Assistant - Unexpected Calendar Server Error</title>
+<title><spring:message code="application.name"/> - <spring:message code="unexpected.error"/></title>
 <%@ include file="/WEB-INF/jsp/themes/jasig/head-elements.jsp" %>
 </head>
 <body>
@@ -31,9 +31,7 @@
 
 <div id="content" class="main col">
 <div class="alert">
-<p><i>Either the WiscCal service is unexpectedly unavailable, or some other unexpected error has occurred.</i>
-</p>
-If you repeatedly see this message, please report the error to the <a href="http://kb.wisc.edu/helpdesk/page.php?id=1">DoIT Help Desk</a>.
+<p><spring:message code="unexpected.error.detail" htmlEscape="false"/></p>
 </div>
 </div> <!--  content -->
 

@@ -98,6 +98,7 @@
 				org.jasig.schedassist.impl.oraclecalendar.OracleCalendarDataAccessException=SERVER,Oracle Calendar Server unavailable (Service Unavailable)
 				org.springframework.transaction.CannotCreateTransactionException=SERVER,Scheduling Assistant Database unavailable (Service Unavailable)
 				org.springframework.jdbc.CannotGetJdbcConnectionException=SERVER,Scheduling Assistant Database unavailable (Service Unavailable)
+				org.jasig.schedassist.impl.caldav.CaldavDataAccessException=SERVER,CalDAV Service unavailable (Service Unavailable)
 				javax.naming.CommunicationException=SERVER,Unable to reach LDAP (Service Unavailable)
 			</value>
 		</property>

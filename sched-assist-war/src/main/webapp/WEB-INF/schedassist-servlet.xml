@@ -81,13 +81,13 @@
 				<prop key="org.jasig.schedassist.SchedulingException">scheduling-error</prop>
 				<prop key="org.jasig.schedassist.impl.owner.IneligibleException">owner-ineligible</prop>
 				<prop key="org.jasig.schedassist.impl.owner.NotRegisteredException">registration-required</prop>
-				<prop key="org.springframework.transaction.CannotCreateTransactionException">calendar-service-unavailable</prop>
-				<prop key="org.springframework.security.authentication.AuthenticationServiceException">calendar-service-unavailable</prop>
-				<prop key="java.sql.SQLException">calendar-service-unavailable</prop>
-				<prop key="org.springframework.jdbc.CannotGetJdbcConnectionException">calendar-service-unavailable</prop>
-				<prop key="org.jasig.schedassist.impl.oraclecalendar.OracleCalendarDataAccessException">calendar-service-unavailable</prop>
-				<prop key="org.jasig.schedassist.impl.caldav.CaldavDataAccessException">calendar-service-unavailable</prop>
-				<prop key="javax.naming.CommunicationException">calendar-service-unavailable</prop>
+				<prop key="org.springframework.transaction.CannotCreateTransactionException">serviceUnavailable</prop>
+				<prop key="org.springframework.security.authentication.AuthenticationServiceException">serviceUnavailable</prop>
+				<prop key="java.sql.SQLException">uncaught-error</prop>
+				<prop key="org.springframework.jdbc.CannotGetJdbcConnectionException">serviceUnavailable</prop>
+				<prop key="org.jasig.schedassist.impl.oraclecalendar.OracleCalendarDataAccessException">serviceUnavailable</prop>
+				<prop key="org.jasig.schedassist.impl.caldav.CaldavDataAccessException">serviceUnavailable</prop>
+				<prop key="javax.naming.CommunicationException">serviceUnavailable</prop>
 			</props>
 		</property>
 	</bean>
