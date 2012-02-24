@@ -26,9 +26,7 @@ import net.fortuna.ical4j.model.property.Attendee;
  * {@link XParameter} that is added to an {@link Attendee} to earmark
  * the Attendee's role in the event (owner, visitor, or both).
  * 
- * BOTH is a special case where the owner and visitor are the same person.
- * 
- * @author Nicholas Blair, nblair@doit.wisc.edu
+ * @author Nicholas Blair
  * @version $Id: AppointmentRole.java 1245 2009-11-10 22:08:04Z npblair $
  */
 public class AppointmentRole extends XParameter {
@@ -37,7 +35,6 @@ public class AppointmentRole extends XParameter {
 	
 	public static final AppointmentRole OWNER = new AppointmentRole(Value.OWNER);
 	public static final AppointmentRole VISITOR= new AppointmentRole(Value.VISITOR);
-	public static final AppointmentRole BOTH = new AppointmentRole(Value.BOTH);
 	
 	/**
 	 * iCalendar property name
@@ -75,14 +72,7 @@ public class AppointmentRole extends XParameter {
 		Value value = Value.valueOf(this.getValue());
 		return Value.VISITOR.equals(value);
 	}
-	/**
-	 * 
-	 * @return if the value of this parameter matches BOTH
-	 */
-	public boolean isBoth() {
-		Value value = Value.valueOf(this.getValue());
-		return Value.BOTH.equals(value);
-	}
+
 	/**
 	 * Enum to represent possible values for the AppointmentRole X-Parameter.
 	 *  
@@ -91,7 +81,6 @@ public class AppointmentRole extends XParameter {
 	 */
 	public static enum Value {
 		OWNER,
-		VISITOR,
-		BOTH;
+		VISITOR;
 	}
 }

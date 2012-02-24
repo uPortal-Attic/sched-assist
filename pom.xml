@@ -46,7 +46,7 @@
 		<commons.codec.version>1.4</commons.codec.version>
 		<commons.fileupload.version>1.2.1</commons.fileupload.version>
 		<commons.io.version>1.4</commons.io.version>
-		<commons.lang.version>2.4</commons.lang.version>
+		<commons.lang.version>2.6</commons.lang.version>
 		<commons.logging.version>1.1.1</commons.logging.version>
 		<commons.pool.version>1.5.6</commons.pool.version>
 		<easymock.version>2.5.2</easymock.version>

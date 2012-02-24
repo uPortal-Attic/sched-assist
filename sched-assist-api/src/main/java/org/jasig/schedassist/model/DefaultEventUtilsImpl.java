@@ -19,7 +19,6 @@
 
 package org.jasig.schedassist.model;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -36,13 +35,14 @@ import java.util.TimeZone;
 import java.util.UUID;
 
 import net.fortuna.ical4j.model.ComponentList;
+import net.fortuna.ical4j.model.DateList;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.ParameterList;
+import net.fortuna.ical4j.model.Period;
+import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.PropertyFactoryImpl;
 import net.fortuna.ical4j.model.PropertyList;
-import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.Cn;
 import net.fortuna.ical4j.model.parameter.CuType;
@@ -60,6 +60,7 @@ import net.fortuna.ical4j.model.property.LastModified;
 import net.fortuna.ical4j.model.property.Location;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.RDate;
+import net.fortuna.ical4j.model.property.RRule;
 import net.fortuna.ical4j.model.property.Sequence;
 import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Summary;
@@ -151,18 +152,13 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			VEvent event = new VEvent();
 			event.getProperties().add(new DtStart(new DateTime(convertToICalendarFormat(block.getStartTime()))));
 			event.getProperties().add(new DtEnd(new DateTime(convertToICalendarFormat(block.getEndTime()))));
-			if(owner.isSamePerson(visitor)) {
-				// only add the person to attendee list once with X-UW-AVAILABLE-APPOINTMENT-ROLE=BOTH
-				Attendee singleAttendee = constructAvailableAttendee(visitor.getCalendarAccount(), AppointmentRole.BOTH);
-				event.getProperties().add(singleAttendee);
-			} else {
-				Attendee visitorAttendee = constructAvailableAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
-				event.getProperties().add(visitorAttendee);
+			
+			Attendee visitorAttendee = constructAvailableAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
+			event.getProperties().add(visitorAttendee);
 
-				// add the owner with X-UW-AVAILABLE-APPOINTMENT-ROLE=OWNER
-				Attendee ownerAttendee = constructAvailableAttendee(owner.getCalendarAccount(), AppointmentRole.OWNER);
-				event.getProperties().add(ownerAttendee);
-			}
+			// add the owner with X-UW-AVAILABLE-APPOINTMENT-ROLE=OWNER
+			Attendee ownerAttendee = constructAvailableAttendee(owner.getCalendarAccount(), AppointmentRole.OWNER);
+			event.getProperties().add(ownerAttendee);
 
 			// add custom UW-AVAILABLE-APPOINTMENT and UW-AVAILABLE-VERSION
 			event.getProperties().add(SchedulingAssistantAppointment.TRUE);
@@ -335,9 +331,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 				Parameter p = attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
 				if(null != p) {
 					AppointmentRole role = new AppointmentRole(p.getValue());
-					if(role.isBoth() && owner.isSamePerson(visitor) && attendeeMatchesPerson(attendee, visitor.getCalendarAccount())) {
-						return true;
-					} else if(role.isVisitor()) {
+					if(role.isVisitor()) {
 						if(attendeeMatchesPerson(attendee, visitor.getCalendarAccount())){
 							visitorIsVisitor = true;
 						}
@@ -438,7 +432,12 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			} else {
 			    // add Rdate to existing event
 			 	net.fortuna.ical4j.model.Date start = new net.fortuna.ical4j.model.Date(DateUtils.truncate(block.getStartTime(), java.util.Calendar.DATE));
-			 	CustomRDate rDate = new CustomRDate(start.toString());
+			 	DateList dates = new DateList();
+			 	dates.add(start);
+			 	
+			 	ParameterList params = new ParameterList();
+			 	params.add(Value.DATE);
+			 	RDate rDate = new RDate(params, dates);
 				event.getProperties().add(rDate);
 			}
 		}
@@ -584,45 +583,24 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		
 		return null;
 	}
-
-
-	/**
-	 * Temporary workaround for problem with RDATE class in ical4j not supporting VALUE=DATE type values.
-	 * 
-	 * @author Nicholas Blair, npblair@wisc.edu
-	 *
+	/*
+	 * (non-Javadoc)
+	 * @see org.jasig.schedassist.model.IEventUtils#isEventRecurring(net.fortuna.ical4j.model.component.VEvent)
 	 */
-	static class CustomRDate extends Property {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		private static final ParameterList params = new ParameterList();
-		static {
-			params.add(Value.DATE);
-		}
-		private String value;
-		
-		public CustomRDate(String value) {
-			super(RDate.RDATE, params, PropertyFactoryImpl.getInstance());
-			this.value=value;
-		}
-
-		@Override
-		public void setValue(String aValue) throws IOException,
-				URISyntaxException, ParseException {
-			this.value=aValue;
-		}
-
-		@Override
-		public void validate() throws ValidationException {
-		}
-
-		@Override
-		public String getValue() {
-			return value;
-		}
-		
+	@Override
+	public boolean isEventRecurring(VEvent event) {
+		return event.getProperties(RDate.RDATE).size() > 0 || event.getProperties(RRule.RRULE).size() > 0;
 	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.jasig.schedassist.model.IEventUtils#expandRecurrence(net.fortuna.ical4j.model.component.VEvent, java.util.Date, java.util.Date)
+	 */
+	@Override
+	public PeriodList calculateRecurrence(VEvent event,
+			Date startBoundary, Date endBoundary) {
+		Period period = new Period(new DateTime(startBoundary), new DateTime(endBoundary));
+		PeriodList periodList = event.calculateRecurrenceSet(period);
+		return periodList;
+	}
+
 }

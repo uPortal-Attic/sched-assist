@@ -25,6 +25,8 @@ import java.util.SortedSet;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
+import net.fortuna.ical4j.model.Period;
+import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
 
@@ -77,8 +79,17 @@ public class VisibleScheduleBuilder implements IVisibleScheduleBuilder {
 	@Override
 	public VisibleSchedule calculateVisibleSchedule(final Date startTime, final Date endTime,
 			final Calendar calendar, final AvailableSchedule schedule, final IScheduleOwner owner) {
-		//return calculateVisibleSchedule(startTime, endTime, calendar, schedule, owner, null);
 		return calculateVisibleScheduleNoAttendingCheck(startTime, endTime, calendar, schedule, owner.getPreferredMeetingDurations(), owner.getCalendarAccount());
+	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.jasig.schedassist.model.IVisibleScheduleBuilder#calculateVisitorConflicts(java.util.Date, java.util.Date, net.fortuna.ical4j.model.Calendar, org.jasig.schedassist.model.AvailableSchedule, org.jasig.schedassist.model.MeetingDurations, org.jasig.schedassist.model.IScheduleVisitor)
+	 */
+	@Override
+	public VisibleSchedule calculateVisitorConflicts(Date startTime,
+			Date endTime, Calendar calendar, AvailableSchedule schedule,
+			MeetingDurations meetingDurations, IScheduleVisitor visitor) {
+		return calculateVisibleScheduleNoAttendingCheck(startTime, endTime, calendar, schedule, meetingDurations, visitor.getCalendarAccount());
 	}
 	/*
 	 * (non-Javadoc)
@@ -93,6 +104,10 @@ public class VisibleScheduleBuilder implements IVisibleScheduleBuilder {
 		Validate.notNull(schedule, "available schedule cannot be null");
 		Validate.notNull(owner, "owner cannot be null");
 
+		ICalendarAccount visitorCalendarAccount = null;
+		if(visitor != null) {
+			visitorCalendarAccount = visitor.getCalendarAccount();
+		}
 		if(endTime.before(startTime)) {
 			throw new IllegalArgumentException("cannot pass end time (" + endTime +") that is before start time (" + startTime + ")");
 		}
@@ -130,66 +145,23 @@ public class VisibleScheduleBuilder implements IVisibleScheduleBuilder {
 
 			// if we reach this point, this event is not skippable,
 			// it's going to be either BUSY, FREE with visitors, or ATTENDING
-			Date startDate = event.getStartDate().getDate();
-			Date endDate = event.getEndDate(true).getDate();
-			AvailableBlock eventBlock = AvailableBlockBuilder.createBlock(startDate, endDate);
-			
-			// test to see if this appointment is an available appointment
-			Property availableEventMarker = event.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT);
-			if(null == availableEventMarker || !SchedulingAssistantAppointment.TRUE.equals(availableEventMarker)) {
-				// non available appointments will ALWAYS simply be busy
-				visibleSchedule.setBusyBlock(eventBlock);
-			} else {
-				// the event is an available appointment
-				// first test if it's an ATTENDING match
-				if(null != visitor && this.eventUtils.isAttendingMatch(event, visitor, owner)) {
-					// if the event is a pre-1.1 appointment, override eventBlock's visitorLimit
-					if(null == event.getProperty(AvailableVersion.AVAILABLE_VERSION)) {
-						eventBlock = AvailableBlockBuilder.createBlock(eventBlock.getStartTime(), eventBlock.getEndTime(), 1);
-					}
-					visibleSchedule.setAttendingBlock(eventBlock);
-				} 
-				// not an attending match, check visitorLimit exceeded
-				else if (this.eventUtils.isAttendingAsOwner(event, owner.getCalendarAccount())) {
-					Property eventVisitorLimit = (Property) event.getProperty(VisitorLimit.VISITOR_LIMIT);
-					if(null == eventVisitorLimit) {
-						// null eventVisitorLimit means pre-1.1 appointment (existence of any appointment means BUSY)
-						visibleSchedule.setBusyBlock(eventBlock);
-					} else {
-						int visitorLimit = Integer.parseInt(eventVisitorLimit.getValue());
-						int availableVisitorCount = this.eventUtils.getScheduleVisitorCount(event);
-						if(availableVisitorCount >= visitorLimit) {
-							// busy
-							visibleSchedule.setBusyBlock(eventBlock);
-						} else {
-							// visitor count is less than limit - this is still free
-							// amend the block to represent count and limit
-							eventBlock = AvailableBlockBuilder.createBlock(startDate, endDate, visitorLimit);
-							eventBlock.setVisitorsAttending(availableVisitorCount);
-							visibleSchedule.overwriteFreeBlockOnlyIfPresent(eventBlock);
-						}
-					}
-				} else {
-					// the event is an available appointment, but does not match attending criteria and should
-					// be considered busy
-					visibleSchedule.setBusyBlock(eventBlock);
+			if(eventUtils.isEventRecurring(event)) {
+				// expand the recurrence rules
+				PeriodList recurrenceList = this.eventUtils.calculateRecurrence(event, startTime, endTime);
+				for(Object o : recurrenceList) {
+					Period period = (Period) o;
+					mutateAppropriateBlockInVisibleSchedule(visibleSchedule, event, owner.getCalendarAccount(), visitorCalendarAccount, period.getStart(), period.getEnd(), true);
 				}
+			} else {	
+				// event is not recurring, just check block on start/end
+				Date startDate = event.getStartDate().getDate();
+				Date endDate = event.getEndDate(true).getDate();
+				mutateAppropriateBlockInVisibleSchedule(visibleSchedule, event, owner.getCalendarAccount(), visitorCalendarAccount, startDate, endDate, true);
 			}
 		}
 		
 		return visibleSchedule;
 	}
-	/*
-	 * (non-Javadoc)
-	 * @see org.jasig.schedassist.model.IVisibleScheduleBuilder#calculateVisitorConflicts(java.util.Date, java.util.Date, net.fortuna.ical4j.model.Calendar, org.jasig.schedassist.model.AvailableSchedule, org.jasig.schedassist.model.MeetingDurations, org.jasig.schedassist.model.IScheduleVisitor)
-	 */
-	@Override
-	public VisibleSchedule calculateVisitorConflicts(Date startTime,
-			Date endTime, Calendar calendar, AvailableSchedule schedule,
-			MeetingDurations meetingDurations, IScheduleVisitor visitor) {
-		return calculateVisibleScheduleNoAttendingCheck(startTime, endTime, calendar, schedule, meetingDurations, visitor.getCalendarAccount());
-	}
-	
 	/**
 	 * 
 	 * @param startTime
@@ -214,8 +186,6 @@ public class VisibleScheduleBuilder implements IVisibleScheduleBuilder {
 			throw new IllegalArgumentException("cannot pass end time (" + endTime +") that is before start time (" + startTime + ")");
 		}
 		LOG.debug("startTime: " + startTime + "; endTime: " + endTime);
-
-		//final MeetingDurations durations = owner.getPreferredMeetingDurations();
 		
 		// expand the passed in schedule's availableBlocks
 		SortedSet<AvailableBlock> availableBlocks = AvailableBlockBuilder.expand(schedule.getAvailableBlocks(), meetingDurations.getMinLength());
@@ -247,41 +217,83 @@ public class VisibleScheduleBuilder implements IVisibleScheduleBuilder {
 
 			// if we reach this point, this event is not skippable,
 			// it's going to be either BUSY, FREE with visitors, or ATTENDING
-			Date startDate = event.getStartDate().getDate();
-			Date endDate = event.getEndDate(true).getDate();
-			AvailableBlock eventBlock = AvailableBlockBuilder.createBlock(startDate, endDate);
-			
-			// test to see if this appointment is an available appointment
-			Property availableEventMarker = event.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT);
-			if(null == availableEventMarker || !SchedulingAssistantAppointment.TRUE.equals(availableEventMarker)) {
-				// non available appointments will ALWAYS simply be busy
-				visibleSchedule.setBusyBlock(eventBlock);
-			} else {
-				// the event is an available appointment
-				// check visitorLimit exceeded
-				Property eventVisitorLimit = (Property) event.getProperty(VisitorLimit.VISITOR_LIMIT);
-				if(null == eventVisitorLimit) {
-					// null eventVisitorLimit means pre-1.1 appointment (existence of any appointment means BUSY)
-					visibleSchedule.setBusyBlock(eventBlock);
-				} else {
-					int visitorLimit = Integer.parseInt(eventVisitorLimit.getValue());
-					int availableVisitorCount = this.eventUtils.getScheduleVisitorCount(event);
-					if(availableVisitorCount >= visitorLimit) {
-						// busy
-						visibleSchedule.setBusyBlock(eventBlock);
-					} else {
-						// visitor count is less than limit - this is still free
-						// amend the block to represent count and limit
-						eventBlock = AvailableBlockBuilder.createBlock(startDate, endDate, visitorLimit);
-						eventBlock.setVisitorsAttending(availableVisitorCount);
-						visibleSchedule.addFreeBlock(eventBlock);
-					}
+			if(eventUtils.isEventRecurring(event)) {
+				// expand the recurrence rules
+				PeriodList recurrenceList = this.eventUtils.calculateRecurrence(event, startTime, endTime);
+				for(Object o : recurrenceList) {
+					Period period = (Period) o;
+					mutateAppropriateBlockInVisibleSchedule(visibleSchedule, event, calendarAccount, null, period.getStart(), period.getEnd(), false);
 				}
+			} else {	
+				// event is not recurring, just check block on start/end
+				Date startDate = event.getStartDate().getDate();
+				Date endDate = event.getEndDate(true).getDate();
+				mutateAppropriateBlockInVisibleSchedule(visibleSchedule, event, calendarAccount, null, startDate, endDate, false);
 			}
 		}
 		
 		return visibleSchedule;
 		
 	}
+	
+	/**
+	 * Mutative method to alter the {@link VisibleSchedule} in an appropriate fashion according to the {@link VEvent}'s properties.
+	 * 
+	 * @param visibleSchedule
+	 * @param event
+	 * @param owner
+	 * @param visitor
+	 * @param eventInstanceStartDate
+	 * @param eventInstanceEndDate
+	 * @param performAttendingCheck
+	 */
+	void mutateAppropriateBlockInVisibleSchedule(VisibleSchedule visibleSchedule, VEvent event,
+			ICalendarAccount owner, ICalendarAccount visitor, Date eventInstanceStartDate, Date eventInstanceEndDate, boolean performAttendingCheck) {
+		int visitorLimit = safeVisitorLimit(event);
+		final AvailableBlock eventBlock = AvailableBlockBuilder.createBlock(eventInstanceStartDate, eventInstanceEndDate, visitorLimit);
+		// test to see if this appointment is an available appointment
+		Property availableEventMarker = event.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT);
+		if(null == availableEventMarker || !SchedulingAssistantAppointment.TRUE.equals(availableEventMarker)) {
+			// non available appointments will ALWAYS simply be busy
+			visibleSchedule.setBusyBlock(eventBlock);
+		} else {
+			// the event is an available appointment
+			// first test if it's an ATTENDING match
+			if(performAttendingCheck && null != visitor && this.eventUtils.isAttendingAsOwner(event, owner) && this.eventUtils.isAttendingAsVisitor(event, visitor)) {
+				visibleSchedule.setAttendingBlock(eventBlock);
+			} else if (this.eventUtils.isAttendingAsOwner(event, owner)) {
+				// not an attending match, check visitorLimit exceeded
+				int availableVisitorCount = this.eventUtils.getScheduleVisitorCount(event);
+				if(availableVisitorCount >= visitorLimit) {
+					// busy
+					visibleSchedule.setBusyBlock(eventBlock);
+				} else {
+					// visitor count is less than limit - this is still free
+					// amend the block to represent current visitor count 
+					eventBlock.setVisitorsAttending(availableVisitorCount);
+					visibleSchedule.overwriteFreeBlockOnlyIfPresent(eventBlock);
+				}
+			} else {
+				// the event is an available appointment, but does not match attending criteria and should
+				// be considered busy
+				visibleSchedule.setBusyBlock(eventBlock);
+			}
+		}
+	}
 
+	/**
+	 * Safely return the value of the {@link VisitorLimit} of the event.
+	 * If it's not set, this returns 1.
+	 * 
+	 * @param event
+	 * @return the value of the {@link VisitorLimit}, or 1 if not set.
+	 */
+	int safeVisitorLimit(VEvent event) {
+		Integer visitorLimit = eventUtils.getEventVisitorLimit(event);
+		if(visitorLimit == null) {
+			return 1;
+		}
+		 
+		return visitorLimit;
+	}
 }

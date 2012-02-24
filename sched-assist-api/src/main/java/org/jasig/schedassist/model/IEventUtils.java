@@ -19,9 +19,11 @@
 
 package org.jasig.schedassist.model;
 
+import java.util.Date;
 import java.util.List;
 
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -182,4 +184,21 @@ public interface IEventUtils {
 	 * @return the value of the {@link VisitorLimit} if the event is a scheduling assistant appointment; if not return null
 	 */
 	Integer getEventVisitorLimit(VEvent event);
+	
+	/**
+	 * 
+	 * @param event
+	 * @return true if the event recurs (either by RRULE or RDATE)
+	 */
+	boolean isEventRecurring(VEvent event);
+	
+	/**
+	 * Calculate recurrence dates for the specified events between the 2 date boundaries.
+	 * 
+	 * @param event
+	 * @param startBoundary
+	 * @param endBoundary
+	 * @return a never null, but possibly empty, {@link PeriodList}
+	 */
+	PeriodList calculateRecurrence(VEvent event, Date startBoundary, Date endBoundary);
 }

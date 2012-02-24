@@ -154,27 +154,6 @@ public class DefaultEventUtilsImplTest {
 		Assert.assertEquals("Some Visitor", attendee.getParameter("CN").getValue());
 	}
 	
-	/**
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testConstructAttendeeBothRolesControl() throws Exception {
-		MockCalendarAccount person = new MockCalendarAccount();
-		person.setEmailAddress("somevisitor@wisc.edu");
-		person.setDisplayName("Some Visitor");
-		MockScheduleVisitor visitor = new MockScheduleVisitor(person);
-		
-		Attendee attendee =this.eventUtils.constructAvailableAttendee(visitor.getCalendarAccount(), AppointmentRole.BOTH);
-		Assert.assertEquals(PartStat.ACCEPTED, attendee.getParameter(PartStat.PARTSTAT));
-		Assert.assertEquals(CuType.INDIVIDUAL, attendee.getParameter(CuType.CUTYPE));
-		Assert.assertEquals(Rsvp.FALSE, attendee.getParameter(Rsvp.RSVP));
-		AppointmentRole role = (AppointmentRole) attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
-		Assert.assertEquals(AppointmentRole.BOTH, role);
-		Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
-		Assert.assertEquals("Some Visitor", attendee.getParameter("CN").getValue());
-	}
-	
 	@Test
 	public void testAttendeeMatchesPersonInvalids() throws Exception {
 		MockCalendarAccount person = new MockCalendarAccount();
@@ -212,12 +191,6 @@ public class DefaultEventUtilsImplTest {
 		Attendee ownerAttendee = this.eventUtils.constructAvailableAttendee(owner.getCalendarAccount(), AppointmentRole.OWNER);
 		Assert.assertFalse(this.eventUtils.attendeeMatchesPerson(ownerAttendee, visitor.getCalendarAccount()));
 		Assert.assertTrue(this.eventUtils.attendeeMatchesPerson(ownerAttendee, owner.getCalendarAccount()));
-		
-		Attendee bothAttendee = this.eventUtils.constructAvailableAttendee(visitor.getCalendarAccount(), AppointmentRole.BOTH);
-		Assert.assertTrue(this.eventUtils.attendeeMatchesPerson(bothAttendee, visitor.getCalendarAccount()));
-		
-		bothAttendee = this.eventUtils.constructAvailableAttendee(owner.getCalendarAccount(), AppointmentRole.BOTH);
-		Assert.assertTrue(this.eventUtils.attendeeMatchesPerson(bothAttendee, owner.getCalendarAccount()));
 	}
 	
 	/**
@@ -381,107 +354,6 @@ public class DefaultEventUtilsImplTest {
 			}
 		}
 	}
-	
-	
-	
-	/**
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testConstructAvailableAppointmentVisitorOwnerSamePerson() throws Exception {
-		// construct visitor
-		MockCalendarAccount person = new MockCalendarAccount();
-		person.setEmailAddress("somevisitor@wisc.edu");
-		person.setDisplayName("Some Visitor");
-		MockScheduleVisitor visitor = new MockScheduleVisitor(person);
-		// construct owner from same person
-		MockScheduleOwner owner = new MockScheduleOwner(person, 1);
-		owner.setPreference(Preferences.LOCATION, "Owner's office");
-		
-		Assert.assertTrue(owner.isSamePerson(visitor));
-		
-		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20091006-1300"), makeDateTime("20091006-1330"));
-		
-		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
-				block,
-				owner, 
-				visitor, 
-				"test event description");
-		
-		Assert.assertEquals("Appointment with Some Visitor", availableAppointment.getSummary().getValue());
-		Assert.assertEquals("test event description", availableAppointment.getDescription().getValue());
-		Assert.assertEquals("Owner's office", availableAppointment.getLocation().getValue());
-		Assert.assertEquals(makeDateTime("20091006-1300"), availableAppointment.getStartDate().getDate());
-		Assert.assertEquals(makeDateTime("20091006-1330"), availableAppointment.getEndDate().getDate());
-		Assert.assertEquals("TRUE", availableAppointment.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT).getValue());
-		Assert.assertEquals("1", availableAppointment.getProperty(VisitorLimit.VISITOR_LIMIT).getValue());
-		Assert.assertEquals(Status.VEVENT_CONFIRMED, availableAppointment.getProperty(Status.STATUS));
-		PropertyList attendeePropertyList = availableAppointment.getProperties(Attendee.ATTENDEE);
-		for(Object o : attendeePropertyList) {
-			Property attendee = (Property) o;
-			Assert.assertEquals(PartStat.ACCEPTED, attendee.getParameter(PartStat.PARTSTAT));
-			Assert.assertEquals(CuType.INDIVIDUAL, attendee.getParameter(CuType.CUTYPE));
-			Assert.assertEquals(Rsvp.FALSE, attendee.getParameter(Rsvp.RSVP));
-			Parameter appointmentRole = attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
-			if("BOTH".equals(appointmentRole.getValue())) {
-				Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
-				Assert.assertEquals("Some Visitor", attendee.getParameter("CN").getValue());
-			} else {
-				Assert.fail("unexpected value for appointment role: " + appointmentRole.getValue());
-			}
-		}
-	}
-	
-	/**
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testConstructAvailableAppointmentVisitorLimit2() throws Exception {
-		// construct visitor
-		MockCalendarAccount person = new MockCalendarAccount();
-		person.setEmailAddress("somevisitor@wisc.edu");
-		person.setDisplayName("Some Visitor");
-		MockScheduleVisitor visitor = new MockScheduleVisitor(person);
-		// construct owner from same person
-		MockScheduleOwner owner = new MockScheduleOwner(person, 1);
-		owner.setPreference(Preferences.LOCATION, "Owner's office");
-		
-		Assert.assertTrue(owner.isSamePerson(visitor));
-		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20091006-1300"), makeDateTime("20091006-1330"), 2);
-		
-		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
-				block,
-				owner, 
-				visitor, 
-				"test event description");
-		
-		Assert.assertEquals("Appointment", availableAppointment.getSummary().getValue());
-		Assert.assertEquals(null, availableAppointment.getDescription());
-		Assert.assertEquals("Owner's office", availableAppointment.getLocation().getValue());
-		Assert.assertEquals(makeDateTime("20091006-1300"), availableAppointment.getStartDate().getDate());
-		Assert.assertEquals(makeDateTime("20091006-1330"), availableAppointment.getEndDate().getDate());
-		Assert.assertEquals("TRUE", availableAppointment.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT).getValue());
-		Assert.assertEquals("2", availableAppointment.getProperty(VisitorLimit.VISITOR_LIMIT).getValue());
-		Assert.assertEquals(Status.VEVENT_CONFIRMED, availableAppointment.getProperty(Status.STATUS));
-		PropertyList attendeePropertyList = availableAppointment.getProperties(Attendee.ATTENDEE);
-		for(Object o : attendeePropertyList) {
-			Property attendee = (Property) o;
-			Assert.assertEquals(PartStat.ACCEPTED, attendee.getParameter(PartStat.PARTSTAT));
-			Assert.assertEquals(CuType.INDIVIDUAL, attendee.getParameter(CuType.CUTYPE));
-			Assert.assertEquals(Rsvp.FALSE, attendee.getParameter(Rsvp.RSVP));
-			Parameter appointmentRole = attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
-			if("BOTH".equals(appointmentRole.getValue())) {
-				Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
-				Assert.assertNull(attendee.getParameter("X-ORACLE-GUID"));
-				Assert.assertEquals("Some Visitor", attendee.getParameter("CN").getValue());
-			} else {
-				Assert.fail("unexpected value for appointment role: " + appointmentRole.getValue());
-			}
-		}
-	}
-	
 	
 	/**
 	 * Call {@link OracleEventUtilsImpl#getAttendeeForUserFromEvent(VEvent, CalendarUser)} on an 
