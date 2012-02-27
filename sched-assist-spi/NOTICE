@@ -18,7 +18,9 @@ under the License.
 This project includes:
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
+  ASM Core under BSD
   Backport of JSR 166 under Public Domain
+  Code Generation Library under ASF 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
@@ -27,7 +29,7 @@ This project includes:
   Ehcache Core under The Apache Software License, Version 2.0
   Ehcache Spring Annotations under Apache 2
   HSQLDB Database under HSQLDB License, a BSD open source license
-  ical4j under iCal4j - License
+  iCal4j under iCal4j - License
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaMail API under Common Development and Distribution License (CDDL) v1.0
   JUnit under Common Public License Version 1.0

@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.jasig.schedassist.impl.caldav.oracle;
 
 import org.apache.commons.httpclient.Credentials;
