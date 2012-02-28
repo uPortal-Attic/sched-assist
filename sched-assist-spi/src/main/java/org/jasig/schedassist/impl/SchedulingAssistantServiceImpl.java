@@ -209,8 +209,8 @@ public final class SchedulingAssistantServiceImpl implements SchedulingAssistant
 		
 		// calculate a VisibleSchedule using the owner's availability but the Visitor's calendar data
 		VisibleSchedule result = this.visibleScheduleBuilder.calculateVisitorConflicts(
-				localStart,
-				localEnd,
+				availableSchedule.getScheduleStartTime(),
+				availableSchedule.getScheduleEndTime(),
 				calendar, 
 				availableSchedule, 
 				owner.getPreferredMeetingDurations(), visitor);
