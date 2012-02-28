@@ -58,24 +58,28 @@
   
    	<import resource="integration/sample-calendarAccounts.xml"/>
     
-    <bean id="caldavAdminCredentials" class="org.apache.commons.httpclient.UsernamePasswordCredentials">
-    	<constructor-arg index="0"><value>${caldav.admin.username}</value></constructor-arg>
-    	<constructor-arg index="1"><value>${caldav.admin.password}</value></constructor-arg>
+    <bean id="caldavAdminAuthScope" class="org.apache.http.auth.AuthScope">
+    	<constructor-arg index="0"><value>${caldav.admin.authscope.host}</value></constructor-arg>
+    	<constructor-arg index="1"><value>${caldav.admin.authscope.port}</value></constructor-arg>
+    	<constructor-arg index="2"><value>${caldav.admin.authscope.realm}</value></constructor-arg>
+    	<constructor-arg index="3" value="BASIC"/>
     </bean>
-    <bean id="caldavAdminAuthScope" class="org.apache.commons.httpclient.auth.AuthScope">
-    	<constructor-arg index="0"><value>${caldav.authscope.host}</value></constructor-arg>
-    	<constructor-arg index="1"><value>${caldav.authscope.port}</value></constructor-arg>
-    	<constructor-arg index="2"><value>${caldav.authscope.realm}</value></constructor-arg>
+    <bean id="httpHost" class="org.apache.http.HttpHost">
+    	<constructor-arg index="0" value="${caldav.admin.authscope.host}"/>
+    	<constructor-arg index="1" value="${caldav.admin.authscope.port}"/>
+    	<constructor-arg index="2" value="${caldav.host.scheme}"/>
     </bean>
-    <bean id="httpClient" class="org.apache.commons.httpclient.HttpClient">
-        <property name="httpConnectionManager" ref="httpConnectionManager"/>
+    <bean id="schemeFactory" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+   		<property name="staticMethod"><value>org.apache.http.impl.conn.SchemeRegistryFactory.createDefault</value></property>
+ 	</bean>
+    <bean id="clientConnectionManager" class="org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager">
+    	<constructor-arg ref="schemeFactory"/>
+    	<constructor-arg index="1" value="${caldav.http.connectionTimeout}"/>
+    	<constructor-arg index="2" value="MILLISECONDS"/>
+    	<property name="defaultMaxPerRoute" value="${caldav.http.defaultMaxConnectionsPerHost}"/>
+    	<property name="maxTotal" value="${caldav.http.maxTotalConnections}"/>
     </bean>
-    <bean id="httpConnectionManager" class="org.apache.commons.httpclient.MultiThreadedHttpConnectionManager">
-        <property name="params">
-            <bean class="org.apache.commons.httpclient.params.HttpConnectionManagerParams">
-                <property name="connectionTimeout" value="5000"/>
-                <property name="defaultMaxConnectionsPerHost" value="20"/>
-            </bean>
-        </property>
-    </bean>       
+    <bean id="httpClient" class="org.apache.http.impl.client.DefaultHttpClient">
+    	<constructor-arg ref="clientConnectionManager"/>
+    </bean>    
 </beans>

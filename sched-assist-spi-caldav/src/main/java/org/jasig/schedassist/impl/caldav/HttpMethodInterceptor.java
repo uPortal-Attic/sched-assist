@@ -22,14 +22,14 @@
  */
 package org.jasig.schedassist.impl.caldav;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.HttpRequest;
+import org.apache.http.client.HttpClient;
 import org.jasig.schedassist.model.ICalendarAccount;
 
 /**
  * Different CalDAV servers may expect different information in the HTTP requests.
  * 
- * This interface provides a mechanism for altering the {@link HttpMethod}s
+ * This interface provides a mechanism for altering the {@link HttpRequest}s
  * created by the {@link CaldavCalendarDataDaoImpl} before they are sent to the CalDAV
  * server.
  * 
@@ -39,14 +39,14 @@ import org.jasig.schedassist.model.ICalendarAccount;
 public interface HttpMethodInterceptor {
 
 	/**
-	 * Implementations will receive the {@link HttpMethod} just before the
-	 * {@link HttpClient#executeMethod(HttpMethod)} is called on it.
+	 * Implementations will receive the {@link HttpRequest} just before the
+	 * {@link HttpClient#executeMethod(HttpRequest)} is called on it.
 	 * 
 	 * Implementations are allowed to mutate the method as needed, but MUST never return null.
 	 * 
 	 * @param method
 	 * @param onBehalfOf the {@link ICalendarAccount} that matches the account the request will be on behalf of
-	 * @return the CalDAV implementation-specific altered {@link HttpMethod}
+	 * @return the CalDAV implementation-specific altered {@link HttpRequest}
 	 */
-	HttpMethod doWithMethod(HttpMethod method, ICalendarAccount onBehalfOf);
+	HttpRequest doWithMethod(HttpRequest method, ICalendarAccount onBehalfOf);
 }

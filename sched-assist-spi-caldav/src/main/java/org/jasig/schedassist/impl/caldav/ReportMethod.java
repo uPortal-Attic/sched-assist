@@ -19,7 +19,7 @@
 
 package org.jasig.schedassist.impl.caldav;
 
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
+import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 
 /**
  * Provides "REPORT" HTTP Method.
@@ -27,31 +27,16 @@ import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
  * @author Nicholas Blair, nblair@doit.wisc.edu
  * @version $Id: ReportMethod.java $
  */
-public final class ReportMethod extends EntityEnclosingMethod {
+public final class ReportMethod extends BasicHttpEntityEnclosingRequest {
 
 	protected static final String REPORT = "REPORT";
 
 	/**
 	 * 
-	 */
-	public ReportMethod() {
-		super();
-	}
-	/**
 	 * @param uri
-	 * @throws IllegalArgumentException
-	 * @throws IllegalStateException
 	 */
-	public ReportMethod(String uri) throws IllegalArgumentException,
-			IllegalStateException {
-		super(uri);
+	public ReportMethod(String uri) {
+		super(REPORT, uri);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.commons.httpclient.HttpMethodBase#getName()
-	 */
-	@Override
-	public String getName() {
-		return REPORT;
-	}
 }

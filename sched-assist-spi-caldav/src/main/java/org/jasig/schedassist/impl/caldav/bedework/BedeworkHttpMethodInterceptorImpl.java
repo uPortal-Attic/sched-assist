@@ -22,8 +22,9 @@
  */
 package org.jasig.schedassist.impl.caldav.bedework;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.message.BasicHeader;
 import org.jasig.schedassist.impl.caldav.HttpMethodInterceptor;
 import org.jasig.schedassist.model.ICalendarAccount;
 
@@ -37,16 +38,17 @@ import org.jasig.schedassist.model.ICalendarAccount;
 public class BedeworkHttpMethodInterceptorImpl implements HttpMethodInterceptor {
 
 	protected static final String RUN_AS_HEADER = "Run-As";
-	protected static final Header CLIENT_ID_HEADER = new Header("Client-Id", "Jasig Scheduling Assistant");
+	protected static final Header CLIENT_ID_HEADER = new BasicHeader("Client-Id", "Jasig Scheduling Assistant");
 	/*
 	 * (non-Javadoc)
-	 * @see org.jasig.schedassist.impl.caldav.HttpMethodInterceptor#doWithMethod(HttpMethod, ICalendarAccount)
+	 * @see org.jasig.schedassist.impl.caldav.HttpMethodInterceptor#doWithMethod(org.apache.http.HttpRequest, org.jasig.schedassist.model.ICalendarAccount)
 	 */
 	@Override
-	public HttpMethod doWithMethod(HttpMethod method, ICalendarAccount calendarAccount) {
-		method.addRequestHeader(CLIENT_ID_HEADER);
-		method.addRequestHeader(RUN_AS_HEADER, calendarAccount.getCalendarLoginId());
-		return method;
+	public HttpRequest doWithMethod(HttpRequest request,
+			ICalendarAccount onBehalfOf) {
+		request.addHeader(CLIENT_ID_HEADER);
+		request.addHeader(new BasicHeader(RUN_AS_HEADER, onBehalfOf.getCalendarLoginId()));
+		return request;
 	}
 
 }

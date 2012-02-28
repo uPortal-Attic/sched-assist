@@ -24,7 +24,7 @@ import java.util.Date;
 
 import net.fortuna.ical4j.model.component.VEvent;
 
-import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.http.HttpEntity;
 import org.jasig.schedassist.model.ICalendarAccount;
 
 /**
@@ -106,7 +106,7 @@ public interface CaldavDialect {
 	 * @param event
 	 * @return a {@link RequestEntity} used with the PUT request to store the specified {@link VEvent}
 	 */
-	RequestEntity generatePutAppointmentRequestEntity(VEvent event);
+	HttpEntity generatePutAppointmentRequestEntity(VEvent event);
 	
 	/**
 	 * Generate an appropriate {@link RequestEntity} body for retrieving Calendar data between
@@ -116,5 +116,5 @@ public interface CaldavDialect {
 	 * @param endDate
 	 * @return a {@link RequestEntity} used with the REPORT request to retrieve an account's Calendar data between the 2 {@link Date}s
 	 */
-	RequestEntity generateGetCalendarRequestEntity(Date startDate, Date endDate);
+	HttpEntity generateGetCalendarRequestEntity(Date startDate, Date endDate);
 }

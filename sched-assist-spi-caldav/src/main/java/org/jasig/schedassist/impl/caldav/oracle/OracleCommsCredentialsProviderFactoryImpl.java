@@ -17,29 +17,29 @@
  * under the License.
  */
 
-package org.jasig.schedassist.impl.caldav;
+package org.jasig.schedassist.impl.caldav.oracle;
 
-import org.apache.http.auth.Credentials;
 import org.apache.http.client.CredentialsProvider;
+import org.jasig.schedassist.impl.caldav.CredentialsProviderFactory;
+import org.jasig.schedassist.impl.caldav.DefaultCredentialsProviderFactoryImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
 
 /**
- * Interface used to define a source for HTTP {@link Credentials}.
+ * {@link CredentialsProviderFactory} for use with Oracle Communications Suite.
+ * 
+ * Returns {@link OracleCommsCredentialsProviderImpl} instances.
  * 
  * @author Nicholas Blair
- * @version $Id: HttpCredentialsProvider.java $
+ * @version $Id: OracleCommsCredentialsProviderProviderImpl.java $
  */
-public interface HttpCredentialsProvider {
+public class OracleCommsCredentialsProviderFactoryImpl extends
+		DefaultCredentialsProviderFactoryImpl {
 
-	/**
-	 * Return a {@link Credentials} that can be used when performing caldav operations against
-	 * the provided {@link ICalendarAccount}.
-	 * 
-	 * Implementations may not all use the {@link ICalendarAccount}; some return the same set of
-	 * credentials for all inputs.
-	 * 
-	 * @param account
-	 * @return a never null {@link Credentials} that the data dao can use to interact with the CalDAV server
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.impl.caldav.CredentialsProviderProvider#getCredentialsProvider(org.jasig.schedassist.model.ICalendarAccount)
 	 */
-	CredentialsProvider getCredentials(ICalendarAccount account);
+	@Override
+	public CredentialsProvider getCredentialsProvider(ICalendarAccount account) {
+		return new OracleCommsCredentialsProviderImpl(account, getAdminCredentials(), getAuthScope());
+	}
 }

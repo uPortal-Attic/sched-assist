@@ -17,29 +17,28 @@
  * under the License.
  */
 
-/**
- * 
- */
 package org.jasig.schedassist.impl.caldav;
 
-import org.apache.http.HttpRequest;
-import org.apache.http.message.AbstractHttpMessage;
+import org.apache.http.client.CredentialsProvider;
 import org.jasig.schedassist.model.ICalendarAccount;
 
 /**
- * Does nothing to the {@link AbstractHttpMessage}.
+ * Factory interface for HTTP Client's {@link CredentialsProvider}s.
+ * 
  * @author Nicholas Blair
- * @version $ Id: NoopHttpMethodInterceptorImpl.java $
+ * @version $Id: CredentialsProviderProvider.java $
  */
-public class NoopHttpMethodInterceptorImpl implements HttpMethodInterceptor {
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.jasig.schedassist.impl.caldav.HttpMethodInterceptor#doWithMethod(org.apache.http.HttpRequest, org.jasig.schedassist.model.ICalendarAccount)
+public interface CredentialsProviderFactory {
+
+	/**
+	 * Return a {@link CredentialsProvider} that can be used when performing caldav operations against
+	 * the provided {@link ICalendarAccount}.
+	 * 
+	 * Implementations may not all use the {@link ICalendarAccount}; some return the same set of
+	 * credentials for all inputs.
+	 * 
+	 * @param account
+	 * @return a never null {@link CredentialsProvider} that the data dao can use to interact with the CalDAV server
 	 */
-	@Override
-	public HttpRequest doWithMethod(HttpRequest method,
-			ICalendarAccount onBehalfOf) {
-		return method;
-	}
+	CredentialsProvider getCredentialsProvider(ICalendarAccount account);
 }

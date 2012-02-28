@@ -32,11 +32,11 @@ import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.ProdId;
 
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.StringEntity;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IEventUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,12 +121,12 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.impl.caldav.CaldavDialect#generateGetCalendarRequestEntity(java.util.Date, java.util.Date)
 	 */
-	public RequestEntity generateGetCalendarRequestEntity(Date startDate, Date endDate) {
+	public HttpEntity generateGetCalendarRequestEntity(Date startDate, Date endDate) {
 		final String content = generateGetCalendarRequestXML(startDate, endDate);
 		
-		StringRequestEntity requestEntity;
+		StringEntity requestEntity;
 		try {
-			requestEntity = new StringRequestEntity(content, "text/xml", "UTF-8");
+			requestEntity = new StringEntity(content, "text/xml", "UTF-8");
 			return requestEntity;
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException(e);
@@ -164,10 +164,10 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.impl.caldav.CaldavDialect#generateCreateAppointmentRequestEntity(net.fortuna.ical4j.model.component.VEvent)
 	 */
-	public RequestEntity generatePutAppointmentRequestEntity(VEvent event) {
+	public HttpEntity generatePutAppointmentRequestEntity(VEvent event) {
 		final String requestEntityBody = this.eventUtils.wrapEventInCalendar(event).toString();
 		try {
-			StringRequestEntity requestEntity = new StringRequestEntity(requestEntityBody, "text/calendar", "UTF-8");
+			StringEntity requestEntity = new StringEntity(requestEntityBody, "text/calendar", "UTF-8");
 			return requestEntity;
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException(e);

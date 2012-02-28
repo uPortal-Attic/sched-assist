@@ -51,8 +51,39 @@
 	<!-- END: Bedework Specific beans -->
 	<!-- If using a CalDAV server other than Bedework, look in localOverridesContext.xml for other options -->
 	
-	<bean id="caldavCredentialsProvider" class="org.jasig.schedassist.impl.caldav.DefaultHttpCredentialsProviderImpl"/>
-    <bean id="caldavAdminAuthScope" class="org.apache.commons.httpclient.auth.AuthScope">
+	<bean id="credentialsProviderProvider" class="org.jasig.schedassist.impl.caldav.DefaultCredentialsProviderProviderImpl"/>	
+	<bean id="affiliationSource" class="org.jasig.schedassist.NullAffiliationSourceImpl"/>
+	<bean id="visibleScheduleBuilder" class="org.jasig.schedassist.model.VisibleScheduleBuilder">
+		<property name="eventUtils" ref="eventUtils"/>
+	</bean>	
+
+	<bean id="caldavAdminAuthScope" class="org.apache.http.auth.AuthScope">
+    	<constructor-arg index="0" value="${caldav.admin.authscope.host}"/>
+    	<constructor-arg index="1" value="${caldav.admin.authscope.port}"/>
+    	<constructor-arg index="2" value="${caldav.admin.authscope.realm}"/>
+    	<constructor-arg index="3" value="${caldav.admin.authscope.scheme}"/>
+    </bean>
+    <bean id="httpHost" class="org.apache.http.HttpHost">
+    	<constructor-arg index="0" value="${caldav.admin.authscope.host}"/>
+    	<constructor-arg index="1" value="${caldav.admin.authscope.port}"/>
+    	<constructor-arg index="2" value="${caldav.host.scheme}"/>
+    </bean>
+    <bean id="schemeFactory" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+   		<property name="staticMethod"><value>org.apache.http.impl.conn.SchemeRegistryFactory.createDefault</value></property>
+ 	</bean>
+    <bean id="clientConnectionManager" class="org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager">
+    	<constructor-arg ref="schemeFactory"/>
+    	<constructor-arg index="1" value="${caldav.http.connectionTimeout}"/>
+    	<constructor-arg index="2" value="MILLISECONDS"/>
+    	<property name="defaultMaxPerRoute" value="${caldav.http.defaultMaxConnectionsPerHost}"/>
+    	<property name="maxTotal" value="${caldav.http.maxTotalConnections}"/>
+    </bean>
+    <bean id="httpClient" class="org.apache.http.impl.client.DefaultHttpClient">
+    	<constructor-arg ref="clientConnectionManager"/>
+    </bean>
+
+	<!--  old httpclient
+	<bean id="caldavAdminAuthScope" class="org.apache.commons.httpclient.auth.AuthScope">
     	<constructor-arg index="0"><value>${caldav.admin.authscope.host}</value></constructor-arg>
     	<constructor-arg index="1"><value>${caldav.admin.authscope.port}</value></constructor-arg>
     	<constructor-arg index="2"><value>${caldav.admin.authscope.realm}</value></constructor-arg>
@@ -69,10 +100,5 @@
         </property>
     </bean> 
 	
-	<bean id="affiliationSource" class="org.jasig.schedassist.NullAffiliationSourceImpl"/>
-	
-	<bean id="visibleScheduleBuilder" class="org.jasig.schedassist.model.VisibleScheduleBuilder">
-		<property name="eventUtils" ref="eventUtils"/>
-	</bean>	
-
+	 -->
 </beans>

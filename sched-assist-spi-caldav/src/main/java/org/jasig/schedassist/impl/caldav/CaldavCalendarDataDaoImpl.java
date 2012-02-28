@@ -41,21 +41,27 @@ import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.util.Calendars;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.jasig.schedassist.ConflictExistsException;
 import org.jasig.schedassist.ICalendarDataDao;
 import org.jasig.schedassist.NullAffiliationSourceImpl;
@@ -110,16 +116,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 
-	static final String CONTENT_LENGTH_HEADER = "Content-Length";
-	static final Header IF_NONE_MATCH_HEADER = new Header("If-None-Match", "*");
-	static final Header ICALENDAR_CONTENT_TYPE_HEADER = new Header("Content-Type", "text/calendar");
+	static final Header IF_NONE_MATCH_HEADER = new BasicHeader("If-None-Match", "*");
+	static final Header ICALENDAR_CONTENT_TYPE_HEADER = new BasicHeader("Content-Type", "text/calendar");
 	static final String IF_MATCH_HEADER = "If-Match";
 
-	private static final Header DEPTH_HEADER = new Header("Depth", "1");
+	private static final Header DEPTH_HEADER = new BasicHeader("Depth", "1");
 	protected final Log log = LogFactory.getLog(this.getClass());
 	private HttpClient httpClient;
-	private HttpCredentialsProvider credentialsProvider;
+	private CredentialsProviderFactory credentialsProviderFactory;
+	private HttpHost httpHost;
 	private AuthScope caldavAdminAuthScope;
+	
 	private IEventUtils eventUtils = new CaldavEventUtilsImpl(new NullAffiliationSourceImpl());
 	private CaldavDialect caldavDialect;
 	private HttpMethodInterceptor methodInterceptor = new NoopHttpMethodInterceptorImpl();
@@ -141,11 +148,33 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 		return httpClient;
 	}
 	/**
-	 * @param credentialsProvider the credentialsProvider to set
+	 * @return the credentialsProviderFactory
+	 */
+	public CredentialsProviderFactory getCredentialsProviderFactory() {
+		return credentialsProviderFactory;
+	}
+	/**
+	 * @param credentialsProviderFactory the credentialsProviderFactory to set
 	 */
 	@Autowired
-	public void setCredentialsProvider(HttpCredentialsProvider credentialsProvider) {
-		this.credentialsProvider = credentialsProvider;
+	public void setCredentialsProviderFactory(
+			CredentialsProviderFactory credentialsProviderFactory) {
+		this.credentialsProviderFactory = credentialsProviderFactory;
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public HttpHost getHttpHost() {
+		return httpHost;
+	}
+	/**
+	 * 
+	 * @param httpHost
+	 */
+	@Autowired
+	public void setHttpHost(HttpHost httpHost) {
+		this.httpHost = httpHost;
 	}
 	/**
 	 * @param caldavAdminAuthScope the caldavAdminAuthScope to set
@@ -302,6 +331,20 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 	}
 
 	/**
+	 * Construct an {@link HttpContext} with a {@link CredentialsProvider} appropriate
+	 * for the {@link ICalendarAccount} argument.
+	 * Returned value is intended for use with {@link HttpClient#execute(HttpHost, HttpRequest, HttpContext)}.
+	 * 
+	 * @param calendarAccount
+	 * @return an appropriate {@link HttpContext} for the {@link ICalendarAccount}.
+	 */
+	protected HttpContext constructHttpContext(ICalendarAccount calendarAccount) {
+		CredentialsProvider credentialsProvider = this.credentialsProviderFactory.getCredentialsProvider(calendarAccount);
+		HttpContext context = new BasicHttpContext();
+		context.setAttribute(ClientContext.CREDS_PROVIDER, credentialsProvider);
+		return context;
+	}
+	/**
 	 * 
 	 * @param calendarWithURI
 	 * @param calendarAccount
@@ -309,27 +352,30 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 	 */
 	protected int deleteCalendar(CalendarWithURI calendarWithURI, ICalendarAccount calendarAccount) {
 		URI uri = this.caldavDialect.resolveCalendarURI(calendarWithURI);
-		DeleteMethod method = new DeleteMethod(uri.toString());
+		HttpDelete method = new HttpDelete(uri.toString());
 		if(log.isDebugEnabled()) {
 			log.debug("deleteCalendar executing " + methodToString(method) + " for " + calendarAccount);
 		}
-		HttpMethod toExecute = methodInterceptor.doWithMethod(method, calendarAccount);
+		HttpRequest toExecute = methodInterceptor.doWithMethod(method, calendarAccount);
+		final HttpContext context = constructHttpContext(calendarAccount);
 		
+		HttpEntity entity = null;
 		try {
-			int statusCode = this.httpClient.executeMethod(null, toExecute, constructHttpState(calendarAccount));
+			HttpResponse response = this.httpClient.execute(httpHost, toExecute, context);
+			entity = response.getEntity();
+			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("deleteCalendar status code: " + statusCode);
 			if(statusCode == HttpStatus.SC_NO_CONTENT) {
 				return statusCode;
 			} else {
 				throw new CaldavDataAccessException("deleteCalendar for " + calendarAccount + ", " + calendarWithURI +" failed with unexpected status code: " + statusCode);
 			}
-		} catch (HttpException e) {
-			log.error("an HttpException occurred in deleteCalendar for " + calendarAccount + ", " + calendarWithURI);
-			throw new CaldavDataAccessException(e);
 		} catch (IOException e) {
 			log.error("an IOException occurred in deleteCalendar for " + calendarAccount + ", " + calendarWithURI);
 			throw new CaldavDataAccessException(e);
-		} 
+		} finally {
+			quietlyConsume(entity);
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -359,9 +405,6 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 				} else {
 					throw new CaldavDataAccessException("joinAppointment for " + visitor + ", " + owner + ", " + startTime + " failed with unexpected status code: " + statusCode);
 				}
-			} catch (HttpException e) {
-				log.error("an HttpException occurred in joinAppointment for " + owner + ", " + visitor + ", " + startTime);
-				throw new CaldavDataAccessException(e);
 			} catch (IOException e) {
 				log.error("an IOException occurred in joinAppointment for " + owner + ", " + visitor + ", " + startTime);
 				throw new CaldavDataAccessException(e);
@@ -399,9 +442,6 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 				} else {
 					throw new CaldavDataAccessException("leaveAppointment for " + visitor + ", " + owner + ", " + startTime + " failed with unexpected status code: " + statusCode);
 				}
-			} catch (HttpException e) {
-				log.error("an HttpException occurred in leaveAppointment for " + owner + ", " + visitor + ", " + startTime);
-				throw new CaldavDataAccessException(e);
 			} catch (IOException e) {
 				log.error("an IOException occurred in leaveAppointment for " + owner + ", " + visitor + ", " + startTime);
 				throw new CaldavDataAccessException(e);
@@ -495,26 +535,29 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 			for(CalendarWithURI calendar: calendars) {
 				// delete!
 				URI uri = this.caldavDialect.resolveCalendarURI(calendar);
-				DeleteMethod method = new DeleteMethod(uri.toString());
+				HttpDelete method = new HttpDelete(uri.toString());
 				if(log.isDebugEnabled()) {
 					log.debug("purgeAvailableScheduleReflections executing " + methodToString(method) + " for " + owner + ", " + startDate + ", " + endDate);
 				}
-				HttpMethod toExecute = methodInterceptor.doWithMethod(method,owner.getCalendarAccount());
+				final HttpContext context = constructHttpContext(owner.getCalendarAccount());
+				HttpRequest toExecute = methodInterceptor.doWithMethod(method,owner.getCalendarAccount());
+				HttpEntity entity = null;
 				try {
-					int statusCode = this.httpClient.executeMethod(null, toExecute, constructHttpState(owner.getCalendarAccount()));
+					HttpResponse response = this.httpClient.execute(httpHost, toExecute, context);
+					entity = response.getEntity();
+					int statusCode = response.getStatusLine().getStatusCode();
 					log.debug("cancelAppointment status code: " + statusCode);
 					if(statusCode == HttpStatus.SC_NO_CONTENT) {
 						return;
 					} else {
 						throw new CaldavDataAccessException("purgeAvailableScheduleReflections for " + owner + ", " + startDate +  ", " + endDate +" failed with unexpected status code: " + statusCode);
 					}
-				} catch (HttpException e) {
-					log.error("an HttpException occurred in purgeAvailableScheduleReflections for " + owner + ", " + startDate + ", " + endDate);
-					throw new CaldavDataAccessException(e);
 				} catch (IOException e) {
 					log.error("an IOException occurred in purgeAvailableScheduleReflections for " + owner + ", " + startDate + ", " + endDate);
 					throw new CaldavDataAccessException(e);
-				} 
+				} finally {
+					quietlyConsume(entity);
+				}
 			}
 		} else {
 			log.debug("experimental feature 'Availability Schedule reflection' disabled");
@@ -577,25 +620,31 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 	 * @param startDate
 	 * @param endDate
 	 * @return
+	 * @throws IOException 
 	 */
 	protected List<CalendarWithURI> getCalendarsInternal(ICalendarAccount calendarAccount,
 			Date startDate, Date endDate) {
 
 		String accountUri = this.caldavDialect.getCalendarAccountHome(calendarAccount);
-		RequestEntity requestEntity = caldavDialect.generateGetCalendarRequestEntity(startDate, endDate);
+		HttpEntity requestEntity = caldavDialect.generateGetCalendarRequestEntity(startDate, endDate);
 		ReportMethod method = new ReportMethod(accountUri);
-		method.setRequestEntity(requestEntity);
-		method.addRequestHeader(CONTENT_LENGTH_HEADER, Long.toString(requestEntity.getContentLength()));
-		method.addRequestHeader(DEPTH_HEADER);
+		method.setEntity(requestEntity);
+		//method.addHeader(CONTENT_LENGTH_HEADER, Long.toString(requestEntity.getContentLength()));
+		method.addHeader(DEPTH_HEADER);
 		if(log.isDebugEnabled()) {
 			log.debug("getCalendarsInternal executing " + methodToString(method) + " for " + calendarAccount + ", start " + startDate + ", end " + endDate);
 		}
-		HttpMethod toExecute = methodInterceptor.doWithMethod(method,calendarAccount);
+		HttpRequest toExecute = methodInterceptor.doWithMethod(method,calendarAccount);
+		final HttpContext context = constructHttpContext(calendarAccount);
+		
+		HttpEntity entity = null;
 		try {
-			int statusCode = this.httpClient.executeMethod(null, toExecute, constructHttpState(calendarAccount));
+			HttpResponse response = this.httpClient.execute(httpHost, toExecute, context);
+			entity = response.getEntity();
+			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("getCalendarsInternal status code: " + statusCode);
 			if(statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_MULTI_STATUS) {
-				InputStream content = method.getResponseBodyAsStream();
+				InputStream content = entity.getContent();
 				ReportResponseHandlerImpl reportResponseHandler = new ReportResponseHandlerImpl();
 				List<CalendarWithURI> calendars = reportResponseHandler.extractCalendars(content);
 				List<CalendarWithURI> results = new ArrayList<CalendarWithURI>();
@@ -608,13 +657,12 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 			} else {
 				throw new CaldavDataAccessException("unexpected status code: " + statusCode);
 			}
-		} catch (HttpException e) {
-			log.error("an HttpException occurred in getCalendarsInternal for " + calendarAccount + ", " + startDate + ", " + endDate);
-			throw new CaldavDataAccessException(e);
 		} catch (IOException e) {
 			log.error("an IOException occurred in getCalendarsInternal for " + calendarAccount + ", " + startDate + ", " + endDate);
 			throw new CaldavDataAccessException(e);
-		} 
+		} finally {
+			quietlyConsume(entity);
+		}
 	}
 	/**
 	 * Consolidate the {@link Calendar}s within the argument, returning 1.
@@ -672,8 +720,6 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 					// immediately skip over non-scheduling assistant appointments
 					continue;
 				}
-
-				// TODO version check still needed in Jasig release?
 				// check for version first
 				Property versionProperty = event.getProperty(AvailableVersion.AVAILABLE_VERSION);
 				if (AvailableVersion.AVAILABLE_VERSION_1_2.equals(versionProperty)) {
@@ -759,20 +805,33 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 	protected int putNewEvent(ICalendarAccount eventOwner, VEvent event) throws HttpException, IOException {
 		String uri = generateEventUri(eventOwner, event);
 
-		PutMethod method = constructPutMethod(uri, event);
-		method.addRequestHeader(IF_NONE_MATCH_HEADER);
+		HttpPut method = constructPutMethod(uri, event);
+		method.addHeader(IF_NONE_MATCH_HEADER);
 
-		HttpMethod toExecute = this.methodInterceptor.doWithMethod(method, eventOwner);
+		HttpRequest toExecute = this.methodInterceptor.doWithMethod(method, eventOwner);
 		if(log.isDebugEnabled()) {
 			log.debug("putNewEvent executing " + methodToString(method) + " for " + eventOwner);
 		}
-		int statusCode = this.httpClient.executeMethod(null, toExecute, constructHttpState(eventOwner));
-		if(log.isDebugEnabled()) {
-			InputStream content = method.getResponseBodyAsStream();
-			log.debug("putNewEvent response body: " + IOUtils.toString(content));
+		final HttpContext context = constructHttpContext(eventOwner);
+		
+		HttpEntity entity = null;
+		try {
+			HttpResponse response = this.httpClient.execute(httpHost, toExecute, context);
+			entity = response.getEntity();
+			if(log.isDebugEnabled()) {
+				if(entity == null) {
+					log.debug("putNewEvent response entity was null, statusline: " + response.getStatusLine());
+				} else {
+					InputStream content = entity.getContent();
+					log.debug("putNewEvent response body: " + IOUtils.toString(content));
+				}
+			}
+			int statusCode = response.getStatusLine().getStatusCode();
+			return statusCode;
+		} finally {
+			EntityUtils.consume(entity);
 		}
-
-		return statusCode;
+		
 	}
 	/**
 	 * Update an existing event using CalDAV PUT.
@@ -784,19 +843,30 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 	 * @throws HttpException
 	 * @throws IOException
 	 */
-	protected int putExistingEvent(ICalendarAccount eventOwner, VEvent event, String etag) throws HttpException, IOException {
+	protected int putExistingEvent(ICalendarAccount eventOwner, VEvent event, String etag) throws IOException {
 		String uri = generateEventUri(eventOwner, event);
 
-		PutMethod method = constructPutMethod(uri, event);
-		method.addRequestHeader(IF_MATCH_HEADER, etag);
+		HttpPut method = constructPutMethod(uri, event);
+		method.addHeader(IF_MATCH_HEADER, etag);
 
-		HttpMethod toExecute = this.methodInterceptor.doWithMethod(method, eventOwner);
+		HttpRequest toExecute = this.methodInterceptor.doWithMethod(method, eventOwner);
 		if(log.isDebugEnabled()) {
 			log.debug("putExistingEvent executing " + methodToString(method) + " for " + eventOwner);
 		}
-		int statusCode = this.httpClient.executeMethod(null, toExecute, constructHttpState(eventOwner));
-		// can't log the response stream here like we do in putNewEvent - since there is no response for event overwrites!
-		return statusCode;
+		final HttpContext context = constructHttpContext(eventOwner);
+		
+		HttpEntity entity = null;
+		try {
+			HttpResponse response = this.httpClient.execute(httpHost, toExecute, context);
+			entity = response.getEntity();
+			if(log.isDebugEnabled()) {
+				log.debug("putExistingEvent response entity is null, response status line: " + response.getStatusLine());
+			}
+			int statusCode = response.getStatusLine().getStatusCode();
+			return statusCode;
+		} finally {
+			EntityUtils.consume(entity);
+		}
 	}
 	/**
 	 * This method will inspect {@link IScheduleVisitor} {@link Attendee}s among the {@link SchedulingAssistantAppointment}s
@@ -833,7 +903,6 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 						Parameter appointmentRole = attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
 						if(AppointmentRole.OWNER.equals(appointmentRole) ) {
 							// remove whole appointment
-							//Uid eventUid = event.getUid();
 							deleteCalendar(calendarWithURI, owner);
 							log.warn("purgeDeclinedAttendees successfully cancelled appointment due to owner decline " + event);
 							
@@ -859,9 +928,6 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 									} else {
 										throw new CaldavDataAccessException("purgeDeclinedAttendees leave failed for " + attendee + ", " + owner + " failed with unexpected status code: " + statusCode);
 									}
-								} catch (HttpException e) {
-									log.error("an HttpException occurred in joinAppointment for " + owner + ", " + attendee );
-									throw new CaldavDataAccessException(e);
 								} catch (IOException e) {
 									log.error("an IOException occurred in joinAppointment for " + owner + ", " + attendee);
 									throw new CaldavDataAccessException(e);
@@ -871,7 +937,6 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 							} else {
 								// either one on one appointment or group appointment with only 1 visitor
 								// remove whole appointment
-								//Uid eventUid = event.getUid();
 								deleteCalendar(calendarWithURI, owner);
 								log.warn("purgeDeclinedAttendees successfully cancelled appointment due to no remaining visitors " + event);
 								this.applicationEventPublisher.publishEvent(new AutomaticAppointmentCancellationEvent(event, owner, Reason.NO_REMAINING_VISITORS));
@@ -894,34 +959,18 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 		}
 		return calendarWithURI;
 	}
-	/**
-	 * Construct a {@link HttpState} that we can pass into 
-	 * {@link HttpClient#executeMethod(org.apache.commons.httpclient.HostConfiguration, HttpMethod, HttpState)}.
-	 * 
-	 * Depends on the configured {@link HttpCredentialsProvider} for {@link Credentials} to 
-	 * set in the returned {@link HttpState}.
-	 * 
-	 * @param account
-	 * @return a {@link HttpState} to be used to execute a {@link HttpMethod}.
-	 */
-	protected HttpState constructHttpState(ICalendarAccount account) {
-		HttpState state = new HttpState();
-		
-		Credentials credentials = this.credentialsProvider.getCredentials(account);
-		state.setCredentials(getCaldavAdminAuthScope(), credentials);
-		return state;
-	}
+
 	/**
 	 * 
 	 * @param uri
 	 * @param event
 	 * @return
 	 */
-	PutMethod constructPutMethod(String uri, VEvent event) {
-		PutMethod method = new PutMethod(uri);
-		method.addRequestHeader(ICALENDAR_CONTENT_TYPE_HEADER);
-		RequestEntity requestEntity = caldavDialect.generatePutAppointmentRequestEntity(event);
-		method.setRequestEntity(requestEntity);
+	HttpPut constructPutMethod(String uri, VEvent event) {
+		HttpPut method = new HttpPut(uri);
+		method.addHeader(ICALENDAR_CONTENT_TYPE_HEADER);
+		HttpEntity requestEntity = caldavDialect.generatePutAppointmentRequestEntity(event);
+		method.setEntity(requestEntity);
 		return method;
 	}
 	/**
@@ -938,16 +987,24 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 	}
 
 	/**
-	 * Basic toString for {@link HttpMethod} to output method name and path.
+	 * Basic toString for {@link HttpRequest} to output method name and path.
 	 * 
 	 * @param method
 	 * @return
 	 */
-	String methodToString(HttpMethod method) {
-		StringBuilder result = new StringBuilder();
-		result.append(method.getName());
-		result.append(" ");
-		result.append(method.getPath());
-		return result.toString();
+	String methodToString(HttpRequest method) {
+		return method.getRequestLine().toString();
+	}
+	
+	/**
+	 * 
+	 * @param entity
+	 */
+	void quietlyConsume(HttpEntity entity) {
+		try {
+			EntityUtils.consume(entity);
+		} catch (IOException e) {
+			log.info("caught IOException from EntityUtils#consume", e);
+		}
 	}
 }

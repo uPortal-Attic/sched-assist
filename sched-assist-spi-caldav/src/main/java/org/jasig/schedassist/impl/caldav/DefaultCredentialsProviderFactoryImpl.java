@@ -19,28 +19,28 @@
 
 package org.jasig.schedassist.impl.caldav;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.jasig.schedassist.model.ICalendarAccount;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
- * Default {@link HttpCredentialsProvider} uses the exact same credentials for 
- * all accounts.
+ * Default {@link CredentialsProviderFactory} implementation, returns
+ * {@link DefaultCredentialsProviderImpl} instances.
  * 
- * The intent with this implementation is that the administrative credentials you configure
- * have full read/write/admin privileges for all {@link ICalendarAccount}s. in your calendar
- * system.
  * 
  * @author Nicholas Blair
- * @version $Id: DefaultHttpCredentialsProviderImpl.java $
+ * @version $Id: DefaultCredentialsProviderProviderImpl.java $
  */
-public class DefaultHttpCredentialsProviderImpl implements
-		HttpCredentialsProvider {
+public class DefaultCredentialsProviderFactoryImpl implements
+		CredentialsProviderFactory {
 
 	private String caldavAdminUsername;
 	private String caldavAdminPassword;
-	
+	private AuthScope authScope;
 	/**
 	 * @param caldavAdminUsername the caldavAdminUsername to set
 	 */
@@ -67,13 +67,32 @@ public class DefaultHttpCredentialsProviderImpl implements
 	protected String getCaldavAdminPassword() {
 		return caldavAdminPassword;
 	}
+	/**
+	 * @return the authScope
+	 */
+	public AuthScope getAuthScope() {
+		return authScope;
+	}
+	/**
+	 * @param authScope the authScope to set
+	 */
+	@Autowired
+	public void setAuthScope(AuthScope authScope) {
+		this.authScope = authScope;
+	}
+	/**
+	 * 
+	 * @return a {@link Credentials} made up of {@link #getCaldavAdminUsername()} and {@link #getCaldavAdminPassword()}.
+	 */
+	protected Credentials getAdminCredentials() {
+		return new UsernamePasswordCredentials(getCaldavAdminUsername(), getCaldavAdminPassword());
+	}
 	/* (non-Javadoc)
-	 * @see org.jasig.schedassist.impl.caldav.HttpCredentialsProvider#getCredentials(org.jasig.schedassist.model.ICalendarAccount)
+	 * @see org.jasig.schedassist.impl.caldav.CredentialsProviderProvider#getCredentialsProvider(org.jasig.schedassist.model.ICalendarAccount)
 	 */
 	@Override
-	public Credentials getCredentials(ICalendarAccount account) {
-		UsernamePasswordCredentials adminCredentials = new UsernamePasswordCredentials(caldavAdminUsername, caldavAdminPassword);
-		return adminCredentials;
+	public CredentialsProvider getCredentialsProvider(ICalendarAccount account) {
+		DefaultCredentialsProviderImpl provider = new DefaultCredentialsProviderImpl(getAdminCredentials(), authScope);
+		return provider;
 	}
-
 }
