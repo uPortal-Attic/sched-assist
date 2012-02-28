@@ -68,11 +68,18 @@
     	<constructor-arg index="1" value="${caldav.admin.authscope.port}"/>
     	<constructor-arg index="2" value="${caldav.host.scheme}"/>
     </bean>
-    <bean id="schemeFactory" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-   		<property name="staticMethod"><value>org.apache.http.impl.conn.SchemeRegistryFactory.createDefault</value></property>
+    <bean id="schemeRegistry" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+   		<property name="staticMethod" value="org.jasig.schedassist.impl.caldav.SchemeRegistryProvider.createSchemeRegistry"/>
+   		<property name="arguments">
+   			<array>
+   				<value>${caldav.host.scheme}</value>
+   				<value>${caldav.admin.authscope.port}</value>
+   				<value>${caldav.host.ssl:false}</value>
+   			</array>
+   		</property>
  	</bean>
     <bean id="clientConnectionManager" class="org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager">
-    	<constructor-arg ref="schemeFactory"/>
+    	<constructor-arg ref="schemeRegistry"/>
     	<constructor-arg index="1" value="${caldav.http.connectionTimeout}"/>
     	<constructor-arg index="2" value="MILLISECONDS"/>
     	<property name="defaultMaxPerRoute" value="${caldav.http.defaultMaxConnectionsPerHost}"/>
@@ -81,24 +88,4 @@
     <bean id="httpClient" class="org.apache.http.impl.client.DefaultHttpClient">
     	<constructor-arg ref="clientConnectionManager"/>
     </bean>
-
-	<!--  old httpclient
-	<bean id="caldavAdminAuthScope" class="org.apache.commons.httpclient.auth.AuthScope">
-    	<constructor-arg index="0"><value>${caldav.admin.authscope.host}</value></constructor-arg>
-    	<constructor-arg index="1"><value>${caldav.admin.authscope.port}</value></constructor-arg>
-    	<constructor-arg index="2"><value>${caldav.admin.authscope.realm}</value></constructor-arg>
-    </bean>
-    <bean id="httpClient" class="org.apache.commons.httpclient.HttpClient">
-        <property name="httpConnectionManager" ref="httpConnectionManager"/>
-    </bean>
-    <bean id="httpConnectionManager" class="org.apache.commons.httpclient.MultiThreadedHttpConnectionManager">
-        <property name="params">
-            <bean class="org.apache.commons.httpclient.params.HttpConnectionManagerParams">
-                <property name="connectionTimeout" value="5000"/>
-                <property name="defaultMaxConnectionsPerHost" value="20"/>
-            </bean>
-        </property>
-    </bean> 
-	
-	 -->
 </beans>
