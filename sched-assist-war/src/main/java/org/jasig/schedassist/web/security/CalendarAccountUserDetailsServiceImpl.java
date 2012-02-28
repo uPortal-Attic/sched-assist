@@ -153,7 +153,8 @@ public class CalendarAccountUserDetailsServiceImpl implements
 		result.setActiveDisplayNameAttribute(this.activeDisplayNameAttribute);
 		checkForVisitorAndOwner(result);
 		
-		if(this.administrators.contains(username)) {
+		final String id = calendarAccount.getAttributeValue(this.activeDisplayNameAttribute);
+		if(this.administrators.contains(id)) {
 			result.setAdministrator(true);
 		}
 		return result;
