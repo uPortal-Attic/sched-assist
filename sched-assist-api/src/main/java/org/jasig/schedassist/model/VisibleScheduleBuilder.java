@@ -217,6 +217,11 @@ public class VisibleScheduleBuilder implements IVisibleScheduleBuilder {
 
 			// if we reach this point, this event is not skippable,
 			// it's going to be either BUSY, FREE with visitors, or ATTENDING
+			// whether event is recurring or not, check block on start/end
+			Date startDate = event.getStartDate().getDate();
+			Date endDate = event.getEndDate(true).getDate();
+			mutateAppropriateBlockInVisibleSchedule(visibleSchedule, event, calendarAccount, null, startDate, endDate, false);
+						
 			if(eventUtils.isEventRecurring(event)) {
 				// expand the recurrence rules
 				PeriodList recurrenceList = this.eventUtils.calculateRecurrence(event, startTime, endTime);
@@ -224,12 +229,7 @@ public class VisibleScheduleBuilder implements IVisibleScheduleBuilder {
 					Period period = (Period) o;
 					mutateAppropriateBlockInVisibleSchedule(visibleSchedule, event, calendarAccount, null, period.getStart(), period.getEnd(), false);
 				}
-			} else {	
-				// event is not recurring, just check block on start/end
-				Date startDate = event.getStartDate().getDate();
-				Date endDate = event.getEndDate(true).getDate();
-				mutateAppropriateBlockInVisibleSchedule(visibleSchedule, event, calendarAccount, null, startDate, endDate, false);
-			}
+			} 
 		}
 		
 		return visibleSchedule;
