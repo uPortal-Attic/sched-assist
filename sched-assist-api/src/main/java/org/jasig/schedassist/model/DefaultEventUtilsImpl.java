@@ -432,12 +432,10 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			} else {
 			    // add Rdate to existing event
 			 	net.fortuna.ical4j.model.Date start = new net.fortuna.ical4j.model.Date(DateUtils.truncate(block.getStartTime(), java.util.Calendar.DATE));
-			 	DateList dates = new DateList();
+			 	DateList dates = new DateList(Value.DATE);
 			 	dates.add(start);
 			 	
-			 	ParameterList params = new ParameterList();
-			 	params.add(Value.DATE);
-			 	RDate rDate = new RDate(params, dates);
+			 	RDate rDate = new RDate(dates);
 				event.getProperties().add(rDate);
 			}
 		}
