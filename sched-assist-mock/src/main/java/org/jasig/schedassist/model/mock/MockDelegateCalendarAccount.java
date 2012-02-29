@@ -20,6 +20,7 @@
 package org.jasig.schedassist.model.mock;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jasig.schedassist.model.AbstractCalendarAccount;
@@ -43,7 +44,7 @@ public class MockDelegateCalendarAccount extends AbstractCalendarAccount
 	private ICalendarAccount accountOwner;
 	private String location;
 	private String contactInformation;
-	private Map<String, String> attributes = new HashMap<String, String>();
+	private Map<String, List<String>> attributes = new HashMap<String, List<String>>();
 	private String calendarLoginId;
 	
 	/*
@@ -84,19 +85,10 @@ public class MockDelegateCalendarAccount extends AbstractCalendarAccount
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.jasig.schedassist.model.AbstractCalendarAccount#getAttributeValue(java.lang.String)
-	 */
-	@Override
-	public String getAttributeValue(String attributeName) {
-		return this.attributes.get(attributeName);
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.model.AbstractCalendarAccount#getAttributes()
 	 */
 	@Override
-	public Map<String, String> getAttributes() {
+	public Map<String, List<String>> getAttributes() {
 		return this.attributes;
 	}
 
@@ -133,7 +125,7 @@ public class MockDelegateCalendarAccount extends AbstractCalendarAccount
 	/**
 	 * @param attributes the attributes to set
 	 */
-	public void setAttributes(Map<String, String> attributes) {
+	public void setAttributes(Map<String, List<String>> attributes) {
 		this.attributes = attributes;
 	}
 

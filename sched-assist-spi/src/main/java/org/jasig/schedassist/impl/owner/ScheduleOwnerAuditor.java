@@ -186,7 +186,7 @@ public final class ScheduleOwnerAuditor extends SimpleJdbcDaoSupport {
 		}
 
 		@Override
-		public Map<String, String> getAttributes() {
+		public Map<String, List<String>> getAttributes() {
 			return null;
 		}
 
@@ -231,6 +231,11 @@ public final class ScheduleOwnerAuditor extends SimpleJdbcDaoSupport {
 		 */
 		public void setUsername(String username) {
 			this.username = username;
+		}
+
+		@Override
+		public List<String> getAttributeValues(String attributeName) {
+			return null;
 		}
 	}
 }

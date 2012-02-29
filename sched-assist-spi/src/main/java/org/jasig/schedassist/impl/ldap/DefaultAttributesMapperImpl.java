@@ -22,7 +22,9 @@
  */
 package org.jasig.schedassist.impl.ldap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.NamingEnumeration;
@@ -53,7 +55,7 @@ public class DefaultAttributesMapperImpl implements AttributesMapper {
 	 */
 	@Override
 	public Object mapFromAttributes(Attributes attributes) throws NamingException {
-		Map<String, String> attributesMap = convertToStringAttributesMap(attributes);
+		Map<String, List<String>> attributesMap = convertToStringAttributesMap(attributes);
 		
 		LDAPPersonCalendarAccountImpl account = new LDAPPersonCalendarAccountImpl(attributesMap, ldapAttributesKey);
 		return account;
@@ -65,8 +67,8 @@ public class DefaultAttributesMapperImpl implements AttributesMapper {
 	 * @return
 	 * @throws NamingException
 	 */
-	protected final Map<String, String> convertToStringAttributesMap(Attributes attributes) throws NamingException {
-		Map<String, String> attributesMap = new HashMap<String, String>();
+	protected final Map<String, List<String>> convertToStringAttributesMap(Attributes attributes) throws NamingException {
+		Map<String, List<String>> attributesMap = new HashMap<String, List<String>>();
 		
 		NamingEnumeration<String> attributeNames = attributes.getIDs();
 		while(attributeNames.hasMore()) {
@@ -76,14 +78,33 @@ public class DefaultAttributesMapperImpl implements AttributesMapper {
 				continue;
 			}
 			Attribute attribute = attributes.get(attributeName);
-			String value = (String) attribute.get();
-			if(null != value) {
-				value = value.trim();
-			}
+			int numberOfValues = attribute.size();
+			for(int i = 0; i < numberOfValues; i++) {
+				String value = (String) attribute.get(i);
+				if(null != value) {
+					value = value.trim();
+				}
 			
-			attributesMap.put(attributeName.toLowerCase(), value);
+				List<String> list = safeGetAttributeList(attributesMap, attributeName.toLowerCase());
+				list.add(value);
+			}
 		}
 		return attributesMap;
+	}
+	/**
+	 * 
+	 * @param attributesMap
+	 * @param attributeName
+	 * @return
+	 */
+	protected List<String> safeGetAttributeList(Map<String, List<String>> attributesMap, String attributeName) {
+		List<String> list = attributesMap.get(attributeName);
+		if(list == null) {
+			list = new ArrayList<String>();
+			attributesMap.put(attributeName, list);
+		}
+		
+		return list;
 	}
 
 }

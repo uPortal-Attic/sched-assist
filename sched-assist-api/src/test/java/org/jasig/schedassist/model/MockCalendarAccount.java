@@ -20,9 +20,8 @@
 package org.jasig.schedassist.model;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import org.jasig.schedassist.model.AbstractCalendarAccount;
 
 /**
  * Mock {@link AbstractCalendarAccount} implementation.
@@ -37,16 +36,7 @@ class MockCalendarAccount extends AbstractCalendarAccount {
 	 */
 	private static final long serialVersionUID = 53706L;
 
-	private Map<String,String> attributes = new HashMap<String, String>();
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.jasig.schedassist.model.AbstractCalendarAccount#getAttributeValue(java.lang.String)
-	 */
-	@Override
-	public String getAttributeValue(String attributeName) {
-		return this.attributes.get(attributeName);
-	}
+	private Map<String,List<String>> attributes = new HashMap<String, List<String>>();
 	
 	/**
 	 * 
@@ -54,7 +44,8 @@ class MockCalendarAccount extends AbstractCalendarAccount {
 	 * @param attributeValue
 	 */
 	public void setAttributeValue(String attributeName, String attributeValue) {
-		this.attributes.put(attributeName, attributeValue);
+		List<String> values = getAttributeListSafely(attributeName);
+		values.add(attributeValue);
 	}
 
 	/*
@@ -62,14 +53,14 @@ class MockCalendarAccount extends AbstractCalendarAccount {
 	 * @see org.jasig.schedassist.model.AbstractCalendarAccount#getAttributes()
 	 */
 	@Override
-	public Map<String, String> getAttributes() {
-		return new HashMap<String, String>(attributes);
+	public Map<String, List<String>> getAttributes() {
+		return attributes;
 	}
 
 	/**
 	 * @param attributes the attributes to set
 	 */
-	public void setAttributes(Map<String, String> attributes) {
+	public void setAttributes(Map<String, List<String>> attributes) {
 		this.attributes = attributes;
 	}
 

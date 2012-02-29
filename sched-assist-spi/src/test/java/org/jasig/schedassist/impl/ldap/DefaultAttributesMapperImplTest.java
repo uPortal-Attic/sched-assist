@@ -22,6 +22,7 @@ package org.jasig.schedassist.impl.ldap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.NamingEnumeration;
@@ -41,7 +42,8 @@ public class DefaultAttributesMapperImplTest {
 
 	@Test
 	public void testControl() throws NamingException {
-		LDAPAttributesKey ldapAttributesKey = new LDAPAttributesKeyImpl();
+		LDAPAttributesKeyImpl ldapAttributesKey = new LDAPAttributesKeyImpl();
+		ldapAttributesKey.setUniqueIdentifierAttributeName("uniqueid");
 		DefaultAttributesMapperImpl mapper = new DefaultAttributesMapperImpl(ldapAttributesKey);
 		Attributes attributes = mock(Attributes.class);
 		@SuppressWarnings("unchecked")
@@ -53,17 +55,21 @@ public class DefaultAttributesMapperImplTest {
 				ldapAttributesKey.getUsernameAttributeName());
 		when(attributes.getIDs()).thenReturn(attributeIds);
 		Attribute cn = mock(Attribute.class);
-		when(cn.get()).thenReturn("Buckingham Badger");
+		when(cn.size()).thenReturn(1);
+		when(cn.get(0)).thenReturn("Buckingham Badger");
 		when(attributes.get(ldapAttributesKey.getDisplayNameAttributeName())).thenReturn(cn);
 		Attribute email = mock(Attribute.class);
-		when(email.get()).thenReturn("bbadger@wisc.edu");
+		when(email.size()).thenReturn(1);
+		when(email.get(0)).thenReturn("bbadger@wisc.edu");
 		when(attributes.get(ldapAttributesKey.getEmailAddressAttributeName())).thenReturn(email);
 		Attribute uniqueId = mock(Attribute.class);
-		when(uniqueId.get()).thenReturn("bbadger");
+		when(uniqueId.size()).thenReturn(1);
+		when(uniqueId.get(0)).thenReturn("bbadger");
 		when(attributes.get(ldapAttributesKey.getUniqueIdentifierAttributeName())).thenReturn(uniqueId);
 		
 		Attribute username= mock(Attribute.class);
-		when(username.get()).thenReturn("bbadger");
+		when(username.size()).thenReturn(1);
+		when(username.get(0)).thenReturn("bbadger");
 		when(attributes.get(ldapAttributesKey.getUsernameAttributeName())).thenReturn(username);
 		
 		Object o = mapper.mapFromAttributes(attributes);
@@ -92,27 +98,32 @@ public class DefaultAttributesMapperImplTest {
 				ldapAttributesKey.getUsernameAttributeName());
 		when(attributes.getIDs()).thenReturn(attributeIds);
 		Attribute cn = mock(Attribute.class);
-		when(cn.get()).thenReturn("Buckingham Badger");
+		when(cn.size()).thenReturn(1);
+		when(cn.get(0)).thenReturn("Buckingham Badger");
 		when(attributes.get(ldapAttributesKey.getDisplayNameAttributeName())).thenReturn(cn);
 		Attribute password = mock(Attribute.class);
-		when(password.get()).thenReturn("badgers!");
+		when(password.size()).thenReturn(1);
+		when(password.get(0)).thenReturn("badgers!");
 		when(attributes.get("userPassword")).thenReturn(password);
 		Attribute email = mock(Attribute.class);
-		when(email.get()).thenReturn("bbadger@wisc.edu");
+		when(email.size()).thenReturn(1);
+		when(email.get(0)).thenReturn("bbadger@wisc.edu");
 		when(attributes.get(ldapAttributesKey.getEmailAddressAttributeName())).thenReturn(email);
 		Attribute uniqueId = mock(Attribute.class);
-		when(uniqueId.get()).thenReturn("bbadger");
+		when(uniqueId.size()).thenReturn(1);
+		when(uniqueId.get(0)).thenReturn("bbadger");
 		when(attributes.get(ldapAttributesKey.getUniqueIdentifierAttributeName())).thenReturn(uniqueId);
 		
 		Attribute username= mock(Attribute.class);
-		when(username.get()).thenReturn("bbadger");
+		when(username.size()).thenReturn(1);
+		when(username.get(0)).thenReturn("bbadger");
 		when(attributes.get(ldapAttributesKey.getUsernameAttributeName())).thenReturn(username);
 		
-		Map<String, String> values = mapper.convertToStringAttributesMap(attributes);
+		Map<String, List<String>> values = mapper.convertToStringAttributesMap(attributes);
 		Assert.assertNull(values.get("userPassword"));
-		Assert.assertEquals("bbadger", values.get(ldapAttributesKey.getUniqueIdentifierAttributeName()));
-		Assert.assertEquals("Buckingham Badger", values.get(ldapAttributesKey.getDisplayNameAttributeName()));
-		Assert.assertEquals("bbadger@wisc.edu", values.get(ldapAttributesKey.getEmailAddressAttributeName()));
-		Assert.assertEquals("bbadger", values.get(ldapAttributesKey.getUsernameAttributeName()));
+		Assert.assertEquals("bbadger", values.get(ldapAttributesKey.getUniqueIdentifierAttributeName()).get(0));
+		Assert.assertEquals("Buckingham Badger", values.get(ldapAttributesKey.getDisplayNameAttributeName()).get(0));
+		Assert.assertEquals("bbadger@wisc.edu", values.get(ldapAttributesKey.getEmailAddressAttributeName()).get(0));
+		Assert.assertEquals("bbadger", values.get(ldapAttributesKey.getUsernameAttributeName()).get(0));
 	}
 }

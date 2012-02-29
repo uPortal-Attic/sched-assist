@@ -19,7 +19,9 @@
 
 package org.jasig.schedassist.impl.ldap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -38,7 +40,7 @@ public class LDAPPersonCalendarAccountImplTest {
 	@Test
 	public void testEmptyPerson() {
 		LDAPAttributesKey ldapAttributesKey = new LDAPAttributesKeyImpl();
-		LDAPPersonCalendarAccountImpl person = new LDAPPersonCalendarAccountImpl(new HashMap<String, String>(), ldapAttributesKey);
+		LDAPPersonCalendarAccountImpl person = new LDAPPersonCalendarAccountImpl(new HashMap<String, List<String>>(), ldapAttributesKey);
 		Assert.assertFalse(person.isEligible());
 		Assert.assertNull(person.getCalendarLoginId());
 		Assert.assertNull(person.getCalendarUniqueId());
@@ -53,11 +55,11 @@ public class LDAPPersonCalendarAccountImplTest {
 	@Test
 	public void testControlPerson() {
 		LDAPAttributesKey ldapAttributesKey = new LDAPAttributesKeyImpl();
-		Map<String, String> attributes = new HashMap<String, String>();
-		attributes.put(ldapAttributesKey.getDisplayNameAttributeName(), "Buckingham Badger");
-		attributes.put(ldapAttributesKey.getEmailAddressAttributeName(), "bbadger@wisc.edu");
-		attributes.put(ldapAttributesKey.getUniqueIdentifierAttributeName(), "bbadger");
-		attributes.put(ldapAttributesKey.getUsernameAttributeName(), "bbadger");
+		Map<String, List<String>> attributes = new HashMap<String, List<String>>();
+		attributes.put(ldapAttributesKey.getDisplayNameAttributeName(), singleValuedList("Buckingham Badger"));
+		attributes.put(ldapAttributesKey.getEmailAddressAttributeName(), singleValuedList("bbadger@wisc.edu"));
+		attributes.put(ldapAttributesKey.getUniqueIdentifierAttributeName(), singleValuedList("bbadger"));
+		attributes.put(ldapAttributesKey.getUsernameAttributeName(), singleValuedList("bbadger"));
 		LDAPPersonCalendarAccountImpl person = new LDAPPersonCalendarAccountImpl(attributes, ldapAttributesKey);
 		Assert.assertTrue(person.isEligible());
 		Assert.assertEquals("bbadger", person.getCalendarLoginId());
@@ -67,7 +69,16 @@ public class LDAPPersonCalendarAccountImplTest {
 		Assert.assertEquals("bbadger", person.getUsername());
 		
 	}
-	
+	/**
+	 * 
+	 * @param value
+	 * @return
+	 */
+	protected List<String> singleValuedList(String value) {
+		List<String> values = new ArrayList<String>();
+		values.add(value);
+		return values;
+	}
 	/**
 	 * Override {@link LDAPAttributesKey} implementation to use different attribute
 	 * evaluator.
@@ -81,18 +92,23 @@ public class LDAPPersonCalendarAccountImplTest {
 			 */
 			@Override
 			public boolean evaluateEligibilityAttributeValue(
-					Map<String, String> attributes) {
-				final String eligibilityValue = attributes.get(getEligibilityAttributeName());
-				return "Y".equalsIgnoreCase(eligibilityValue);
+					Map<String, List<String>> attributes) {
+				List<String> values = attributes.get(getEligibilityAttributeName());
+				if(values.size() == 1) {
+					final String eligibilityValue = values.get(0) ;
+					return "Y".equalsIgnoreCase(eligibilityValue);
+				} 
+				
+				return false;
 			}
 		};
 		
-		Map<String, String> attributes = new HashMap<String, String>();
-		attributes.put(ldapAttributesKey.getDisplayNameAttributeName(), "Buckingham Badger");
-		attributes.put(ldapAttributesKey.getEligibilityAttributeName(), "Y");
-		attributes.put(ldapAttributesKey.getEmailAddressAttributeName(), "bbadger@wisc.edu");
-		attributes.put(ldapAttributesKey.getUniqueIdentifierAttributeName(), "bbadger");
-		attributes.put(ldapAttributesKey.getUsernameAttributeName(), "bbadger");
+		Map<String, List<String>> attributes = new HashMap<String, List<String>>();
+		attributes.put(ldapAttributesKey.getDisplayNameAttributeName(), singleValuedList("Buckingham Badger"));
+		attributes.put(ldapAttributesKey.getEligibilityAttributeName(), singleValuedList("Y"));
+		attributes.put(ldapAttributesKey.getEmailAddressAttributeName(), singleValuedList("bbadger@wisc.edu"));
+		attributes.put(ldapAttributesKey.getUniqueIdentifierAttributeName(), singleValuedList("bbadger"));
+		attributes.put(ldapAttributesKey.getUsernameAttributeName(), singleValuedList("bbadger"));
 		LDAPPersonCalendarAccountImpl person = new LDAPPersonCalendarAccountImpl(attributes, ldapAttributesKey);
 		Assert.assertTrue(person.isEligible());
 		Assert.assertEquals("bbadger", person.getCalendarLoginId());
@@ -101,7 +117,7 @@ public class LDAPPersonCalendarAccountImplTest {
 		Assert.assertEquals("bbadger@wisc.edu", person.getEmailAddress());
 		Assert.assertEquals("bbadger", person.getUsername());
 		
-		attributes.put(ldapAttributesKey.getEligibilityAttributeName(), "N");
+		attributes.put(ldapAttributesKey.getEligibilityAttributeName(), singleValuedList("N"));
 		person = new LDAPPersonCalendarAccountImpl(attributes, ldapAttributesKey);
 		Assert.assertFalse(person.isEligible());
 	}

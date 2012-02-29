@@ -19,7 +19,9 @@
 
 package org.jasig.schedassist.impl.ldap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -36,13 +38,15 @@ public class LDAPAttributesKeyImplTest {
 	public void testEvaluateEligibilityAttributeEmpty() {
 		LDAPAttributesKeyImpl attributesKey = new LDAPAttributesKeyImpl();
 		Assert.assertFalse(attributesKey.evaluateEligibilityAttributeValue(null));
-		Assert.assertFalse(attributesKey.evaluateEligibilityAttributeValue(new HashMap<String, String>()));
+		Assert.assertFalse(attributesKey.evaluateEligibilityAttributeValue(new HashMap<String, List<String>>()));
 	}
 	@Test
 	public void testEvaluateEligibilityAttributeControl() {
 		LDAPAttributesKeyImpl attributesKey = new LDAPAttributesKeyImpl();
-		Map<String, String> attributes = new HashMap<String, String>();
-		attributes.put(attributesKey.getUniqueIdentifierAttributeName(), "something");
+		Map<String, List<String>> attributes = new HashMap<String, List<String>>();
+		List<String> values = new ArrayList<String>();
+		values.add("something");
+		attributes.put(attributesKey.getUniqueIdentifierAttributeName(), values);
 		Assert.assertTrue(attributesKey.evaluateEligibilityAttributeValue(attributes));
 	}
 }

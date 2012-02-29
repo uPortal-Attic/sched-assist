@@ -23,6 +23,7 @@
 package org.jasig.schedassist.impl.ldap;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jasig.schedassist.model.AbstractCalendarAccount;
@@ -41,36 +42,29 @@ class LDAPPersonCalendarAccountImpl extends AbstractCalendarAccount {
 	 */
 	private static final long serialVersionUID = 1794331642591042311L;
 
-	private Map<String, String> attributesMap = new HashMap<String, String>();
+	private Map<String, List<String>> attributesMap = new HashMap<String, List<String>>();
 	/**
 	 * Default implementation.
 	 * 
 	 * @param attributes
 	 * @param ldapAttributesKey
 	 */
-	public LDAPPersonCalendarAccountImpl(Map<String, String> attributes, LDAPAttributesKey ldapAttributesKey) {
+	public LDAPPersonCalendarAccountImpl(Map<String, List<String>> attributes, LDAPAttributesKey ldapAttributesKey) {
 		this.attributesMap = attributes;
 		// populate fields first
-		setCalendarUniqueId(attributes.get(ldapAttributesKey.getUniqueIdentifierAttributeName()));
-		setDisplayName(attributes.get(ldapAttributesKey.getDisplayNameAttributeName()));
-		setEmailAddress(attributes.get(ldapAttributesKey.getEmailAddressAttributeName()));
-		setUsername(attributes.get(ldapAttributesKey.getUsernameAttributeName()));
+		setCalendarUniqueId(getSingleAttributeValue(attributes.get(ldapAttributesKey.getUniqueIdentifierAttributeName())));
+		setDisplayName(getSingleAttributeValue(attributes.get(ldapAttributesKey.getDisplayNameAttributeName())));
+		setEmailAddress(getSingleAttributeValue(attributes.get(ldapAttributesKey.getEmailAddressAttributeName())));
+		setUsername(getSingleAttributeValue(attributes.get(ldapAttributesKey.getUsernameAttributeName())));
 		// set eligibility
 		setEligible(ldapAttributesKey.evaluateEligibilityAttributeValue(attributes));
-	}
-	/* (non-Javadoc)
-	 * @see org.jasig.schedassist.model.AbstractCalendarAccount#getAttributeValue(java.lang.String)
-	 */
-	@Override
-	public String getAttributeValue(String attributeName) {
-		return this.attributesMap.get(attributeName);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.model.AbstractCalendarAccount#getAttributes()
 	 */
 	@Override
-	public Map<String, String> getAttributes() {
+	public Map<String, List<String>> getAttributes() {
 		return this.attributesMap;
 	}
 
@@ -80,6 +74,15 @@ class LDAPPersonCalendarAccountImpl extends AbstractCalendarAccount {
 	@Override
 	public String getCalendarLoginId() {
 		return getUsername();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "LDAPPersonCalendarAccountImpl [attributesMap=" + attributesMap
+				+ ", toString()=" + super.toString() + "]";
 	}
 
 }

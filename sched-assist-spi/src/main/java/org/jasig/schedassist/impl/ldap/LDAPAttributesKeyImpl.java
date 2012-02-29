@@ -19,6 +19,7 @@
 
 package org.jasig.schedassist.impl.ldap;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -166,15 +167,20 @@ public class LDAPAttributesKeyImpl implements LDAPAttributesKey {
 	/**
 	 * Default implementation returns true if the uniqueIdentifier attribute is not empty.
 	 * 
-	 * @see org.jasig.schedassist.impl.ldap.LDAPAttributesKey#evaluateEligibilityAttributeValue(java.lang.String)
+	 * @see org.jasig.schedassist.impl.ldap.LDAPAttributesKey#evaluateEligibilityAttributeValue(java.util.Map)
 	 */
 	@Override
-	public boolean evaluateEligibilityAttributeValue(Map<String, String> attributes) {
+	public boolean evaluateEligibilityAttributeValue(Map<String, List<String>> attributes) {
 		if(attributes == null || attributes.isEmpty()) {
 			return false;
 		}
-		final String uniqueId = attributes.get(getUniqueIdentifierAttributeName());
-		return StringUtils.isNotBlank(uniqueId);
+		List<String> values = attributes.get(getUniqueIdentifierAttributeName());
+		if(values != null && values.size() == 1) {
+			String uniqueId = values.get(0);
+			return StringUtils.isNotBlank(uniqueId);
+		}
+		
+		return false;
 	}
 	
 	/* (non-Javadoc)

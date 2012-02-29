@@ -44,7 +44,7 @@ import com.googlecode.ehcache.annotations.KeyGenerator;
 
 
 /**
- * @author Nicholas BlairNicholas Blair
+ * @author Nicholas Blair
  * @version $Id: LDAPCalendarAccountDaoImpl.java $
  */
 public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {

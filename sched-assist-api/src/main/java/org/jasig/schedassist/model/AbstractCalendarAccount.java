@@ -19,6 +19,8 @@
 
 package org.jasig.schedassist.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -110,6 +112,39 @@ public abstract class AbstractCalendarAccount implements ICalendarAccount {
 		this.eligible = eligible;
 	}
 	
+	/**
+	 * 
+	 * @param attributeName
+	 * @return
+	 */
+	protected List<String> getAttributeListSafely(String attributeName) {
+		Map<String, List<String>> map = getAttributes();
+		List<String> attributes = map.get(attributeName);
+		if(attributes == null) {
+			attributes = new ArrayList<String>();
+			map.put(attributeName, attributes);
+		}
+		
+		return attributes;
+	}
+	
+	/**
+	 * 
+	 * @param attributeValues
+	 * @return
+	 */
+	protected String getSingleAttributeValue(List<String> attributeValues) {
+		if(attributeValues == null) {
+			return null;
+		}
+		
+		if(attributeValues.size() == 1) {
+			return attributeValues.get(0);
+		}
+		
+		return null;
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -191,14 +226,18 @@ public abstract class AbstractCalendarAccount implements ICalendarAccount {
 	 * @see org.jasig.schedassist.model.ICalendarAccount#getAttributeValue(java.lang.String)
 	 */
 	@Override
-	public abstract String getAttributeValue(String attributeName);
+	public final String getAttributeValue(String attributeName) {
+		List<String> values = getAttributeListSafely(attributeName);
+		String value = getSingleAttributeValue(values);
+		return value;
+	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.model.ICalendarAccount#getAttributes()
 	 */
 	@Override
-	public abstract Map<String, String> getAttributes();
+	public abstract Map<String, List<String>> getAttributes();
 
 	/*
 	 * (non-Javadoc)
@@ -206,5 +245,14 @@ public abstract class AbstractCalendarAccount implements ICalendarAccount {
 	 */
 	@Override
 	public abstract String getCalendarLoginId();
+	
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.model.ICalendarAccount#getAttributeValues(java.lang.String)
+	 */
+	@Override
+	public final List<String> getAttributeValues(String attributeName) {
+		List<String> values = getAttributeListSafely(attributeName);
+		return values;
+	}
 	
 }

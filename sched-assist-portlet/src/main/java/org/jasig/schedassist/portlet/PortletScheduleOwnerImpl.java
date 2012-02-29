@@ -20,6 +20,7 @@
 package org.jasig.schedassist.portlet;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jasig.schedassist.messaging.PreferencesElement;
@@ -137,7 +138,7 @@ class PortletScheduleOwnerImpl extends AbstractScheduleOwner {
 		}
 
 		@Override
-		public Map<String, String> getAttributes() {
+		public Map<String, List<String>> getAttributes() {
 			throw new UnsupportedOperationException();
 		}
 
@@ -169,6 +170,11 @@ class PortletScheduleOwnerImpl extends AbstractScheduleOwner {
 		@Override
 		public boolean isEligible() {
 			return true;
+		}
+
+		@Override
+		public List<String> getAttributeValues(String attributeName) {
+			throw new UnsupportedOperationException();
 		}
 		
 	}

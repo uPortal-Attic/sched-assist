@@ -20,6 +20,7 @@
 package org.jasig.schedassist.model;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -78,10 +79,17 @@ public interface ICalendarAccount extends Serializable {
 	String getAttributeValue(final String attributeName);
 	
 	/**
+	 * Get the list of values of the specified multi-valued attribute on the account.
 	 * 
-	 * @return a map of the account's single-valued attributes
+	 * @param attributeName
+	 * @return
 	 */
-	Map<String, String> getAttributes();
+	List<String> getAttributeValues(String attributeName);
+	/**
+	 * 
+	 * @return a map of the account's attributes
+	 */
+	Map<String, List<String>> getAttributes();
 	
 	/**
 	 * 

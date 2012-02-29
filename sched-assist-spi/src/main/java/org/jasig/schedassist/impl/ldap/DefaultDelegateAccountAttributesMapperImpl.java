@@ -19,6 +19,7 @@
 
 package org.jasig.schedassist.impl.ldap;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.NamingException;
@@ -45,7 +46,7 @@ public class DefaultDelegateAccountAttributesMapperImpl extends DefaultAttribute
 	 */
 	@Override
 	public Object mapFromAttributes(Attributes attributes) throws NamingException {
-		Map<String, String> attributesMap = convertToStringAttributesMap(attributes);
+		Map<String, List<String>> attributesMap = convertToStringAttributesMap(attributes);
 		
 		LDAPDelegateCalendarAccountImpl delegate = new LDAPDelegateCalendarAccountImpl(attributesMap, ldapAttributesKey, accountOwner);
 		return delegate;

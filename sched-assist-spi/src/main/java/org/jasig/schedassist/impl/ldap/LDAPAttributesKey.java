@@ -19,6 +19,7 @@
 
 package org.jasig.schedassist.impl.ldap;
 
+import java.util.List;
 import java.util.Map;
 
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -84,6 +85,6 @@ public interface LDAPAttributesKey {
 	 * 
 	 * @return true if the value of the attribute means the account is eligible for service
 	 */
-	public boolean evaluateEligibilityAttributeValue(Map<String, String> attributes);
+	public boolean evaluateEligibilityAttributeValue(Map<String, List<String>> attributes);
 
 }
