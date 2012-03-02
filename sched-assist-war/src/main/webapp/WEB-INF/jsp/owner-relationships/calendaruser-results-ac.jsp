@@ -21,5 +21,5 @@
 
 <%@ include file="/WEB-INF/jsp/includes.jsp" %><%@ page contentType="text/plain; charset=UTF-8"  
 %><c:set var="mapKey" value="${identifyingAttributeName}"/><c:forEach items="${results}" var="user">
-${user.displayName}|${user.attributes[mapKey]}<% out.println(); %>
+${user.displayName}|${user.username}<% out.println(); %>
 </c:forEach>
