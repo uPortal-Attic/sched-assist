@@ -23,11 +23,14 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.impl.EventType;
+import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer;
@@ -48,6 +51,7 @@ public class AppointmentStatisticsApplicationListener implements
 	private Log LOG = LogFactory.getLog(this.getClass());
 	private SimpleJdbcTemplate simpleJdbcTemplate;
 	private DataFieldMaxValueIncrementer statisticsEventIdSequence;
+	private String identifyingAttributeName = "uid";
 	
 	/**
 	 * 
@@ -65,7 +69,21 @@ public class AppointmentStatisticsApplicationListener implements
 			@Qualifier("statistics") DataFieldMaxValueIncrementer statisticsEventIdSequence) {
 		this.statisticsEventIdSequence = statisticsEventIdSequence;
 	}
-
+	/**
+	 * 
+	 * @param identifyingAttributeName
+	 */
+	@Value("${users.visibleIdentifierAttributeName:uid}")
+	public void setIdentifyingAttributeName(String identifyingAttributeName) {
+		this.identifyingAttributeName = identifyingAttributeName;
+	}
+	/**
+	 * 
+	 * @return the attribute used to commonly uniquely identify an account
+	 */
+	public String getIdentifyingAttributeName() {
+		return identifyingAttributeName;
+	}
 	/* (non-Javadoc)
 	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
 	 */
@@ -77,10 +95,11 @@ public class AppointmentStatisticsApplicationListener implements
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("attempting to store event " + event + " with new event ID " + eventId);
 		}
+		final String accountIdentifier = getIdentifyingAttribute(event.getVisitor().getCalendarAccount());
 		int rows = this.simpleJdbcTemplate.update("insert into event_statistics (event_id,owner_id,visitor_id,event_type,event_timestamp,event_start) values (?,?,?,?,?,?)", 
 				eventId,
 				event.getOwner().getId(),
-				event.getVisitor().getCalendarAccount().getUsername(),
+				accountIdentifier,
 				type.toString(),
 				new Date(event.getTimestamp()),
 				event.getBlock().getStartTime());
@@ -89,4 +108,18 @@ public class AppointmentStatisticsApplicationListener implements
 		}
 	}
 
+	/**
+	 * 
+	 * @param account
+	 * @return the value of {@link #getIdentifyingAttributeName()} for the account
+	 * @throws IllegalStateException if the account does not have a value for that attribute.
+	 */
+	protected String getIdentifyingAttribute(ICalendarAccount account) {
+		final String accountIdentifier = account.getAttributeValue(identifyingAttributeName);
+		if(StringUtils.isBlank(accountIdentifier)) {
+			LOG.error(identifyingAttributeName + " attribute not present for calendarAccount " + account + "; this scenario suggests either a problem with the account, or a deployment configuration problem. Please set the 'users.visibleIdentifierAttributeName' appropriately.");
+			throw new IllegalStateException(identifyingAttributeName + " attribute not present for calendarAccount " + account);
+		}
+		return accountIdentifier;
+	}
 }
