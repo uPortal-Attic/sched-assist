@@ -349,7 +349,8 @@ public class FlowHelper {
 	 * @return {@link #YES} for valid, {@link #NO} for invalid
 	 */
 	public String validateChosenStartTime(VisibleWindow window, Date startTime)  {
-		if(startTime.before(window.calculateCurrentWindowStart()) || startTime.after(window.calculateCurrentWindowEnd())) {
+		final Date currentWindowEnd = window.calculateCurrentWindowEnd();
+		if(startTime.before(window.calculateCurrentWindowStart()) || startTime.equals(currentWindowEnd) || startTime.after(currentWindowEnd)) {
 			LOG.debug("selected startTime (" + startTime + ") is no longer within window " + window.getKey());
 			return NO;
 		}
