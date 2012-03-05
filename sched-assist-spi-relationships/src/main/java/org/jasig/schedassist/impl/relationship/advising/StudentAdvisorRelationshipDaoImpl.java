@@ -113,6 +113,18 @@ implements RelationshipDao {
 		this.advisorEmplidAttributeName = advisorEmplidAttributeName;
 	}
 	
+	/**
+	 * @return the studentEmplidAttributeName
+	 */
+	public String getStudentEmplidAttributeName() {
+		return studentEmplidAttributeName;
+	}
+	/**
+	 * @return the advisorEmplidAttributeName
+	 */
+	public String getAdvisorEmplidAttributeName() {
+		return advisorEmplidAttributeName;
+	}
 	/*
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.RelationshipDao#forOwner(org.jasig.schedassist.model.IScheduleOwner)
@@ -123,7 +135,7 @@ implements RelationshipDao {
 			LOG.debug("enter StudentAdvisorRelationshipDaoImpl#forOwner " + owner);
 		}
 		ICalendarAccount ownerCalendarAccount = owner.getCalendarAccount();
-		String advisorEmplid = ownerCalendarAccount.getAttributeValue(advisorEmplidAttributeName);
+		String advisorEmplid = ownerCalendarAccount.getAttributeValue(this.advisorEmplidAttributeName);
 		if(StringUtils.isBlank(advisorEmplid)) {
 			return Collections.emptyList();
 		}
@@ -134,7 +146,7 @@ implements RelationshipDao {
 		List<Relationship> results = new ArrayList<Relationship>();
 
 		for(StudentAdvisorAssignment record : isisRecords) {
-			ICalendarAccount calUser = calendarAccountDao.getCalendarAccount("wisceduisisstudentemplid", record.getStudentEmplid());
+			ICalendarAccount calUser = getStudentCalendarAccount(record);
 			if(null == calUser) {
 				LOG.debug("no calendar user found for " + record);
 				continue;
@@ -171,7 +183,7 @@ implements RelationshipDao {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("enter StudentAdvisorRelationshipDaoImpl#forVisitor " + visitor);
 		}
-		String studentEmplid = visitor.getCalendarAccount().getAttributeValue(studentEmplidAttributeName);
+		String studentEmplid = visitor.getCalendarAccount().getAttributeValue(this.studentEmplidAttributeName);
 		if(StringUtils.isBlank(studentEmplid)) {
 			return Collections.emptyList();
 		}
@@ -181,7 +193,7 @@ implements RelationshipDao {
 				studentEmplid);
 		List<Relationship> results = new ArrayList<Relationship>();
 		for(StudentAdvisorAssignment record : isisRecords) {
-			ICalendarAccount calUser = calendarAccountDao.getCalendarAccount("wisceduisisadvisoremplid", record.getAdvisorEmplid());
+			ICalendarAccount calUser = getAdvisorCalendarAccount(record);
 			if(null == calUser) {
 				LOG.debug("no calendar user found for " + record);
 				continue;
@@ -210,7 +222,25 @@ implements RelationshipDao {
 		
 		return results;
 	}
-
+	
+	/**
+	 * 
+	 * @param record
+	 * @return the {@link ICalendarAccount} that corresponds to the student in the assignment
+	 */
+	protected ICalendarAccount getStudentCalendarAccount(StudentAdvisorAssignment record) {
+		ICalendarAccount studentCalendarAccount = calendarAccountDao.getCalendarAccount(getStudentEmplidAttributeName(), record.getStudentEmplid());
+		return studentCalendarAccount;
+	}
+	/**
+	 * 
+	 * @param record
+	 * @return the {@link ICalendarAccount} that corresponds to the advisor in the assignment
+	 */
+	protected ICalendarAccount getAdvisorCalendarAccount(StudentAdvisorAssignment record) {
+		ICalendarAccount advisorCalendarAccount = calendarAccountDao.getCalendarAccount(getAdvisorEmplidAttributeName(), record.getAdvisorEmplid());
+		return advisorCalendarAccount;
+	}
 	/**
 	 * Build the description {@link String} from the {@link StudentAdvisorAssignment}.
 	 * This is formatted like the following:

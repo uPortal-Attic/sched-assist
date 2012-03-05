@@ -63,6 +63,35 @@ public class AdvisorListRelationshipDataSourceImplTest {
 	}
 	
 	/**
+	 * Test parseLine function using an alternate field number.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testParseLineAlternateFieldNumber() throws Exception {
+		AdvisorListRelationshipDataSourceImpl dataSource = new AdvisorListRelationshipDataSourceImpl();
+		dataSource.setAdvisorEmplidFieldNumber(19);
+		String example1 = "notokens";
+		StudentAdvisorAssignment record = dataSource.parseLine(example1);
+		Assert.assertNull(record);
+		
+		String example2 = "with;semi;colons";
+		record = dataSource.parseLine(example2);
+		Assert.assertNull(record);
+		
+		String example3 = "student1@wisc.edu;One,Test Student;0000000001;9010000001;Graduate;L&S;College of Letters and Science;4.000;1092;Fall 2008-2009;87.000;PHD 922L&S;;NWD;G922L;Sociology - LS;PHD 922L&S;Sociology PHD-L&S;Sociology;advisor1@wisc.edu;One,Advisor;1000000001;9020000001;ADVR;Academic";
+		record = dataSource.parseLine(example3);
+		Assert.assertNotNull(record);
+		// field number 19 is email instead of emplid
+		Assert.assertEquals("advisor1@wisc.edu", record.getAdvisorEmplid());
+		Assert.assertEquals("Sociology - LS", record.getAdvisorRelationshipDescription());
+		Assert.assertEquals("0000000001", record.getStudentEmplid());
+		Assert.assertEquals("1092", record.getTermNumber());
+		Assert.assertEquals("Fall 2008-2009", record.getTermDescription());
+		Assert.assertEquals("Academic", record.getAdvisorType());
+	}
+	
+	/**
 	 * Test parseLine function with a number of different inputs.
 	 * 
 	 * @throws Exception

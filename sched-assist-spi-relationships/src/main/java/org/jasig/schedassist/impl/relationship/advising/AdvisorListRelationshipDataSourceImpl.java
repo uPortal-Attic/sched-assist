@@ -79,7 +79,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public class AdvisorListRelationshipDataSourceImpl implements RelationshipDataSource, InitializingBean {
 
-	private Log LOG = LogFactory.getLog(this.getClass());
+	protected final Log LOG = LogFactory.getLog(this.getClass());
 	public static final String CONFIG = System.getProperty(
 			AdvisorListRelationshipDataSourceImpl.class.getPackage().getName() + ".CONFIG",
 			"advisorlist-dataSource.xml");
@@ -89,6 +89,13 @@ public class AdvisorListRelationshipDataSourceImpl implements RelationshipDataSo
 	private Date lastReloadTimestamp;
 	private SimpleJdbcTemplate simpleJdbcTemplate;
 	private JdbcTemplate jdbcTemplate;
+	private int advisorEmplidFieldNumber = 21;
+	private int relationshipDescriptionFieldNumber = 15;
+	private int studentEmplidFieldNumber = 2;
+	private int termNumberFieldNumber = 8;
+	private int termDescriptionFieldNumber = 9;
+	private int advisorTypeFieldNumber = 24;
+	private int committeeRoleFieldNumber = 25;
 	
 	/**
 	 * @param advisorListResource the advisorListResource to set
@@ -116,6 +123,91 @@ public class AdvisorListRelationshipDataSourceImpl implements RelationshipDataSo
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 	
+	/**
+	 * @return the advisorEmplidFieldNumber
+	 */
+	public int getAdvisorEmplidFieldNumber() {
+		return advisorEmplidFieldNumber;
+	}
+	/**
+	 * @param advisorEmplidFieldNumber the advisorEmplidFieldNumber to set
+	 */
+	public void setAdvisorEmplidFieldNumber(int advisorEmplidFieldNumber) {
+		this.advisorEmplidFieldNumber = advisorEmplidFieldNumber;
+	}
+	/**
+	 * @return the relationshipDescriptionFieldNumber
+	 */
+	public int getRelationshipDescriptionFieldNumber() {
+		return relationshipDescriptionFieldNumber;
+	}
+	/**
+	 * @param relationshipDescriptionFieldNumber the relationshipDescriptionFieldNumber to set
+	 */
+	public void setRelationshipDescriptionFieldNumber(
+			int relationshipDescriptionFieldNumber) {
+		this.relationshipDescriptionFieldNumber = relationshipDescriptionFieldNumber;
+	}
+	/**
+	 * @return the studentEmplidFieldNumber
+	 */
+	public int getStudentEmplidFieldNumber() {
+		return studentEmplidFieldNumber;
+	}
+	/**
+	 * @param studentEmplidFieldNumber the studentEmplidFieldNumber to set
+	 */
+	public void setStudentEmplidFieldNumber(int studentEmplidFieldNumber) {
+		this.studentEmplidFieldNumber = studentEmplidFieldNumber;
+	}
+	/**
+	 * @return the termNumberFieldNumber
+	 */
+	public int getTermNumberFieldNumber() {
+		return termNumberFieldNumber;
+	}
+	/**
+	 * @param termNumberFieldNumber the termNumberFieldNumber to set
+	 */
+	public void setTermNumberFieldNumber(int termNumberFieldNumber) {
+		this.termNumberFieldNumber = termNumberFieldNumber;
+	}
+	/**
+	 * @return the termDescriptionFieldNumber
+	 */
+	public int getTermDescriptionFieldNumber() {
+		return termDescriptionFieldNumber;
+	}
+	/**
+	 * @param termDescriptionFieldNumber the termDescriptionFieldNumber to set
+	 */
+	public void setTermDescriptionFieldNumber(int termDescriptionFieldNumber) {
+		this.termDescriptionFieldNumber = termDescriptionFieldNumber;
+	}
+	/**
+	 * @return the advisorTypeFieldNumber
+	 */
+	public int getAdvisorTypeFieldNumber() {
+		return advisorTypeFieldNumber;
+	}
+	/**
+	 * @param advisorTypeFieldNumber the advisorTypeFieldNumber to set
+	 */
+	public void setAdvisorTypeFieldNumber(int advisorTypeFieldNumber) {
+		this.advisorTypeFieldNumber = advisorTypeFieldNumber;
+	}
+	/**
+	 * @return the committeeRoleFieldNumber
+	 */
+	public int getCommitteeRoleFieldNumber() {
+		return committeeRoleFieldNumber;
+	}
+	/**
+	 * @param committeeRoleFieldNumber the committeeRoleFieldNumber to set
+	 */
+	public void setCommitteeRoleFieldNumber(int committeeRoleFieldNumber) {
+		this.committeeRoleFieldNumber = committeeRoleFieldNumber;
+	}
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
@@ -215,6 +307,7 @@ public class AdvisorListRelationshipDataSourceImpl implements RelationshipDataSo
 		} catch (IOException e) {
 			// this exception will occur if the Resource is not representable as a File
 			// in this case - always return true?
+			throw new IllegalStateException("caught IOException from Resource#lastModified(), is " + resource + " a folder?", e);
 		}
 		return result;
 	}
@@ -223,7 +316,7 @@ public class AdvisorListRelationshipDataSourceImpl implements RelationshipDataSo
 	 * Converts a semi-colon delimited line of text into a {@link StudentAdvisorAssignment}.
 	 * 
 	 * Uses {@link String#split(String)}.
-	 * 
+	 * Default mapping:
 	 <ol>
 	 <li>{@link StudentAdvisorAssignment#setAdvisorEmplid(String)} - field #22 (index 21)</li>
 	 <li>{@link StudentAdvisorAssignment#setAdvisorRelationshipDescription(String)} - field #16 (index 15)</li>
@@ -246,17 +339,34 @@ public class AdvisorListRelationshipDataSourceImpl implements RelationshipDataSo
 			return null;
 		}
 		StudentAdvisorAssignment record = new StudentAdvisorAssignment();
-		record.setAdvisorEmplid(tokens[21]);
-		record.setAdvisorRelationshipDescription(tokens[15]);
-		record.setStudentEmplid(tokens[2]);
-		record.setTermNumber(tokens[8]);
-		record.setTermDescription(tokens[9]);
-		record.setAdvisorType(tokens[24]);
+		// IDs must be lower-cased safely
+		record.setAdvisorEmplid(nullSafeGetLowerCase(tokens, getAdvisorEmplidFieldNumber()));
+		record.setStudentEmplid(nullSafeGetLowerCase(tokens, getStudentEmplidFieldNumber()));
+		
+		record.setAdvisorRelationshipDescription(tokens[getRelationshipDescriptionFieldNumber()]);
+		record.setTermNumber(tokens[getTermNumberFieldNumber()]);
+		record.setTermDescription(tokens[getTermDescriptionFieldNumber()]);
+		record.setAdvisorType(tokens[getAdvisorTypeFieldNumber()]);
 		if(tokens.length == 26) {
-			record.setCommitteeRole(tokens[25]);
+			record.setCommitteeRole(tokens[getCommitteeRoleFieldNumber()]);
 		}
 		LOG.debug("parseLine result: " + record);
 		return record;
+	}
+
+	/**
+	 * 
+	 * @param tokens
+	 * @param field
+	 * @return the value in the array, lower cased if not null
+	 */
+	private String nullSafeGetLowerCase(final String [] tokens, final int field) {
+		String value = tokens[field];
+		if(value == null) {
+			 return null;
+		}
+		
+		return value.toLowerCase();
 	}
 
 	/**
