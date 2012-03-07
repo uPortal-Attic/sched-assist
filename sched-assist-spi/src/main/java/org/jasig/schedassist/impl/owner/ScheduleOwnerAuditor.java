@@ -237,5 +237,10 @@ public final class ScheduleOwnerAuditor extends SimpleJdbcDaoSupport {
 		public List<String> getAttributeValues(String attributeName) {
 			return null;
 		}
+
+		@Override
+		public boolean isDelegate() {
+			return false;
+		}
 	}
 }

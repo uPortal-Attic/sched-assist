@@ -178,6 +178,14 @@ class LDAPDelegateCalendarAccountImpl extends AbstractCalendarAccount implements
 	}
 
 	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.model.ICalendarAccount#isDelegate()
+	 */
+	@Override
+	public boolean isDelegate() {
+		return true;
+	}
+
+	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

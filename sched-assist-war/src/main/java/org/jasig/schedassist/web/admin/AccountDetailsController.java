@@ -23,6 +23,7 @@ package org.jasig.schedassist.web.admin;
 import org.apache.commons.lang.StringUtils;
 import org.jasig.schedassist.IAffiliationSource;
 import org.jasig.schedassist.ICalendarAccountDao;
+import org.jasig.schedassist.IDelegateCalendarAccountDao;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.impl.owner.PublicProfileDao;
 import org.jasig.schedassist.impl.visitor.NotAVisitorException;
@@ -51,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class AccountDetailsController {
 
 	private ICalendarAccountDao calendarAccountDao;
+	private IDelegateCalendarAccountDao delegateCalendarAccountDao;
 	private VisitorDao visitorDao;
 	private OwnerDao ownerDao;
 	private PublicProfileDao publicProfileDao;
@@ -61,6 +63,14 @@ public class AccountDetailsController {
 	@Autowired
 	public void setCalendarAccountDao(@Qualifier("composite") ICalendarAccountDao calendarAccountDao) {
 		this.calendarAccountDao = calendarAccountDao;
+	}
+	/**
+	 * @param delegateCalendarAccountDao the delegateCalendarAccountDao to set
+	 */
+	@Autowired
+	public void setDelegateCalendarAccountDao(
+			IDelegateCalendarAccountDao delegateCalendarAccountDao) {
+		this.delegateCalendarAccountDao = delegateCalendarAccountDao;
 	}
 	/**
 	 * @param visitorDao the visitorDao to set
@@ -92,17 +102,58 @@ public class AccountDetailsController {
 	}
 	/**
 	 * 
-	 * @param ctcalxitemid
+	 * @param uniqueId
 	 * @param model
 	 * @return
 	 */
 	@RequestMapping(method=RequestMethod.GET)
-	protected String showDetails(@RequestParam(value="id", required=false, defaultValue="") String ctcalxitemid, final ModelMap model) {
-		model.addAttribute("id", ctcalxitemid);
-		if(StringUtils.isNotBlank(ctcalxitemid)) {
-			ICalendarAccount account = this.calendarAccountDao.getCalendarAccountFromUniqueId(ctcalxitemid);
+	protected String showDetails(@RequestParam(value="id", required=false, defaultValue="") String uniqueId, final ModelMap model) {
+		model.addAttribute("id", uniqueId);
+		if(StringUtils.isNotBlank(uniqueId)) {
+			ICalendarAccount account = this.calendarAccountDao.getCalendarAccountFromUniqueId(uniqueId);
 			if(null != account) {
 				model.addAttribute("isDelegate", account instanceof IDelegateCalendarAccount);
+				model.addAttribute("calendarAccount", account);
+				model.addAttribute("isAdvisor", affiliationSource.doesAccountHaveAffiliation(account, AffiliationImpl.ADVISOR));
+				model.addAttribute("isInstructor", affiliationSource.doesAccountHaveAffiliation(account, AffiliationImpl.INSTRUCTOR));
+				model.addAttribute("calendarAccountAttributes", account.getAttributes().entrySet());
+				
+				// try to look up visitor
+				try {
+					this.visitorDao.toVisitor(account);
+					model.addAttribute("isVisitor", true);
+				} catch (NotAVisitorException e) {
+					// ignore
+				}
+				// try to look up scheduleowner
+				IScheduleOwner owner = this.ownerDao.locateOwner(account);
+				if(null != owner) {
+					model.addAttribute("owner", owner);
+					model.addAttribute("ownerPreferences", owner.getPreferences().entrySet());
+					// if a scheduleowner, try to look up public profile
+					PublicProfile profile = this.publicProfileDao.locatePublicProfileByOwner(owner);
+					if(null != profile) {
+						model.addAttribute("publicProfile", profile);
+					}
+				}
+			}
+		}
+		return "admin/account-details";
+	}
+	
+	/**
+	 * 
+	 * @param uniqueId
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(method=RequestMethod.GET, params="resource")
+	protected String showDetailsResource(@RequestParam(value="id", required=false, defaultValue="") String uniqueId, final ModelMap model) {
+		model.addAttribute("id", uniqueId);
+		if(StringUtils.isNotBlank(uniqueId)) {
+			IDelegateCalendarAccount account = this.delegateCalendarAccountDao.getDelegateByUniqueId(uniqueId);
+			if(null != account) {
+				model.addAttribute("isDelegate", true);
 				model.addAttribute("calendarAccount", account);
 				model.addAttribute("isAdvisor", affiliationSource.doesAccountHaveAffiliation(account, AffiliationImpl.ADVISOR));
 				model.addAttribute("isInstructor", affiliationSource.doesAccountHaveAffiliation(account, AffiliationImpl.INSTRUCTOR));

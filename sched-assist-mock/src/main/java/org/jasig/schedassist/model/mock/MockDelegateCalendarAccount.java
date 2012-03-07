@@ -136,4 +136,12 @@ public class MockDelegateCalendarAccount extends AbstractCalendarAccount
 		this.calendarLoginId = calendarLoginId;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.model.AbstractCalendarAccount#isDelegate()
+	 */
+	@Override
+	public boolean isDelegate() {
+		return true;
+	}
+
 }

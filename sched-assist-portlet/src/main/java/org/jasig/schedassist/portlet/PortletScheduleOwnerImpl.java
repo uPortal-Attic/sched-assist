@@ -176,6 +176,14 @@ class PortletScheduleOwnerImpl extends AbstractScheduleOwner {
 		public List<String> getAttributeValues(String attributeName) {
 			throw new UnsupportedOperationException();
 		}
+
+		/* (non-Javadoc)
+		 * @see org.jasig.schedassist.model.ICalendarAccount#isDelegate()
+		 */
+		@Override
+		public boolean isDelegate() {
+			throw new UnsupportedOperationException();
+		}
 		
 	}
 }

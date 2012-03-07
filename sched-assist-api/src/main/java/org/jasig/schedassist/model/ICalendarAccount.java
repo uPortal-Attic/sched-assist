@@ -96,4 +96,10 @@ public interface ICalendarAccount extends Serializable {
 	 * @return true if this account is eligible for calendar service
 	 */
 	boolean isEligible();
+	
+	/**
+	 * 
+	 * @return true if this account is a delegate account
+	 */
+	boolean isDelegate();
 }

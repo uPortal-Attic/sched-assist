@@ -58,7 +58,20 @@
 <td><c:out value="${account.username}"/></td>
 <td><c:out value="${account.emailAddress}"/></td>
 <td><c:out value="${account.calendarUniqueId}"/></td>
-<td><a href="<c:url value="account-details.html?id=${account.calendarUniqueId}"/>"><spring:message code="details"/>&raquo;</a></td>
+<c:choose>
+<c:when test="${account.delegate}">
+<c:url var="detailsLink" value="account-details.html">
+<c:param name="id" value="${account.calendarUniqueId}"/>
+<c:param name="resource"/>
+</c:url>
+</c:when>
+<c:otherwise>
+<c:url var="detailsLink" value="account-details.html">
+<c:param name="id" value="${account.calendarUniqueId}"/>
+</c:url>
+</c:otherwise>
+</c:choose>
+<td><a href="${detailsLink}"><spring:message code="details"/>&raquo;</a></td>
 </tr>
 </c:forEach>
 </tbody>

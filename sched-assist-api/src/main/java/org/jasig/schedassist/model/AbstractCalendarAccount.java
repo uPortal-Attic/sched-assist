@@ -112,6 +112,13 @@ public abstract class AbstractCalendarAccount implements ICalendarAccount {
 		this.eligible = eligible;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.model.ICalendarAccount#isDelegate()
+	 */
+	@Override
+	public boolean isDelegate() {
+		return false;
+	}
 	/**
 	 * 
 	 * @param attributeName
