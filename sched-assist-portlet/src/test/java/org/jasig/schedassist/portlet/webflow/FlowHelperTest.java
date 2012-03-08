@@ -49,13 +49,13 @@ public class FlowHelperTest {
 		Assert.assertEquals(FlowHelper.NO,flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), -1)));
 		
 		Assert.assertEquals(FlowHelper.YES,flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 2)));
-		Assert.assertEquals(FlowHelper.YES,flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 167)));
+		Assert.assertEquals(FlowHelper.YES,flowHelper.validateChosenStartTime(window, DateUtils.addHours(window.calculateCurrentWindowEnd(), -1)));
 		
 		// still good 1 minute before window end
-		Assert.assertEquals(FlowHelper.YES,flowHelper.validateChosenStartTime(window, DateUtils.addMinutes(DateUtils.addHours(new Date(), 168), -1)));
+		Assert.assertEquals(FlowHelper.YES,flowHelper.validateChosenStartTime(window, DateUtils.addMinutes(window.calculateCurrentWindowEnd(), -1)));
 		
-		Assert.assertEquals(FlowHelper.NO,flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 168)));
-		Assert.assertEquals(FlowHelper.NO,flowHelper.validateChosenStartTime(window, DateUtils.addHours(new Date(), 169)));
+		Assert.assertEquals(FlowHelper.NO,flowHelper.validateChosenStartTime(window, window.calculateCurrentWindowEnd()));
+		Assert.assertEquals(FlowHelper.NO,flowHelper.validateChosenStartTime(window, DateUtils.addHours(window.calculateCurrentWindowEnd(), 1)));
 
 
 	}

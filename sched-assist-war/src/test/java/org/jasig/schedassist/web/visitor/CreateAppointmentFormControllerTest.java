@@ -66,6 +66,13 @@ public class CreateAppointmentFormControllerTest {
 		}
 		
 		try {
+			controller.validateChosenStartTime(window, window.calculateCurrentWindowEnd());
+			Assert.fail("expected SchedulingException not thrown for date exactly equals to window end");
+		} catch (SchedulingException e) {
+			// expected, success
+		}
+		
+		try {
 			controller.validateChosenStartTime(window, DateUtils.addHours(window.calculateCurrentWindowEnd(), 1));
 			Assert.fail("expected SchedulingException not thrown for date 1 hour after window end");
 		} catch (SchedulingException e) {

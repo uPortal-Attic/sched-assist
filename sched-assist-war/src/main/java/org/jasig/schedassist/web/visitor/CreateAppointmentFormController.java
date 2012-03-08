@@ -274,7 +274,9 @@ public class CreateAppointmentFormController {
 	 * @throws SchedulingException
 	 */
 	protected void validateChosenStartTime(VisibleWindow window, Date startTime) throws SchedulingException {
-		if(startTime.before(window.calculateCurrentWindowStart()) || startTime.after(window.calculateCurrentWindowEnd())) {
+		final Date currentWindowStart = window.calculateCurrentWindowStart();
+		final Date currentWindowEnd = window.calculateCurrentWindowEnd();
+		if(startTime.before(currentWindowStart) || startTime.equals(currentWindowEnd) || startTime.after(currentWindowEnd)) {
 			throw new SchedulingException("requested time is no longer within visible window");
 		}
 	}
