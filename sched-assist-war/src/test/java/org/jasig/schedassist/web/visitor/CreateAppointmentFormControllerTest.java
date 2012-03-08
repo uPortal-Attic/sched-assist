@@ -60,10 +60,16 @@ public class CreateAppointmentFormControllerTest {
 		
 		try {
 			// subtract an hour from the end - can't assume it's 167 hours, or this test will fail if start/end wrap a daylight savings boundary
-			;
 			controller.validateChosenStartTime(window, DateUtils.addHours(window.calculateCurrentWindowEnd(), -1));
 		} catch (SchedulingException e) {
 			Assert.fail("expected SchedulingException not thrown for date 1 hour before window end");
+		}
+		
+		try {
+			controller.validateChosenStartTime(window, window.calculateCurrentWindowEnd());
+			Assert.fail("expected SchedulingException not thrown for date exactly equals to window end");
+		} catch (SchedulingException e) {
+			// expected, success
 		}
 		
 		try {
