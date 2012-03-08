@@ -26,7 +26,7 @@ This project includes:
   EasyMock under Apache 2
   Ehcache Core under The Apache Software License, Version 2.0
   Ehcache Spring Annotations under Apache 2
-  ical4j under iCal4j - License
+  iCal4j under iCal4j - License
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaMail API under Common Development and Distribution License (CDDL) v1.0
   JUnit under Common Public License Version 1.0

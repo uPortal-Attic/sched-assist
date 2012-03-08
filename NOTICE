@@ -35,10 +35,11 @@ This project includes:
   Ehcache Spring Annotations under Apache 2
   Ehcache Web Filters under The Apache Software License, Version 2.0
   ezmorph under The Apache Software License, Version 2.0
-  Guava (Google Common Libraries) under The Apache Software License, Version 2.0
+  FindBugs-jsr305 under The Apache Software License, Version 2.0
+  Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   HSQLDB Database under HSQLDB License, a BSD open source license
   HttpClient under Apache License
-  ical4j under iCal4j - License
+  iCal4j under iCal4j - License
   Jackson under The Apache Software License, Version 2.0
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaMail API under Common Development and Distribution License (CDDL) v1.0
@@ -60,7 +61,6 @@ This project includes:
   Resource Server Content under Apache License Version 2.0
   Resource Server Core under Apache License Version 2.0
   Resource Server Utilities under Apache License Version 2.0
-  Rhino under Mozilla Public License version 1.1
   Scheduling Assistant API under Apache License Version 2.0
   Scheduling Assistant Mocks under Apache License Version 2.0
   Scheduling Assistant Parent under Apache License Version 2.0
@@ -117,6 +117,5 @@ This project includes:
   Xalan Java Serializer under The Apache Software License, Version 2.0
   XML Security under The Apache Software License, Version 2.0
   XmlSchema under The Apache Software License, Version 2.0
-  yui compressor under BSD License
 
   
