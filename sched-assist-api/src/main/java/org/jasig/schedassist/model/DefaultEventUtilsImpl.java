@@ -91,7 +91,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	/**
 	 * {@link ProdId} attached to {@link Calendar}s sent to the CalDAV server by the Scheduling Assistant.
 	 */
-	public static final ProdId PROD_ID = new ProdId("-//jasig.org//Jasig Scheduling Assistant 1.0//EN");
+	public static final ProdId PROD_ID = new ProdId("-//jasig.org//Jasig Scheduling Assistant 1.1//EN");
 	// Commons-Lang provides a thread-safe replacement for SimpleDateFormat
 	private static final FastDateFormat FASTDATEFORMAT = FastDateFormat.getInstance(ICAL_DATETIME_FORMAT, 
 			TimeZone.getTimeZone("UTC"));
