@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>org.jasig.parent</groupId>
 		<artifactId>jasig-parent</artifactId>
-		<version>30</version>
+		<version>33</version>
 	</parent>
 
 	<modules>
@@ -28,9 +28,9 @@
 		<url>https://issues.jasig.org/browse/SA</url>
 	</issueManagement>
 	<scm>
-        <connection>scm:svn:https://source.jasig.org/sa/sched-assist/trunk</connection>
-        <developerConnection>scm:svn:https://source.jasig.org/sa/sched-assist/trunk</developerConnection>
-        <url>https://developer.jasig.org/source/browse/jasigsvn/sa/sched-assist/trunk</url>
+        <connection>scm:git:git@github.com:Jasig/sched-assist.git</connection>
+        <developerConnection>scm:git:git@github.com:Jasig/sched-assist.git</developerConnection>
+        <url>https://github.com/Jasig/sched-assist</url>
     </scm>
 	
 	<developers>
