@@ -57,6 +57,7 @@ import org.jasig.schedassist.model.Preferences;
 import org.jasig.schedassist.model.SchedulingAssistantAppointment;
 import org.jasig.schedassist.model.VisitorLimit;
 import org.jasig.schedassist.model.mock.MockCalendarAccount;
+import org.jasig.schedassist.model.mock.MockDelegateCalendarAccount;
 import org.jasig.schedassist.model.mock.MockScheduleOwner;
 import org.jasig.schedassist.model.mock.MockScheduleVisitor;
 import org.junit.Assert;
@@ -97,6 +98,10 @@ public class CaldavIntegrationTest {
 	@Autowired
 	@Qualifier("visitor2")
 	private MockCalendarAccount visitorCalendarAccount2;
+	
+	@Autowired
+	@Qualifier("resource1")
+	private MockDelegateCalendarAccount resourceCalendarAccount1;
 	
 	@Value("${caldav.reflectionEnabled:false}")
 	private String reflectionEnabled;
@@ -171,6 +176,54 @@ public class CaldavIntegrationTest {
 		Assert.assertEquals(AppointmentRole.VISITOR, visitorAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
 
 		Property ownerAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, ownerCalendarAccount1);
+		Assert.assertNotNull(ownerAttendee);
+		Assert.assertEquals(AppointmentRole.OWNER, ownerAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
+
+		this.calendarDataDao.cancelAppointment(visitor1, owner1, event);
+		VEvent lookupResultAfterCancel = this.calendarDataDao.getExistingAppointment(owner1, block);
+		Assert.assertNull(lookupResultAfterCancel);
+	}
+	
+	/**
+	 * Basic workflow integration test:
+	 * <ol>
+	 * <li>Create an individual appointment using mock resource and visitor ("resource1" and "visitor1")</li>
+	 * <li>Verify event retrieved via {@link ICalendarDataDao#getExistingAppointment(org.jasig.schedassist.model.IScheduleOwner, AvailableBlock)}</li>
+	 * <li>Verify event contains expected properties and parameters</li>
+	 * <li>Cancel appointment, verify removed</li>
+	 * </ol>
+	 */
+	@Test
+	public void testCreateAndCancelIndividualAppointmentDelegateOwner() {
+		// starts now
+		Date start = DateUtils.truncate(new Date(), java.util.Calendar.MINUTE);
+		Date end = DateUtils.addHours(start, 1);
+		final DateTime ical4jstart = new DateTime(start);
+		final DateTime ical4jend = new DateTime(end);
+
+		AvailableBlock block = AvailableBlockBuilder.createBlock(start, end, 1);
+		MockScheduleOwner owner1 = new MockScheduleOwner(resourceCalendarAccount1, 1);
+		owner1.setPreference(Preferences.MEETING_PREFIX, "test resource appointment");
+		owner1.setPreference(Preferences.LOCATION, "meeting room 1a");
+
+		MockScheduleVisitor visitor1 = new MockScheduleVisitor(visitorCalendarAccount1);
+		VEvent event = this.calendarDataDao.createAppointment(visitor1, owner1, block, "testCreateAndCancelIndividualAppointmentDelegateOwner");
+		Assert.assertNotNull(event);
+
+		VEvent lookupResult = this.calendarDataDao.getExistingAppointment(owner1, block);
+		Assert.assertNotNull(lookupResult);
+		Assert.assertEquals(ical4jstart, lookupResult.getStartDate().getDate());
+		Assert.assertEquals(ical4jend, lookupResult.getEndDate().getDate());
+		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookupResult.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
+		Assert.assertEquals(1, Integer.parseInt(lookupResult.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
+
+		Assert.assertEquals(2, lookupResult.getProperties(Attendee.ATTENDEE).size());
+
+		Property visitorAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, visitorCalendarAccount1);
+		Assert.assertNotNull(visitorAttendee);
+		Assert.assertEquals(AppointmentRole.VISITOR, visitorAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
+
+		Property ownerAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, resourceCalendarAccount1);
 		Assert.assertNotNull(ownerAttendee);
 		Assert.assertEquals(AppointmentRole.OWNER, ownerAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
 

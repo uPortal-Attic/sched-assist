@@ -55,5 +55,14 @@
         <property name="eligible" value="${integration.calendarAccount.owner1.eligible}"/>
         <qualifier value="owner1"/>
     </bean> 
+    
+    <bean id="resourceCalendarAccount1" class="org.jasig.schedassist.model.mock.MockDelegateCalendarAccount">
+    	 <property name="calendarUniqueId" value="${integration.calendarAccount.resource1.calendarUniqueId}"/>
+        <property name="displayName" value="${integration.calendarAccount.resource1.displayName}"/>
+        <property name="emailAddress" value="${integration.calendarAccount.resource1.emailAddress}"/>
+        <property name="username" value="${integration.calendarAccount.resource1.username}"/>
+        <property name="eligible" value="${integration.calendarAccount.resource1.eligible}"/>
+        <qualifier value="resource1"/>
+    </bean>
          
 </beans>
