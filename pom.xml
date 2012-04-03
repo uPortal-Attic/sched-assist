@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jasig.sched-assist</groupId>
 	<artifactId>sched-assist</artifactId>
@@ -21,6 +22,7 @@
 		<module>sched-assist-spi-relationships</module>
 		<module>sched-assist-war</module>
 		<module>sched-assist-portlet</module>
+		<module>sched-assist-spi-caldav-integrationtest</module>
 	</modules>
 
 	<issueManagement>
@@ -28,11 +30,11 @@
 		<url>https://issues.jasig.org/browse/SA</url>
 	</issueManagement>
 	<scm>
-        <connection>scm:git:git@github.com:Jasig/sched-assist.git</connection>
-        <developerConnection>scm:git:git@github.com:Jasig/sched-assist.git</developerConnection>
-        <url>https://github.com/Jasig/sched-assist</url>
-    </scm>
-	
+		<connection>scm:git:git@github.com:Jasig/sched-assist.git</connection>
+		<developerConnection>scm:git:git@github.com:Jasig/sched-assist.git</developerConnection>
+		<url>https://github.com/Jasig/sched-assist</url>
+	</scm>
+
 	<developers>
 		<developer>
 			<email>nblair@doit.wisc.edu</email>
@@ -176,11 +178,10 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-		
-			<!-- 
-			org.springframework is intentionally left out of dependencyManagement
-			as sched-assist-spi and sched-assist-portlet currently depend on conflicting versions
-			 -->
+
+			<!-- org.springframework is intentionally left out of dependencyManagement 
+				as sched-assist-spi and sched-assist-portlet currently depend on conflicting 
+				versions -->
 			<dependency>
 				<groupId>org.springframework.ldap</groupId>
 				<artifactId>spring-ldap-core</artifactId>
@@ -401,34 +402,48 @@
 				<version>${easymock.version}</version>
 			</dependency>
 			<dependency>
-    			<groupId>org.mockito</groupId>
+				<groupId>org.mockito</groupId>
 				<artifactId>mockito-all</artifactId>
-    			<version>${mockito.version}</version>
+				<version>${mockito.version}</version>
 			</dependency>
 		</dependencies>
 
 	</dependencyManagement>
 
 	<build>
-	   <pluginManagement>
-	       <plugins>
-	           <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>2.1.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.8</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.3.2</version>
-                </plugin>
-	       </plugins>
-	   </pluginManagement>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.1.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.8</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.3.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>2.12</version>
+					<executions>
+						<execution>
+							<id>integration-test</id>
+							<goals>
+								<goal>integration-test</goal>
+								<goal>verify</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -447,27 +462,27 @@
 				</configuration>
 			</plugin>
 			<plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>bootstrap/local-hsqldb/*.*</exclude>
-                        <exclude>sched-assist-war/src/main/webapp/css/jquery.autocomplete.css</exclude>
-                        <exclude>sched-assist-war/src/main/webapp/css/jquery.lightbox-0.5.css</exclude>
-                        <exclude>sched-assist-war/src/main/webapp/js/jquery.autocomplete.min.js</exclude>
-                        <exclude>sched-assist-war/src/main/webapp/js/jquery.jqEasyCharCounter.min.js</exclude>
-                        <exclude>sched-assist-war/src/main/webapp/js/jquery.lightbox-0.5.min.js</exclude>
-                        <exclude>sched-assist-war/src/main/webapp/js/jquery.lockSubmit.js</exclude>
-                        <exclude>**/*.ics</exclude>
-                        <exclude>**/*.csv</exclude>
-                    </excludes>
-                    <mapping>
-                        <ddl>JAVADOC_STYLE</ddl>
-                        <tld>XML_STYLE</tld>
-                        <rc>SCRIPT_STYLE</rc>
-                    </mapping>
-                </configuration>
-            </plugin>
+				<groupId>com.mycila.maven-license-plugin</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>bootstrap/local-hsqldb/*.*</exclude>
+						<exclude>sched-assist-war/src/main/webapp/css/jquery.autocomplete.css</exclude>
+						<exclude>sched-assist-war/src/main/webapp/css/jquery.lightbox-0.5.css</exclude>
+						<exclude>sched-assist-war/src/main/webapp/js/jquery.autocomplete.min.js</exclude>
+						<exclude>sched-assist-war/src/main/webapp/js/jquery.jqEasyCharCounter.min.js</exclude>
+						<exclude>sched-assist-war/src/main/webapp/js/jquery.lightbox-0.5.min.js</exclude>
+						<exclude>sched-assist-war/src/main/webapp/js/jquery.lockSubmit.js</exclude>
+						<exclude>**/*.ics</exclude>
+						<exclude>**/*.csv</exclude>
+					</excludes>
+					<mapping>
+						<ddl>JAVADOC_STYLE</ddl>
+						<tld>XML_STYLE</tld>
+						<rc>SCRIPT_STYLE</rc>
+					</mapping>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
