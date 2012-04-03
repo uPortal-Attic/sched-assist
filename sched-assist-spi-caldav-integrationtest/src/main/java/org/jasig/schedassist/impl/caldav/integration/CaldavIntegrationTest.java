@@ -397,4 +397,5 @@ public class CaldavIntegrationTest {
 			log.debug("testReflectAvailabilitySchedule disabled");
 		}
 	}
+
 }

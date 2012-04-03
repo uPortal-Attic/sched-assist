@@ -26,37 +26,6 @@
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="ignoreResourceNotFound" value="true"/>
-        <property name="locations">
-            <list>
-            	 <value>classpath:/integration-SAMPLE.properties</value>
-                 <value>classpath:/integration.properties</value>
-            </list>
-        </property>
-    </bean>
-    
-    <!--  
-    Import either "bedework.xml" or "default-caldav.xml" or "oracle-comms.xml" 
-    One or the other, never more than 1 of the 3.
-     -->
-    <import resource="integration/bedework.xml"/>
-    <!--  
-    <import resource="integration/oracle-comms.xml"/>
-    <import resource="integration/default-caldav.xml"/>
-    -->
-    
-    <context:annotation-config />
-    <context:component-scan base-package="org.jasig.schedassist.impl.caldav"/>  
-    
-    <!-- 
-     | An AffiliationSource implementation tells the scheduling assistant which accounts are
-     | Instructors and which accounts are Advisors   
-     +-->      
-    <bean id="affiliationSource" class="org.jasig.schedassist.NullAffiliationSourceImpl"/>
-  
-   	<import resource="integration/sample-calendarAccounts.xml"/>
     
     <bean id="caldavAdminAuthScope" class="org.apache.http.auth.AuthScope">
     	<constructor-arg index="0"><value>${caldav.admin.authscope.host}</value></constructor-arg>

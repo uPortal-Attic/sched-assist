@@ -42,7 +42,7 @@
 
 	<property file="${basedir}/build.properties" />
 
-	<artifact:dependencies pathid="hsql.classpath" >
+	<artifact:dependencies pathid="hsql.classpath">
 		<dependency groupId="hsqldb" artifactId="hsqldb" version="1.8.0.10" />
 	</artifact:dependencies>
 
@@ -52,7 +52,10 @@
 	<artifact:dependencies pathid="spi.maven.classpath">
 		<pom file="${basedir}/sched-assist-spi/pom.xml" />
 	</artifact:dependencies>
-	
+	<artifact:dependencies pathid="integrationtest.maven.classpath">
+		<dependency groupId="org.jasig.sched-assist" artifactId="sched-assist-spi-caldav-integrationtest" version="1.1.0-SNAPSHOT" />
+	</artifact:dependencies>
+
 	<target name="hsql" description="Start a HSQLDB instance consistent with the default RDBMS requirements of Available">
 		<property name="spawn" value="false" />
 
@@ -114,45 +117,45 @@
 	<target name="hsql-initialize-firstrun" description="Initializes the Scheduling Assistant HSQL database for the first time.">
 		<java classname="org.jasig.schedassist.impl.InitializeSchedulingAssistantDatabase" fork="true" dir=".">
 			<!-- first argument is 'firstRun' - if true, skips the drop statements -->
-			<arg value="true"/>
+			<arg value="true" />
 			<jvmarg value="-Dorg.jasig.schedassist.impl.InitializeSchedulingAssistantDatabase.CONFIG=${database.config}" />
 			<classpath>
 				<path refid="spi.maven.classpath" />
 				<fileset dir="${basedir}/sched-assist-spi/target">
 					<include name="*.jar" />
 				</fileset>
-				<pathelement location="${basedir}/bootstrap"/>
+				<pathelement location="${basedir}/bootstrap" />
 				<pathelement location="${basedir}/sched-assist-spi/src/main/resources" />
 				<pathelement location="${basedir}/sched-assist-spi/src/main/sql" />
 				<pathelement location="${basedir}/sched-assist-spi/src/test/resources" />
 			</classpath>
 		</java>
 	</target>
-	
-	<target name="hsql-rebuild" description="Re-initializes the Scheduling Assistant HSQL database (caution: destroys existing tables first!)">
-			<echo>hsql-rebuild will remove any data in the database</echo>
-			<input message="Are you sure you want to continue?" validargs="y,n" addproperty="confirmed" />
-			<condition property="do.abort">
-				<equals arg1="n" arg2="${confirmed}" />
-			</condition>
-			<fail if="do.abort">hsql-rebuild aborted.</fail>
 
-			<java classname="org.jasig.schedassist.impl.InitializeSchedulingAssistantDatabase" fork="true" dir=".">
-				<!-- firstRun=false will trigger drop ddl commands -->
-				<arg value="false"/>
-				<jvmarg value="-Dorg.jasig.schedassist.impl.InitializeSchedulingAssistantDatabase.CONFIG=${database.config}" />
-				<classpath>
-					<path refid="spi.maven.classpath" />
-					<fileset dir="${basedir}/sched-assist-spi/target">
-						<include name="*.jar" />
-					</fileset>
-					<pathelement location="${basedir}/bootstrap"/>
-					<pathelement location="${basedir}/sched-assist-spi/src/main/resources" />
-					<pathelement location="${basedir}/sched-assist-spi/src/main/sql" />
-					<pathelement location="${basedir}/sched-assist-spi/src/test/resources" />
-				</classpath>
-			</java>
-		</target>
+	<target name="hsql-rebuild" description="Re-initializes the Scheduling Assistant HSQL database (caution: destroys existing tables first!)">
+		<echo>hsql-rebuild will remove any data in the database</echo>
+		<input message="Are you sure you want to continue?" validargs="y,n" addproperty="confirmed" />
+		<condition property="do.abort">
+			<equals arg1="n" arg2="${confirmed}" />
+		</condition>
+		<fail if="do.abort">hsql-rebuild aborted.</fail>
+
+		<java classname="org.jasig.schedassist.impl.InitializeSchedulingAssistantDatabase" fork="true" dir=".">
+			<!-- firstRun=false will trigger drop ddl commands -->
+			<arg value="false" />
+			<jvmarg value="-Dorg.jasig.schedassist.impl.InitializeSchedulingAssistantDatabase.CONFIG=${database.config}" />
+			<classpath>
+				<path refid="spi.maven.classpath" />
+				<fileset dir="${basedir}/sched-assist-spi/target">
+					<include name="*.jar" />
+				</fileset>
+				<pathelement location="${basedir}/bootstrap" />
+				<pathelement location="${basedir}/sched-assist-spi/src/main/resources" />
+				<pathelement location="${basedir}/sched-assist-spi/src/main/sql" />
+				<pathelement location="${basedir}/sched-assist-spi/src/test/resources" />
+			</classpath>
+		</java>
+	</target>
 
 	<!-- This target removes the web application from the tomcat installation
 				you defined in build.properties -->
@@ -171,10 +174,25 @@
 		<antcall target="clean-webapp" />
 		<antcall target="deploy-war" />
 	</target>
-	
+
 	<target name="hot-deploy-log4j.properties">
-		<copy file="${basedir}/sched-assist-war/src/main/resources/log4j.properties" todir="${tomcat.home}/webapps/scheduling-assistant/WEB-INF/classes/"></copy>
+		<copy file="${basedir}/sched-assist-war/src/main/resources/log4j.properties" todir="${tomcat.home}/webapps/scheduling-assistant/WEB-INF/classes/">
+		</copy>
 	</target>
+
+	<target name="run-integration-test">
+		<junit fork="true" printsummary="withOutAndErr" haltonfailure="true">
+			<classpath>
+				<path refid="integrationtest.maven.classpath" />
+				<pathelement location="bootstrap" />
+			</classpath>
+
+			<formatter type="plain" usefile="off" />
+			<test name="org.jasig.schedassist.impl.caldav.integration.CaldavIntegrationTest">
+			</test>
+		</junit>
+	</target>
+
 	<!--
 	<target name="audit-schedule-owners" description="Audits the ScheduleOwner database">
 		<java classname="org.jasig.schedassist.impl.owner.ScheduleOwnerAuditor" fork="true" dir="." jvm="${cli.jvm}">
@@ -198,5 +216,5 @@
 		</java>
 	</target>
 	-->
-	
+
 </project>
