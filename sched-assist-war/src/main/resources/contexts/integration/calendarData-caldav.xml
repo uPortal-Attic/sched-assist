@@ -51,7 +51,7 @@
 	<!-- END: Bedework Specific beans -->
 	<!-- If using a CalDAV server other than Bedework, look in localOverridesContext.xml for other options -->
 	
-	<bean id="credentialsProviderProvider" class="org.jasig.schedassist.impl.caldav.DefaultCredentialsProviderProviderImpl"/>	
+	<bean id="credentialsProviderFactory" class="org.jasig.schedassist.impl.caldav.DefaultCredentialsProviderFactoryImpl"/>	
 	<bean id="affiliationSource" class="org.jasig.schedassist.NullAffiliationSourceImpl"/>
 	<bean id="visibleScheduleBuilder" class="org.jasig.schedassist.model.VisibleScheduleBuilder">
 		<property name="eventUtils" ref="eventUtils"/>
