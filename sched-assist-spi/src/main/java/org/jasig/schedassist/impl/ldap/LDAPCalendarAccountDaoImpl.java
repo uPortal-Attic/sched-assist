@@ -173,7 +173,7 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 		
 		List<ICalendarAccount> results = Collections.emptyList();
 		try {
-			results = ldapTemplate.search(baseDn, searchFilter.toString(), sc, new DefaultAttributesMapperImpl(ldapAttributesKey));
+			results = ldapTemplate.search(baseDn, searchFilter.toString(), sc, new DefaultContextMapperImpl(ldapAttributesKey));
 		} catch (SizeLimitExceededException e) {
 			log.debug("search filter exceeded results size limit(" + searchResultsLimit +"): " + searchFilter);
 		} catch (TimeLimitExceededException e) {

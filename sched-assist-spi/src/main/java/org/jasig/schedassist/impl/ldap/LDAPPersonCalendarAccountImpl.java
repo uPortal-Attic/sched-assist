@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.Name;
+
 import org.jasig.schedassist.model.AbstractCalendarAccount;
 
 /**
@@ -35,7 +37,7 @@ import org.jasig.schedassist.model.AbstractCalendarAccount;
  * @author Nicholas BlairNicholas Blair
  * @version $Id: LDAPPersonCalendarAccountImpl.java $
  */
-class LDAPPersonCalendarAccountImpl extends AbstractCalendarAccount {
+class LDAPPersonCalendarAccountImpl extends AbstractCalendarAccount implements HasDistinguishedName {
 
 	/**
 	 * 
@@ -43,6 +45,8 @@ class LDAPPersonCalendarAccountImpl extends AbstractCalendarAccount {
 	private static final long serialVersionUID = 1794331642591042311L;
 
 	private Map<String, List<String>> attributesMap = new HashMap<String, List<String>>();
+	private Name distinguishedName;
+	
 	/**
 	 * Default implementation.
 	 * 
@@ -76,13 +80,28 @@ class LDAPPersonCalendarAccountImpl extends AbstractCalendarAccount {
 		return getUsername();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jasig.schedassist.impl.ldap.HasDistinguishedName#getDistinguishedName()
+	 */
+	public Name getDistinguishedName() {
+		return distinguishedName;
+	}
+
+	/**
+	 * @param distinguishedName the distinguishedName to set
+	 */
+	public void setDistinguishedName(Name distinguishedName) {
+		this.distinguishedName = distinguishedName;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		return "LDAPPersonCalendarAccountImpl [attributesMap=" + attributesMap
-				+ ", toString()=" + super.toString() + "]";
+				+ ", distinguishedName=" + distinguishedName +", toString()=" + super.toString() + "]";
 	}
 
 }
