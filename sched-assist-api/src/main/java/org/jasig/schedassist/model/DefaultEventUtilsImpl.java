@@ -224,11 +224,6 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	public Attendee constructVisitorAttendee(ICalendarAccount calendarAccount) {
 		ParameterList parameterList = new ParameterList();
 		parameterList.add(PartStat.ACCEPTED);
-		if(calendarAccount instanceof IDelegateCalendarAccount) {
-			parameterList.add(CuType.RESOURCE);
-		} else {
-			parameterList.add(CuType.INDIVIDUAL);
-		}
 		parameterList.add(Rsvp.FALSE);
 		parameterList.add(AppointmentRole.VISITOR);
 		parameterList.add(new Cn(calendarAccount.getDisplayName()));
