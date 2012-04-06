@@ -46,6 +46,7 @@ public class MockDelegateCalendarAccount extends AbstractCalendarAccount
 	private String contactInformation;
 	private Map<String, List<String>> attributes = new HashMap<String, List<String>>();
 	private String calendarLoginId;
+	private String accountOwnerAttribute;
 	
 	/*
 	 * (non-Javadoc)
@@ -61,8 +62,8 @@ public class MockDelegateCalendarAccount extends AbstractCalendarAccount
 	 * @see org.jasig.schedassist.model.IDelegateCalendarAccount#getAccountOwnerUsername()
 	 */
 	@Override
-	public String getAccountOwnerUsername() {
-		return accountOwner.getUsername();
+	public String getAccountOwnerAttribute() {
+		return accountOwnerAttribute;
 	}
 
 	/*
@@ -134,6 +135,13 @@ public class MockDelegateCalendarAccount extends AbstractCalendarAccount
 	 */
 	public void setCalendarLoginId(String calendarLoginId) {
 		this.calendarLoginId = calendarLoginId;
+	}
+
+	/**
+	 * @param accountOwnerAttribute the accountOwnerAttribute to set
+	 */
+	public void setAccountOwnerAttribute(String accountOwnerAttribute) {
+		this.accountOwnerAttribute = accountOwnerAttribute;
 	}
 
 	/* (non-Javadoc)

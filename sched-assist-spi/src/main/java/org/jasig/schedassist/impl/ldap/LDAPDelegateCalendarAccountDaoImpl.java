@@ -169,8 +169,8 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 		}
 		searchFilter.and(new LikeFilter(ldapAttributesKey.getUniqueIdentifierAttributeName(), WILDCARD));
 
-		List<LDAPDelegateCalendarAccountImpl> results = executeSearchReturnList(searchFilter, owner);
-		LDAPDelegateCalendarAccountImpl delegate = (LDAPDelegateCalendarAccountImpl) DataAccessUtils.singleResult(results);
+		List<IDelegateCalendarAccount> results = executeSearchReturnList(searchFilter, owner);
+		IDelegateCalendarAccount delegate = (IDelegateCalendarAccount) DataAccessUtils.singleResult(results);
 		return delegate;
 	}
 
@@ -194,8 +194,8 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 			// TODO assumes delegateOwnerAttributeName has values of ICalendarAccount#getUsername
 			searchFilter.and(new EqualsFilter(ldapAttributesKey.getDelegateOwnerAttributeName(), owner.getUsername()));
 		}
-		List<LDAPDelegateCalendarAccountImpl> results = executeSearchReturnList(searchFilter, owner);
-		LDAPDelegateCalendarAccountImpl delegate = (LDAPDelegateCalendarAccountImpl) DataAccessUtils.singleResult(results);
+		List<IDelegateCalendarAccount> results = executeSearchReturnList(searchFilter, owner);
+		IDelegateCalendarAccount delegate = (IDelegateCalendarAccount) DataAccessUtils.singleResult(results);
 		return delegate;
 	}
 
@@ -206,13 +206,13 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	protected List<LDAPDelegateCalendarAccountImpl> executeSearchReturnList(final Filter searchFilter, final ICalendarAccount owner) {
+	protected List<IDelegateCalendarAccount> executeSearchReturnList(final Filter searchFilter, final ICalendarAccount owner) {
 		SearchControls searchControls = new SearchControls();
 		searchControls.setCountLimit(searchResultsLimit);
 		searchControls.setTimeLimit(searchTimeLimit);
 		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 		
-		List<LDAPDelegateCalendarAccountImpl> results = Collections.emptyList();
+		List<IDelegateCalendarAccount> results = Collections.emptyList();
 		try {
 			results = ldapTemplate.search(
 				baseDn, 
@@ -241,10 +241,10 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 	 * @param delegates
 	 * @param desiredOwnerAccount
 	 */
-	protected void enforceDistinguishedNameMatch(List<LDAPDelegateCalendarAccountImpl> delegates, HasDistinguishedName desiredOwnerAccount) {
-		for(Iterator<LDAPDelegateCalendarAccountImpl> i = delegates.iterator(); i.hasNext(); ) {
-			LDAPDelegateCalendarAccountImpl delegate = i.next();
-			String ownerAttributeValue = delegate.getAccountOwnerUsername();
+	protected void enforceDistinguishedNameMatch(List<IDelegateCalendarAccount> delegates, HasDistinguishedName desiredOwnerAccount) {
+		for(Iterator<IDelegateCalendarAccount> i = delegates.iterator(); i.hasNext(); ) {
+			IDelegateCalendarAccount delegate = i.next();
+			String ownerAttributeValue = delegate.getAccountOwnerAttribute();
 			if(!desiredOwnerAccount.getDistinguishedName().equals(new DistinguishedName(ownerAttributeValue))) {
 				if(log.isDebugEnabled()) {
 					log.debug(ownerAttributeValue + " does not match desired owner ICalendarAccount dn: " + desiredOwnerAccount.getDistinguishedName());

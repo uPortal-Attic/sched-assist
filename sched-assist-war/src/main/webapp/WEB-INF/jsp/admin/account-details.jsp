@@ -57,6 +57,9 @@
 <li><spring:message code="email.address"/>: <a href="mailto:${calendarAccount.emailAddress}" title="Compose Email"><c:out value="${calendarAccount.emailAddress}"/>&nbsp;<img src="${emailIcon}"/></a></li>
 <li><spring:message code="calendaruniqueid"/>: <c:out value="${calendarAccount.calendarUniqueId}"/></li>
 <li><spring:message code="calendarloginid"/>: <c:out value="${calendarAccount.calendarLoginId}"/></li>
+<c:if test="${hasDistinguishedName}">
+<li><spring:message code="distinguished.name"/>: ${calendarAccount.distinguishedName}</li>
+</c:if>
 
 <li><spring:message code="raw.attributes"/>:
 <ul>

@@ -28,6 +28,10 @@ import java.util.Map;
  */
 public class MockDelegateCalendarAccount implements IDelegateCalendarAccount {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8813143938160632214L;
 	private String displayName;
 	private String username;
 	private String emailAddress;
@@ -38,6 +42,7 @@ public class MockDelegateCalendarAccount implements IDelegateCalendarAccount {
 	private Map<String, List<String>> attributes;
 	private boolean eligible;
 	private ICalendarAccount accountOwner;
+	private String accountOwnerAttribute;
 	
 	/**
 	 * @return the displayName
@@ -156,12 +161,32 @@ public class MockDelegateCalendarAccount implements IDelegateCalendarAccount {
 	public ICalendarAccount getAccountOwner() {
 		return accountOwner;
 	}
-	@Override
-	public String getAccountOwnerUsername() {
-		return accountOwner.getUsername();
+	/**
+	 * @return the accountOwnerAttribute
+	 */
+	public String getAccountOwnerAttribute() {
+		return accountOwnerAttribute;
 	}
-	
-	
+	/**
+	 * @param accountOwnerAttribute the accountOwnerAttribute to set
+	 */
+	public void setAccountOwnerAttribute(String accountOwnerAttribute) {
+		this.accountOwnerAttribute = accountOwnerAttribute;
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "MockDelegateCalendarAccount [displayName=" + displayName
+				+ ", username=" + username + ", emailAddress=" + emailAddress
+				+ ", calendarLoginId=" + calendarLoginId
+				+ ", calendarUniqueId=" + calendarUniqueId + ", location="
+				+ location + ", contactInformation=" + contactInformation
+				+ ", attributes=" + attributes + ", eligible=" + eligible
+				+ ", accountOwner=" + accountOwner + ", accountOwnerAttribute="
+				+ accountOwnerAttribute + "]";
+	}
 	
 
 }

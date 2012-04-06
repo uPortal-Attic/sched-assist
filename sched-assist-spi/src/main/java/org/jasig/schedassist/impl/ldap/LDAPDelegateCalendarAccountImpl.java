@@ -48,7 +48,7 @@ class LDAPDelegateCalendarAccountImpl extends AbstractCalendarAccount implements
 	private final String location;
 	private final String contactInformation;
 	private Map<String, List<String>> attributesMap = new HashMap<String, List<String>>();
-	
+	private final String accountOwnerAttribute;
 	private ICalendarAccount accountOwner;
 	
 	/**
@@ -79,6 +79,7 @@ class LDAPDelegateCalendarAccountImpl extends AbstractCalendarAccount implements
 		username = getSingleAttributeValue(attributes.get(ldapAttributesKey.getUsernameAttributeName()));
 		location = getSingleAttributeValue(attributes.get(ldapAttributesKey.getDelegateLocationAttributeName()));
 		contactInformation = getSingleAttributeValue(attributes.get(ldapAttributesKey.getDelegateContactInformationAttributeName()));
+		accountOwnerAttribute = getSingleAttributeValue(attributes.get(ldapAttributesKey.getDelegateOwnerAttributeName()));
 		// set eligibility
 		eligible = ldapAttributesKey.evaluateEligibilityAttributeValue(attributes);
 	}
@@ -153,12 +154,8 @@ class LDAPDelegateCalendarAccountImpl extends AbstractCalendarAccount implements
 	 * @see org.jasig.schedassist.model.IDelegateCalendarAccount#getAccountOwnerUsername()
 	 */
 	@Override
-	public String getAccountOwnerUsername() {
-		if(accountOwner != null) {
-			return accountOwner.getUsername();
-		}
-		
-		return null;
+	public String getAccountOwnerAttribute() {
+		return accountOwnerAttribute;
 	}
 
 	/* (non-Javadoc)

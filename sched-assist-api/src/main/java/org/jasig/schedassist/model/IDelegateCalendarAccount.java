@@ -42,7 +42,7 @@ public interface IDelegateCalendarAccount extends ICalendarAccount {
 	 * 
 	 * @return the username of this delegate's account owner.
 	 */
-	String getAccountOwnerUsername();
+	String getAccountOwnerAttribute();
 	
 	/**
 	 * 

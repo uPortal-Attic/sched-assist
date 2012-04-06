@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jasig.schedassist.IAffiliationSource;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.IDelegateCalendarAccountDao;
+import org.jasig.schedassist.impl.ldap.HasDistinguishedName;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.impl.owner.PublicProfileDao;
 import org.jasig.schedassist.impl.visitor.NotAVisitorException;
@@ -117,7 +118,9 @@ public class AccountDetailsController {
 				model.addAttribute("isAdvisor", affiliationSource.doesAccountHaveAffiliation(account, AffiliationImpl.ADVISOR));
 				model.addAttribute("isInstructor", affiliationSource.doesAccountHaveAffiliation(account, AffiliationImpl.INSTRUCTOR));
 				model.addAttribute("calendarAccountAttributes", account.getAttributes().entrySet());
-				
+				if(account instanceof HasDistinguishedName) {
+					model.addAttribute("hasDistinguishedName", "true");
+				}
 				// try to look up visitor
 				try {
 					this.visitorDao.toVisitor(account);
