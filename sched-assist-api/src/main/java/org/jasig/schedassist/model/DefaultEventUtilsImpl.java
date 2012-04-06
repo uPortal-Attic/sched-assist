@@ -58,6 +58,7 @@ import net.fortuna.ical4j.model.property.DtStamp;
 import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.model.property.LastModified;
 import net.fortuna.ical4j.model.property.Location;
+import net.fortuna.ical4j.model.property.Organizer;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.RRule;
@@ -120,7 +121,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	@Override
 	public boolean attendeeMatchesPerson(Property attendee,
 			ICalendarAccount calendarAccount) {
-		if(null == attendee || !Attendee.ATTENDEE.equals(attendee.getName())) {
+		if(null == attendee) {
 			return false;
 		}
 		
@@ -153,12 +154,11 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			event.getProperties().add(new DtStart(new DateTime(convertToICalendarFormat(block.getStartTime()))));
 			event.getProperties().add(new DtEnd(new DateTime(convertToICalendarFormat(block.getEndTime()))));
 			
-			Attendee visitorAttendee = constructAvailableAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
+			Attendee visitorAttendee = constructVisitorAttendee(visitor.getCalendarAccount());
 			event.getProperties().add(visitorAttendee);
-
-			// add the owner with X-UW-AVAILABLE-APPOINTMENT-ROLE=OWNER
-			Attendee ownerAttendee = constructAvailableAttendee(owner.getCalendarAccount(), AppointmentRole.OWNER);
-			event.getProperties().add(ownerAttendee);
+			
+			Organizer ownerOrganizer = constructOrganizer(owner.getCalendarAccount());
+			event.getProperties().add(ownerOrganizer);
 
 			// add custom UW-AVAILABLE-APPOINTMENT and UW-AVAILABLE-VERSION
 			event.getProperties().add(SchedulingAssistantAppointment.TRUE);
@@ -181,8 +181,8 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			
 			// finally add meeting title
 			event.getProperties().add(new Summary(title.toString()));
-			// add class (normal)
-			event.getProperties().add(Clazz.PRIVATE);
+			// add class (confidential)
+			event.getProperties().add(Clazz.CONFIDENTIAL);
 
 			// check if block overrides meeting location
 			final String blockMeetingLocationOverride = block.getMeetingLocation();
@@ -198,6 +198,9 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			
 			// add CONFIRMED status
 			event.getProperties().add(Status.VEVENT_CONFIRMED);
+			
+			// lastly we must add a UID
+			event.getProperties().add(generateNewUid());
 			
 			return event;
 		} catch (ParseException e) {
@@ -215,22 +218,37 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	 * The value will be a mailto address for the {@link ICalendarAccount}'s email address.
 	 * 
 	 * @param calendarAccount
-	 * @param role
 	 * @return an appropriate attendee for the calendar account
 	 */
 	@Override
-	public Attendee constructAvailableAttendee(ICalendarAccount calendarAccount,
-			AppointmentRole role) {
+	public Attendee constructVisitorAttendee(ICalendarAccount calendarAccount) {
 		ParameterList parameterList = new ParameterList();
 		parameterList.add(PartStat.ACCEPTED);
-		parameterList.add(CuType.INDIVIDUAL);
+		if(calendarAccount instanceof IDelegateCalendarAccount) {
+			parameterList.add(CuType.RESOURCE);
+		} else {
+			parameterList.add(CuType.INDIVIDUAL);
+		}
 		parameterList.add(Rsvp.FALSE);
-		parameterList.add(role);
+		parameterList.add(AppointmentRole.VISITOR);
 		parameterList.add(new Cn(calendarAccount.getDisplayName()));
 		Attendee attendee = new Attendee(parameterList, emailToURI(calendarAccount.getEmailAddress()));
 		return attendee;
 	}
 
+	/**
+	 * Construct an {@link Organizer} property for the specified {@link ICalendarAccount}.
+	 * 
+	 * @param calendarAccount
+	 * @return an {@link Organizer} property for the {@link ICalendarAccount}
+	 */
+	public Organizer constructOrganizer(ICalendarAccount calendarAccount) {
+		ParameterList parameterList = new ParameterList();
+		parameterList.add(new Cn(calendarAccount.getDisplayName()));
+		parameterList.add(AppointmentRole.OWNER);
+		Organizer organizer = new Organizer(parameterList, emailToURI(calendarAccount.getEmailAddress()));
+		return organizer;
+	}
 	/**
 	 * Walk through the attendee list in the {@link VEvent} argument.
 	 * Return the matching {@link Attendee} for the {@link ICalendarAccount} argument, or null
@@ -252,6 +270,12 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 				return attendee;
 			}
 		}
+		
+		//otherwise the calendarUser might be the organizer
+		if(isAttendingAsOwner(event, calendarUser)) {
+			return event.getProperty(Organizer.ORGANIZER);
+		}
+		
 		return null;
 	}
 
@@ -298,7 +322,11 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	public boolean willEventCauseConflict(ICalendarAccount calendarAccount, VEvent event) {
 		// check to see if the owner an attendee and has ACCEPTED
 		Property ownerAttendee = getAttendeeForUserFromEvent(event, calendarAccount);
+		
 		if(ownerAttendee != null) {
+			if(Organizer.ORGANIZER.equals(ownerAttendee.getName())) {
+				return true;
+			}
 			Parameter p = ownerAttendee.getParameter(PartStat.PARTSTAT);
 			return PartStat.ACCEPTED.equals(p);
 		}
@@ -322,39 +350,15 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	public boolean isAttendingMatch(VEvent event, IScheduleVisitor visitor, IScheduleOwner owner) {
 		// only test the appointment if it's marked as an available appointment
 		if(event.getProperties().contains(SchedulingAssistantAppointment.TRUE)) {
-			boolean visitorIsVisitor = false;
-			boolean ownerIsOwner = false;
-
-			PropertyList attendees = getAttendeeListFromEvent(event);
-			for(Object obj : attendees) {
-				Property attendee = (Property) obj;
-				Parameter p = attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
-				if(null != p) {
-					AppointmentRole role = new AppointmentRole(p.getValue());
-					if(role.isVisitor()) {
-						if(attendeeMatchesPerson(attendee, visitor.getCalendarAccount())){
-							visitorIsVisitor = true;
-						}
-					} else if (role.isOwner()) {
-						if(attendeeMatchesPerson(attendee, owner.getCalendarAccount())) {
-							ownerIsOwner = true;
-						}
-					}
-				} else {
-					// appointment role is null, this is a 1.0 appointment
-					// just check both
-					if(attendeeMatchesPerson(attendee, visitor.getCalendarAccount())) {
-						visitorIsVisitor = true;
-					} else if(attendeeMatchesPerson(attendee, owner.getCalendarAccount())) {
-						ownerIsOwner = true;
-					}
-				}
-				// short circuit if both are true
-				if(visitorIsVisitor && ownerIsOwner) {
-					return true;
-				}
+			boolean visitorMatch = isAttendingAsVisitor(event, visitor.getCalendarAccount());
+			if(!visitorMatch) {
+				return false;
 			}
+			
+			boolean ownerMatch = isAttendingAsOwner(event, owner.getCalendarAccount());
+			return ownerMatch;
 		}
+		
 		return false;
 	}
 	
@@ -393,20 +397,14 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			ICalendarAccount proposedOwner) {
 		// only test the appointment if it's marked as an available appointment
 		if(event.getProperties().contains(SchedulingAssistantAppointment.TRUE)) {
-			PropertyList attendees = getAttendeeListFromEvent(event);
-			// walk through attendee list
-			for(Object obj : attendees) {
-				Property attendee = (Property) obj;
-				// extract UW APPOINTMENT_ROLE
-				Parameter p = attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
-				if(null != p) {
-					AppointmentRole role = new AppointmentRole(p.getValue());
-					if(role.isOwner() && attendeeMatchesPerson(attendee, proposedOwner)) {
-						return true;
-					}
-				}
+			Organizer organizer = (Organizer) event.getProperty(Organizer.ORGANIZER);
+			if(organizer == null) {
+				return false;
+				
 			}
+			return attendeeMatchesPerson(organizer, proposedOwner);
 		}
+		
 		return false;
 	}
 	

@@ -23,13 +23,11 @@
 package org.jasig.schedassist.impl.caldav;
 
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.ParameterList;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
-import net.fortuna.ical4j.model.parameter.Cn;
 import net.fortuna.ical4j.model.parameter.Role;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.DtEnd;
@@ -41,7 +39,6 @@ import net.fortuna.ical4j.model.property.Uid;
 
 import org.apache.commons.lang.Validate;
 import org.jasig.schedassist.IAffiliationSource;
-import org.jasig.schedassist.model.AppointmentRole;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.DefaultEventUtilsImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -137,8 +134,6 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements Initi
 			String eventDescription) {
 		VEvent event = super.constructAvailableAppointment(block, owner, visitor,
 				eventDescription);
-		event.getProperties().add(constructOrganizer(owner.getCalendarAccount()));
-		event.getProperties().add(this.generateNewUid());
 		if(isExplicitSetTimeZone() && _timeZone != null) {
 			DtStart start = event.getStartDate();
 			start.setTimeZone(_timeZone);
@@ -148,20 +143,7 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements Initi
 		}
 		return event;
 	}
-
-	/**
-	 * Construct an {@link Organizer} property for the specified {@link ICalendarAccount}.
-	 * 
-	 * @param calendarAccount
-	 * @return an {@link Organizer} property for the {@link ICalendarAccount}
-	 */
-	public Organizer constructOrganizer(ICalendarAccount calendarAccount) {
-		ParameterList parameterList = new ParameterList();
-		parameterList.add(new Cn(calendarAccount.getDisplayName()));
-		Organizer organizer = new Organizer(parameterList, emailToURI(calendarAccount.getEmailAddress()));
-		return organizer;
-	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.model.DefaultEventUtilsImpl#willEventCauseConflict(org.jasig.schedassist.model.ICalendarAccount, net.fortuna.ical4j.model.component.VEvent)
 	 */
@@ -185,19 +167,15 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements Initi
 		}	
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jasig.schedassist.model.DefaultEventUtilsImpl#constructAvailableAttendee(org.jasig.schedassist.model.ICalendarAccount, org.jasig.schedassist.model.AppointmentRole)
+	/*
+	 * (non-Javadoc)
+	 * @see org.jasig.schedassist.model.DefaultEventUtilsImpl#constructVisitorAttendee(org.jasig.schedassist.model.ICalendarAccount)
 	 */
 	@Override
-	public Attendee constructAvailableAttendee(
-			ICalendarAccount calendarAccount, AppointmentRole role) {
-		Attendee attendee = super.constructAvailableAttendee(calendarAccount, role);
-		// add iCalendar ROLE parameter to the attendee
-		if(AppointmentRole.OWNER.equals(role)) {
-			attendee.getParameters().add(Role.CHAIR);
-		} else if (AppointmentRole.VISITOR.equals(role)) {
-			attendee.getParameters().add(Role.REQ_PARTICIPANT);
-		}
+	public Attendee constructVisitorAttendee(
+			ICalendarAccount calendarAccount) {
+		Attendee attendee = super.constructVisitorAttendee(calendarAccount);
+		attendee.getParameters().add(Role.REQ_PARTICIPANT);
 		return attendee;
 	}
 	

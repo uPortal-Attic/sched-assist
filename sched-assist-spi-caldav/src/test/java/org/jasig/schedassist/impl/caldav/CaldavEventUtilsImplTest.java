@@ -116,6 +116,7 @@ public class CaldavEventUtilsImplTest {
 		
 		Organizer expected = new Organizer("mailto:someone@wherever.org");
 		expected.getParameters().add(new Cn("DISPLAY NAME"));
+		expected.getParameters().add(AppointmentRole.OWNER);
 		
 		Organizer generated = eventUtils.constructOrganizer(calendarAccount);
 		
@@ -255,12 +256,12 @@ public class CaldavEventUtilsImplTest {
 		MockCalendarAccount visitorAccount2 = new MockCalendarAccount();
 		visitorAccount2.setDisplayName("VISITOR TWO NAME");
 		visitorAccount2.setEmailAddress("somevisitor2@wherever.org");
-		generated.getProperties().add(eventUtils.constructAvailableAttendee(visitorAccount2, AppointmentRole.VISITOR));
+		generated.getProperties().add(eventUtils.constructVisitorAttendee(visitorAccount2));
 		
 		MockCalendarAccount visitorAccount3 = new MockCalendarAccount();
 		visitorAccount3.setDisplayName("VISITOR THREE NAME");
 		visitorAccount3.setEmailAddress("somevisitor3@wherever.org");
-		generated.getProperties().add(eventUtils.constructAvailableAttendee(visitorAccount3, AppointmentRole.VISITOR));
+		generated.getProperties().add(eventUtils.constructVisitorAttendee(visitorAccount3));
 		
 		Resource example = new ClassPathResource("vevent-examples/example-group-appointment.ics");
 		CalendarBuilder builder = new CalendarBuilder();
@@ -315,12 +316,12 @@ public class CaldavEventUtilsImplTest {
 		MockCalendarAccount visitorAccount2 = new MockCalendarAccount();
 		visitorAccount2.setDisplayName("VISITOR TWO NAME");
 		visitorAccount2.setEmailAddress("somevisitor2@wherever.org");
-		generated.getProperties().add(eventUtils.constructAvailableAttendee(visitorAccount2, AppointmentRole.VISITOR));
+		generated.getProperties().add(eventUtils.constructVisitorAttendee(visitorAccount2));
 		
 		MockCalendarAccount visitorAccount3 = new MockCalendarAccount();
 		visitorAccount3.setDisplayName("VISITOR THREE NAME");
 		visitorAccount3.setEmailAddress("somevisitor3@wherever.org");
-		generated.getProperties().add(eventUtils.constructAvailableAttendee(visitorAccount3, AppointmentRole.VISITOR));
+		generated.getProperties().add(eventUtils.constructVisitorAttendee(visitorAccount3));
 		
 		Resource example = new ClassPathResource("vevent-examples/example-group-appointment-with-explicit-timezone.ics");
 		CalendarBuilder builder = new CalendarBuilder();

@@ -38,7 +38,6 @@ import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.impl.reminder.IReminder;
 import org.jasig.schedassist.impl.reminder.ReminderService;
-import org.jasig.schedassist.model.AppointmentRole;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
 import org.jasig.schedassist.model.DefaultEventUtilsImpl;
@@ -68,7 +67,6 @@ public class AutomaticAttendeeRemovalApplicationListenerTest {
 		MockCalendarAccount visitorAccount2 = new MockCalendarAccount();
 		visitorAccount2.setDisplayName("Some Visitor 2");
 		visitorAccount2.setEmailAddress("visitor2@wisc.edu");
-		//MockScheduleVisitor visitor2 = new MockScheduleVisitor(visitorAccount2);
 		
 		Date startDate = new Date();
 		Date endDate = DateUtils.addHours(startDate, 1);
@@ -76,7 +74,7 @@ public class AutomaticAttendeeRemovalApplicationListenerTest {
 		
 		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		VEvent event = eventUtils.constructAvailableAppointment(block, owner, visitor, "test appointment");
-		Attendee visitor2attendee = eventUtils.constructAvailableAttendee(visitorAccount2, AppointmentRole.VISITOR);
+		Attendee visitor2attendee = eventUtils.constructVisitorAttendee(visitorAccount2);
 		event.getProperties().add(visitor2attendee);
 		
 		OwnerDao ownerDao = mock(OwnerDao.class);
@@ -86,8 +84,6 @@ public class AutomaticAttendeeRemovalApplicationListenerTest {
 		AvailableBlock expectedBlock = AvailableBlockBuilder.createBlock(startDate, endDate);
 		List<IReminder> reminders = new ArrayList<IReminder>();
 		when(reminderService.getReminders(owner, expectedBlock)).thenReturn(reminders);
-		
-		//Attendee removedAttendee = new Attendee("mailto:visitor3@wisc.edu");
 		
 		AutomaticAttendeeRemovalApplicationListener listener = new AutomaticAttendeeRemovalApplicationListener();
 		listener.setOwnerDao(ownerDao);
@@ -118,7 +114,6 @@ public class AutomaticAttendeeRemovalApplicationListenerTest {
 		MockCalendarAccount visitorAccount2 = new MockCalendarAccount();
 		visitorAccount2.setDisplayName("Some Visitor 2");
 		visitorAccount2.setEmailAddress("visitor2@wisc.edu");
-		//MockScheduleVisitor visitor2 = new MockScheduleVisitor(visitorAccount2);
 		
 		Date startDate = new Date();
 		Date endDate = DateUtils.addHours(startDate, 1);
@@ -126,7 +121,7 @@ public class AutomaticAttendeeRemovalApplicationListenerTest {
 		
 		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		VEvent event = eventUtils.constructAvailableAppointment(block, owner, visitor, "test appointment");
-		Attendee visitor2attendee = eventUtils.constructAvailableAttendee(visitorAccount2, AppointmentRole.VISITOR);
+		Attendee visitor2attendee = eventUtils.constructVisitorAttendee(visitorAccount2);
 		event.getProperties().add(visitor2attendee);
 		
 		OwnerDao ownerDao = mock(OwnerDao.class);
@@ -136,8 +131,6 @@ public class AutomaticAttendeeRemovalApplicationListenerTest {
 		AvailableBlock expectedBlock = AvailableBlockBuilder.createBlock(startDate, endDate);
 		List<IReminder> reminders = new ArrayList<IReminder>();
 		when(reminderService.getReminders(owner, expectedBlock)).thenReturn(reminders);
-		
-		//Attendee removedAttendee = new Attendee("mailto:visitor3@wisc.edu");
 		
 		AutomaticAttendeeRemovalApplicationListener listener = new AutomaticAttendeeRemovalApplicationListener();
 		listener.setOwnerDao(ownerDao);
