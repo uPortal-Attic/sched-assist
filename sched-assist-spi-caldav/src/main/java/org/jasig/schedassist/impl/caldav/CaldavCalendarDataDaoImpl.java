@@ -392,7 +392,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 		if(null != calendarWithURI) {
 			VEvent event = extractSchedulingAssistantAppointment(calendarWithURI);
 
-			Attendee attendee = this.eventUtils.constructAvailableAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
+			Attendee attendee = this.eventUtils.constructVisitorAttendee(visitor.getCalendarAccount());
 			event.getProperties().add(attendee);
 			try {
 				int statusCode = putExistingEvent(owner.getCalendarAccount(), event, calendarWithURI.getEtag());
@@ -723,20 +723,10 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 				// check for version first
 				Property versionProperty = event.getProperty(AvailableVersion.AVAILABLE_VERSION);
 				if (AvailableVersion.AVAILABLE_VERSION_1_2.equals(versionProperty)) {
-					Parameter ownerAttendeeRole = null;
-					Property ownerAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, owner.getCalendarAccount());
-					if(ownerAttendee != null) {
-						ownerAttendeeRole = ownerAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
-					}
-
-					if(null == ownerAttendeeRole) {
-						// owner role not on organizer or on attendee
-						continue;
-					}
 					// event has to be (1) an available appointment
-					// with (2) owner as AppointmentRole#OWNER
+					// with (2) owner recognized as appointment owner and
 					// (3) start and (4) end date have to match
-					if(AppointmentRole.OWNER.equals(ownerAttendeeRole) &&
+					if(this.eventUtils.isAttendingAsOwner(event, owner.getCalendarAccount()) &&
 							eventStart.equals(targetStartTime) &&
 							eventEnd.equals(targetEndTime)) {
 						if(log.isDebugEnabled()) {

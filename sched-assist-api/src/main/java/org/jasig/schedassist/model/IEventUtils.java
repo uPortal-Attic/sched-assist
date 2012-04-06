@@ -69,13 +69,14 @@ public interface IEventUtils {
 	
 	/**
 	 * Construct an {@link Attendee} appropriate for the specified {@link ICalendarAccount}
-	 * and {@link AppointmentRole}
+	 * in the visitor role.
 	 * 
+	 * @see AppointmentRole#VISITOR
 	 * @param calendarAccount
 	 * @param role
 	 * @return an appropriate attendee property
 	 */
-	Attendee constructAvailableAttendee(ICalendarAccount calendarAccount, AppointmentRole role);
+	Attendee constructVisitorAttendee(ICalendarAccount calendarAccount);
 	
 	/**
 	 * Walk through the attendee list in the {@link VEvent} argument.

@@ -1,6 +1,8 @@
 .classpath
 .project
 .settings
+bootstrap/local-hsqldb/schedassistdb.*
+build.properties
 target
 sched-assist-api/.classpath
 sched-assist-api/.project
