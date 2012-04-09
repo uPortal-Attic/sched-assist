@@ -77,12 +77,12 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.IAffiliationSource;
+import org.jasig.schedassist.NullAffiliationSourceImpl;
 
 /**
  * Default {@link IEventUtils} implementation.
  *  
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: DefaultEventUtilsImpl.java 41 2011-05-05 16:05:40Z nblair $
+ * @author Nicholas Blair
  */
 public class DefaultEventUtilsImpl implements IEventUtils {
 
@@ -101,7 +101,16 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	protected final Log LOG = LogFactory.getLog(this.getClass());
 	
 	private final IAffiliationSource affiliationSource;
+	private String eventClassForPersonOwners = Clazz.CONFIDENTIAL.getValue();
+	private String eventClassForResourceOwners = Clazz.PUBLIC.getValue();
 	
+	/**
+	 * Default constructor, sets the {@link IAffiliationSource} to the 
+	 * {@link NullAffiliationSourceImpl} implementation.
+	 */
+	public DefaultEventUtilsImpl() {
+		this(new NullAffiliationSourceImpl());
+	}
 	/**
 	 * @param affiliationSource
 	 */
@@ -115,6 +124,30 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		return affiliationSource;
 	}
 
+	/**
+	 * @return the eventClassForPersonOwners
+	 */
+	public String getEventClassForPersonOwners() {
+		return eventClassForPersonOwners;
+	}
+	/**
+	 * @return the eventClassForResourceOwners
+	 */
+	public String getEventClassForResourceOwners() {
+		return eventClassForResourceOwners;
+	}
+	/**
+	 * @param eventClassForPersonOwners the eventClassForPersonOwners to set
+	 */
+	public void setEventClassForPersonOwners(String eventClassForPersonOwners) {
+		this.eventClassForPersonOwners = eventClassForPersonOwners;
+	}
+	/**
+	 * @param eventClassForResourceOwners the eventClassForResourceOwners to set
+	 */
+	public void setEventClassForResourceOwners(String eventClassForResourceOwners) {
+		this.eventClassForResourceOwners = eventClassForResourceOwners;
+	}
 	/*
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.model.IEventUtils#attendeeMatchesPerson(net.fortuna.ical4j.model.Property, org.jasig.schedassist.model.ICalendarAccount)
@@ -184,8 +217,12 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			
 			// finally add meeting title
 			event.getProperties().add(new Summary(title.toString()));
-			// add class (confidential)
-			event.getProperties().add(Clazz.CONFIDENTIAL);
+			
+			if(owner.getCalendarAccount() instanceof IDelegateCalendarAccount) {
+				event.getProperties().add(new Clazz(eventClassForResourceOwners));
+			} else {
+				event.getProperties().add(new Clazz(eventClassForPersonOwners));
+			}
 
 			// check if block overrides meeting location
 			final String blockMeetingLocationOverride = block.getMeetingLocation();
@@ -210,19 +247,21 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			throw new IllegalArgumentException("caught ParseException creating event", e);
 		}
 	}
-
+	
 	/**
-	 * Construct an {@link Attendee} property for the specified user and role.
-	 * The PARTSTAT parameter will be set to ACCEPTED.
-	 * The CUTYPE parameter will be set to INDIVIDUAL.
-	 * The RSVP parameter will be set to FALSE.
-	 * The X-UW-AVAILABLE-APPOINTMENT-ROLE parameter will be set according to the role argument.
-	 * The CN parameter will be set to the {@link ICalendarAccount}'s display name.
-	 * The value will be a mailto address for the {@link ICalendarAccount}'s email address.
+	 * Called by {@link #constructAvailableAppointment(AvailableBlock, IScheduleOwner, IScheduleVisitor, String)};
+	 * returns an appropriate {@link Clazz} depending on whether or not the {@link ICalendarAccount} is a resource account.
 	 * 
 	 * @param calendarAccount
-	 * @return an appropriate attendee for the calendar account
+	 * @return an appropriate {@link Clazz} property to attach to the event
 	 */
+	protected Clazz determineAppropriateClassProperty(ICalendarAccount calendarAccount) {
+		if(calendarAccount instanceof IDelegateCalendarAccount) {
+			return new Clazz(eventClassForResourceOwners);
+		}
+		
+		return new Clazz(eventClassForPersonOwners);
+	}
 	
 	/**
 	 * Construct an {@link Attendee} property for the specified user and role.

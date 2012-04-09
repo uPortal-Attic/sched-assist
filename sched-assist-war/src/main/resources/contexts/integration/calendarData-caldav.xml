@@ -47,6 +47,8 @@
 		<constructor-arg ref="affiliationSource"/>
 		<property name="explicitSetTimeZone" value="${caldav.explicitSetTimeZone}"/>
 		<property name="timeZone" value="${caldav.systemTimeZone}"/>
+		<property name="eventClassForPersonOwners" value="${events.classForPersonOwners}"/>
+		<property name="eventClassForResourceOwners" value="${events.classForResourceOwners}"/>
 	</bean>
 	<!-- END: Bedework Specific beans -->
 	<!-- If using a CalDAV server other than Bedework, look in localOverridesContext.xml for other options -->

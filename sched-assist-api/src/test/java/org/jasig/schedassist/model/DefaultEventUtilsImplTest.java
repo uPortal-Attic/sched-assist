@@ -40,6 +40,7 @@ import net.fortuna.ical4j.model.parameter.Cn;
 import net.fortuna.ical4j.model.parameter.PartStat;
 import net.fortuna.ical4j.model.parameter.Rsvp;
 import net.fortuna.ical4j.model.property.Attendee;
+import net.fortuna.ical4j.model.property.Clazz;
 import net.fortuna.ical4j.model.property.Organizer;
 import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.Status;
@@ -246,6 +247,62 @@ public class DefaultEventUtilsImplTest {
 		Assert.assertEquals("TRUE", availableAppointment.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT).getValue());
 		Assert.assertEquals("1", availableAppointment.getProperty(VisitorLimit.VISITOR_LIMIT).getValue());
 		Assert.assertEquals(Status.VEVENT_CONFIRMED, availableAppointment.getProperty(Status.STATUS));
+		Assert.assertEquals(Clazz.CONFIDENTIAL, availableAppointment.getClassification());
+		PropertyList attendeePropertyList = availableAppointment.getProperties(Attendee.ATTENDEE);
+		for(Object o : attendeePropertyList) {
+			Property attendee = (Property) o;
+			Assert.assertEquals(PartStat.ACCEPTED, attendee.getParameter(PartStat.PARTSTAT));
+			Assert.assertEquals(Rsvp.FALSE, attendee.getParameter(Rsvp.RSVP));
+			Parameter appointmentRole = attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
+			if("VISITOR".equals(appointmentRole.getValue())) {
+				Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
+				Assert.assertEquals("Some Visitor", attendee.getParameter("CN").getValue());
+			} else if ("OWNER".equals(appointmentRole.getValue())) {
+				Assert.assertEquals("mailto:someowner@wisc.edu", attendee.getValue());
+				Assert.assertEquals("Some Owner", attendee.getParameter("CN").getValue());
+			} else {
+				Assert.fail("unexpected value for appointment role: " + appointmentRole.getValue());
+			}
+			
+		}
+	}
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testConstructAvailableAppointmentOwnerIsResource() throws Exception {
+		// construct visitor
+		MockCalendarAccount person = new MockCalendarAccount();
+		person.setEmailAddress("somevisitor@wisc.edu");
+		person.setDisplayName("Some Visitor");
+		MockScheduleVisitor visitor = new MockScheduleVisitor(person);
+		
+		// construct owner
+		MockDelegateCalendarAccount person2 = new MockDelegateCalendarAccount();
+		person2.setEmailAddress("someowner@wisc.edu");
+		person2.setDisplayName("Some Owner");
+		MockScheduleOwner owner = new MockScheduleOwner(person2, 1);
+		owner.setPreference(Preferences.LOCATION, "Owner's office");
+		
+		AvailableBlock block = AvailableBlockBuilder.createBlock(makeDateTime("20091006-1300"), makeDateTime("20091006-1330"));
+		
+		VEvent availableAppointment = this.eventUtils.constructAvailableAppointment(
+				block,
+				owner, 
+				visitor, 
+				"test event description");
+		
+		Assert.assertEquals("Appointment with Some Visitor", availableAppointment.getSummary().getValue());
+		Assert.assertEquals("test event description", availableAppointment.getDescription().getValue());
+		Assert.assertEquals("Owner's office", availableAppointment.getLocation().getValue());
+		Assert.assertEquals(makeDateTime("20091006-1300"), availableAppointment.getStartDate().getDate());
+		Assert.assertEquals(makeDateTime("20091006-1330"), availableAppointment.getEndDate().getDate());
+		Assert.assertEquals("TRUE", availableAppointment.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT).getValue());
+		Assert.assertEquals("1", availableAppointment.getProperty(VisitorLimit.VISITOR_LIMIT).getValue());
+		Assert.assertEquals(Status.VEVENT_CONFIRMED, availableAppointment.getProperty(Status.STATUS));
+		Assert.assertEquals(Clazz.PUBLIC, availableAppointment.getClassification());
 		PropertyList attendeePropertyList = availableAppointment.getProperties(Attendee.ATTENDEE);
 		for(Object o : attendeePropertyList) {
 			Property attendee = (Property) o;
@@ -837,6 +894,20 @@ public class DefaultEventUtilsImplTest {
 				Assert.fail("unexpected event" + event);
 			}
 		}
+	}
+	
+	/**
+	 * Verify correct {@link Clazz} property set.
+	 */
+	@Test
+	public void testDetermineAppropriateClassProperty() {
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
+		
+		Assert.assertEquals(Clazz.CONFIDENTIAL, eventUtils.determineAppropriateClassProperty(new MockCalendarAccount()));
+		Assert.assertEquals(Clazz.PUBLIC, eventUtils.determineAppropriateClassProperty(new MockDelegateCalendarAccount()));
+		
+		eventUtils.setEventClassForPersonOwners("SOMETHING-STRANGE");
+		Assert.assertEquals(new Clazz("SOMETHING-STRANGE"), eventUtils.determineAppropriateClassProperty(new MockCalendarAccount()));
 	}
 	
 	/**
