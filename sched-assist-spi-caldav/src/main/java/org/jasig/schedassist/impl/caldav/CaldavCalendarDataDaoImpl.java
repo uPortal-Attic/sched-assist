@@ -392,7 +392,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 		if(null != calendarWithURI) {
 			VEvent event = extractSchedulingAssistantAppointment(calendarWithURI);
 
-			Attendee attendee = this.eventUtils.constructVisitorAttendee(visitor.getCalendarAccount());
+			Attendee attendee = this.eventUtils.constructSchedulingAssistantAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
 			event.getProperties().add(attendee);
 			try {
 				int statusCode = putExistingEvent(owner.getCalendarAccount(), event, calendarWithURI.getEtag());

@@ -256,12 +256,12 @@ public class CaldavEventUtilsImplTest {
 		MockCalendarAccount visitorAccount2 = new MockCalendarAccount();
 		visitorAccount2.setDisplayName("VISITOR TWO NAME");
 		visitorAccount2.setEmailAddress("somevisitor2@wherever.org");
-		generated.getProperties().add(eventUtils.constructVisitorAttendee(visitorAccount2));
+		generated.getProperties().add(eventUtils.constructSchedulingAssistantAttendee(visitorAccount2, AppointmentRole.VISITOR));
 		
 		MockCalendarAccount visitorAccount3 = new MockCalendarAccount();
 		visitorAccount3.setDisplayName("VISITOR THREE NAME");
 		visitorAccount3.setEmailAddress("somevisitor3@wherever.org");
-		generated.getProperties().add(eventUtils.constructVisitorAttendee(visitorAccount3));
+		generated.getProperties().add(eventUtils.constructSchedulingAssistantAttendee(visitorAccount3, AppointmentRole.VISITOR));
 		
 		Resource example = new ClassPathResource("vevent-examples/example-group-appointment.ics");
 		CalendarBuilder builder = new CalendarBuilder();
@@ -316,12 +316,12 @@ public class CaldavEventUtilsImplTest {
 		MockCalendarAccount visitorAccount2 = new MockCalendarAccount();
 		visitorAccount2.setDisplayName("VISITOR TWO NAME");
 		visitorAccount2.setEmailAddress("somevisitor2@wherever.org");
-		generated.getProperties().add(eventUtils.constructVisitorAttendee(visitorAccount2));
+		generated.getProperties().add(eventUtils.constructSchedulingAssistantAttendee(visitorAccount2, AppointmentRole.VISITOR));
 		
 		MockCalendarAccount visitorAccount3 = new MockCalendarAccount();
 		visitorAccount3.setDisplayName("VISITOR THREE NAME");
 		visitorAccount3.setEmailAddress("somevisitor3@wherever.org");
-		generated.getProperties().add(eventUtils.constructVisitorAttendee(visitorAccount3));
+		generated.getProperties().add(eventUtils.constructSchedulingAssistantAttendee(visitorAccount3, AppointmentRole.VISITOR));
 		
 		Resource example = new ClassPathResource("vevent-examples/example-group-appointment-with-explicit-timezone.ics");
 		CalendarBuilder builder = new CalendarBuilder();

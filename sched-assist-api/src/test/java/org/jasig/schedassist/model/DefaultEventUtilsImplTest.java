@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -141,7 +142,7 @@ public class DefaultEventUtilsImplTest {
 		MockScheduleVisitor visitor = new MockScheduleVisitor(person);
 		
 		
-		Attendee attendee = this.eventUtils.constructVisitorAttendee(visitor.getCalendarAccount());
+		Attendee attendee = this.eventUtils.constructSchedulingAssistantAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
 		Assert.assertEquals(PartStat.ACCEPTED, attendee.getParameter(PartStat.PARTSTAT));
 		Assert.assertEquals(Rsvp.FALSE, attendee.getParameter(Rsvp.RSVP));
 		AppointmentRole role = (AppointmentRole) attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
@@ -162,7 +163,7 @@ public class DefaultEventUtilsImplTest {
 		MockScheduleVisitor visitor = new MockScheduleVisitor(person);
 		
 		
-		Attendee attendee = this.eventUtils.constructVisitorAttendee(visitor.getCalendarAccount());
+		Attendee attendee = this.eventUtils.constructSchedulingAssistantAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
 		Assert.assertEquals(PartStat.ACCEPTED, attendee.getParameter(PartStat.PARTSTAT));
 		Assert.assertEquals(Rsvp.FALSE, attendee.getParameter(Rsvp.RSVP));
 		AppointmentRole role = (AppointmentRole) attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE);
@@ -201,7 +202,7 @@ public class DefaultEventUtilsImplTest {
 		person2.setDisplayName("Some Owner");
 		MockScheduleOwner owner = new MockScheduleOwner(person2, 1);
 		
-		Attendee visitorAttendee = this.eventUtils.constructVisitorAttendee(visitor.getCalendarAccount());
+		Attendee visitorAttendee = this.eventUtils.constructSchedulingAssistantAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
 		Assert.assertTrue(this.eventUtils.attendeeMatchesPerson(visitorAttendee, visitor.getCalendarAccount()));
 		Assert.assertFalse(this.eventUtils.attendeeMatchesPerson(visitorAttendee, owner.getCalendarAccount()));
 		
@@ -254,6 +255,9 @@ public class DefaultEventUtilsImplTest {
 			if("VISITOR".equals(appointmentRole.getValue())) {
 				Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
 				Assert.assertEquals("Some Visitor", attendee.getParameter("CN").getValue());
+			} else if ("OWNER".equals(appointmentRole.getValue())) {
+				Assert.assertEquals("mailto:someowner@wisc.edu", attendee.getValue());
+				Assert.assertEquals("Some Owner", attendee.getParameter("CN").getValue());
 			} else {
 				Assert.fail("unexpected value for appointment role: " + appointmentRole.getValue());
 			}
@@ -305,6 +309,9 @@ public class DefaultEventUtilsImplTest {
 			if("VISITOR".equals(appointmentRole.getValue())) {
 				Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
 				Assert.assertEquals("Some Visitor", attendee.getParameter("CN").getValue());
+			} else if ("OWNER".equals(appointmentRole.getValue())) {
+				Assert.assertEquals("mailto:someowner@wisc.edu", attendee.getValue());
+				Assert.assertEquals("Some Owner", attendee.getParameter("CN").getValue());
 			} else {
 				Assert.fail("unexpected value for appointment role: " + appointmentRole.getValue());
 			}
@@ -354,6 +361,9 @@ public class DefaultEventUtilsImplTest {
 			if("VISITOR".equals(appointmentRole.getValue())) {
 				Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
 				Assert.assertEquals("Some Visitor", attendee.getParameter("CN").getValue());
+			} else if ("OWNER".equals(appointmentRole.getValue())) {
+				Assert.assertEquals("mailto:someowner@wisc.edu", attendee.getValue());
+				Assert.assertEquals("Some Owner", attendee.getParameter("CN").getValue());
 			} else {
 				Assert.fail("unexpected value for appointment role: " + appointmentRole.getValue());
 			}
@@ -701,7 +711,17 @@ public class DefaultEventUtilsImplTest {
 		
 		PropertyList attendeeList = this.eventUtils.getAttendeeListFromEvent(availableAppointment);
 		Assert.assertNotNull(attendeeList);
-		Assert.assertEquals(1, attendeeList.size());
+		Assert.assertEquals(2, attendeeList.size());
+		for(Iterator<?> i = attendeeList.iterator(); i.hasNext(); ) {
+			Attendee attendee = (Attendee) i.next();
+			if(AppointmentRole.VISITOR.equals(attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE))) {
+				Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
+			} else if (AppointmentRole.OWNER.equals(attendee.getParameter(AppointmentRole.APPOINTMENT_ROLE))) {
+				Assert.assertEquals("mailto:someowner@wisc.edu", attendee.getValue());
+			} else {
+				Assert.fail("unexpected attendee: " + attendee);
+			}
+		}
 		Property attendee = (Property) attendeeList.get(0);
 		Assert.assertEquals("mailto:somevisitor@wisc.edu", attendee.getValue());
 		

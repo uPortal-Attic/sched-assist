@@ -39,6 +39,7 @@ import net.fortuna.ical4j.model.property.Uid;
 
 import org.apache.commons.lang.Validate;
 import org.jasig.schedassist.IAffiliationSource;
+import org.jasig.schedassist.model.AppointmentRole;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.DefaultEventUtilsImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -167,15 +168,18 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements Initi
 		}	
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jasig.schedassist.model.DefaultEventUtilsImpl#constructVisitorAttendee(org.jasig.schedassist.model.ICalendarAccount)
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.model.DefaultEventUtilsImpl#constructSchedulingAssistantAttendee(org.jasig.schedassist.model.ICalendarAccount, org.jasig.schedassist.model.AppointmentRole)
 	 */
 	@Override
-	public Attendee constructVisitorAttendee(
-			ICalendarAccount calendarAccount) {
-		Attendee attendee = super.constructVisitorAttendee(calendarAccount);
-		attendee.getParameters().add(Role.REQ_PARTICIPANT);
+	public Attendee constructSchedulingAssistantAttendee(
+			ICalendarAccount calendarAccount, AppointmentRole role) {
+		Attendee attendee = super.constructSchedulingAssistantAttendee(calendarAccount, role);
+		if(AppointmentRole.VISITOR.equals(role)) {
+			attendee.getParameters().add(Role.REQ_PARTICIPANT);
+		} else if (AppointmentRole.OWNER.equals(role)) {
+			attendee.getParameters().add(Role.CHAIR);
+		}
 		return attendee;
 	}
 	

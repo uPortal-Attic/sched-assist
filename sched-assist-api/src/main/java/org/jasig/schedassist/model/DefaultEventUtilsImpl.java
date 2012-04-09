@@ -155,11 +155,13 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			event.getProperties().add(new DtStart(new DateTime(convertToICalendarFormat(block.getStartTime()))));
 			event.getProperties().add(new DtEnd(new DateTime(convertToICalendarFormat(block.getEndTime()))));
 			
-			Attendee visitorAttendee = constructVisitorAttendee(visitor.getCalendarAccount());
-			event.getProperties().add(visitorAttendee);
-			
 			Organizer ownerOrganizer = constructOrganizer(owner.getCalendarAccount());
 			event.getProperties().add(ownerOrganizer);
+			
+			Attendee visitorAttendee = constructSchedulingAssistantAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
+			event.getProperties().add(visitorAttendee);
+			Attendee ownerAttendee = constructSchedulingAssistantAttendee(owner.getCalendarAccount(), AppointmentRole.OWNER);
+			event.getProperties().add(ownerAttendee);
 
 			// add custom UW-AVAILABLE-APPOINTMENT and UW-AVAILABLE-VERSION
 			event.getProperties().add(SchedulingAssistantAppointment.TRUE);
@@ -221,17 +223,28 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	 * @param calendarAccount
 	 * @return an appropriate attendee for the calendar account
 	 */
+	
+	/**
+	 * Construct an {@link Attendee} property for the specified user and role.
+	 * The PARTSTAT parameter will be set to ACCEPTED.
+	 * The RSVP parameter will be set to FALSE.
+	 * The X-UW-AVAILABLE-APPOINTMENT-ROLE parameter will be set according to the role argument.
+	 * The CN parameter will be set to the {@link ICalendarAccount}'s display name.
+	 * The value will be a mailto address for the {@link ICalendarAccount}'s email address.
+	 * 
+	 * @see org.jasig.schedassist.model.IEventUtils#constructSchedulingAssistantAttendee(org.jasig.schedassist.model.ICalendarAccount, org.jasig.schedassist.model.AppointmentRole)
+	 */
 	@Override
-	public Attendee constructVisitorAttendee(ICalendarAccount calendarAccount) {
+	public Attendee constructSchedulingAssistantAttendee(
+			ICalendarAccount calendarAccount, AppointmentRole role) {
 		ParameterList parameterList = new ParameterList();
 		parameterList.add(PartStat.ACCEPTED);
 		parameterList.add(Rsvp.FALSE);
-		parameterList.add(AppointmentRole.VISITOR);
+		parameterList.add(role);
 		parameterList.add(new Cn(calendarAccount.getDisplayName()));
 		Attendee attendee = new Attendee(parameterList, emailToURI(calendarAccount.getEmailAddress()));
 		return attendee;
 	}
-
 	/**
 	 * Construct an {@link Organizer} property for the specified {@link ICalendarAccount}.
 	 * 

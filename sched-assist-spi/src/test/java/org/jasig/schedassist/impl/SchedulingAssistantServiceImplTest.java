@@ -219,7 +219,7 @@ public class SchedulingAssistantServiceImplTest {
 		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		// construct expected VEvent
 		VEvent expectedEvent = eventUtils.constructAvailableAppointment(targetBlock, owner, visitor, "description");
-		expectedEvent.getProperties().add(eventUtils.constructVisitorAttendee(visitor2.getCalendarAccount()));
+		expectedEvent.getProperties().add(eventUtils.constructSchedulingAssistantAttendee(visitor2.getCalendarAccount(), AppointmentRole.VISITOR));
 		
 		// create mock CalendarDao and AvailableScheduleDao
 		ICalendarDataDao mockCalendarDao = EasyMock.createMock(ICalendarDataDao.class);
@@ -383,7 +383,7 @@ public class SchedulingAssistantServiceImplTest {
 		
 		// construct expected result event
 		VEvent expectedEvent = new VEvent(new PropertyList(existingEvent.getProperties()));
-		Attendee newAttendee = eventUtils.constructVisitorAttendee(newVisitor.getCalendarAccount());
+		Attendee newAttendee = eventUtils.constructSchedulingAssistantAttendee(newVisitor.getCalendarAccount(), AppointmentRole.VISITOR);
 		expectedEvent.getProperties().add(newAttendee);
 		
 		// create mock CalendarDao and AvailableScheduleDao
@@ -450,7 +450,7 @@ public class SchedulingAssistantServiceImplTest {
 		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		// construct existing VEvent
 		VEvent existingEvent = eventUtils.constructAvailableAppointment(targetBlock, owner, visitor, "event description");		
-		Attendee newAttendee = eventUtils.constructVisitorAttendee(visitor.getCalendarAccount());
+		Attendee newAttendee = eventUtils.constructSchedulingAssistantAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
 		existingEvent.getProperties().add(newAttendee);
 
 		// construct expected result

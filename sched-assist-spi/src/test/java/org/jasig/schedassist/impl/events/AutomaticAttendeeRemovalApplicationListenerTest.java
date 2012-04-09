@@ -38,6 +38,7 @@ import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.impl.reminder.IReminder;
 import org.jasig.schedassist.impl.reminder.ReminderService;
+import org.jasig.schedassist.model.AppointmentRole;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
 import org.jasig.schedassist.model.DefaultEventUtilsImpl;
@@ -74,7 +75,7 @@ public class AutomaticAttendeeRemovalApplicationListenerTest {
 		
 		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		VEvent event = eventUtils.constructAvailableAppointment(block, owner, visitor, "test appointment");
-		Attendee visitor2attendee = eventUtils.constructVisitorAttendee(visitorAccount2);
+		Attendee visitor2attendee = eventUtils.constructSchedulingAssistantAttendee(visitorAccount2, AppointmentRole.VISITOR);
 		event.getProperties().add(visitor2attendee);
 		
 		OwnerDao ownerDao = mock(OwnerDao.class);
@@ -121,7 +122,7 @@ public class AutomaticAttendeeRemovalApplicationListenerTest {
 		
 		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
 		VEvent event = eventUtils.constructAvailableAppointment(block, owner, visitor, "test appointment");
-		Attendee visitor2attendee = eventUtils.constructVisitorAttendee(visitorAccount2);
+		Attendee visitor2attendee = eventUtils.constructSchedulingAssistantAttendee(visitorAccount2, AppointmentRole.VISITOR);
 		event.getProperties().add(visitor2attendee);
 		
 		OwnerDao ownerDao = mock(OwnerDao.class);
