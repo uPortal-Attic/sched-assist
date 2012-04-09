@@ -169,7 +169,7 @@ public class CaldavIntegrationTest {
 		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookupResult.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
 		Assert.assertEquals(1, Integer.parseInt(lookupResult.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
 
-		Assert.assertEquals(1, lookupResult.getProperties(Attendee.ATTENDEE).size());
+		Assert.assertEquals(2, lookupResult.getProperties(Attendee.ATTENDEE).size());
 
 		Property visitorAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, visitorCalendarAccount1);
 		Assert.assertNotNull(visitorAttendee);
@@ -217,7 +217,7 @@ public class CaldavIntegrationTest {
 		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookupResult.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
 		Assert.assertEquals(1, Integer.parseInt(lookupResult.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
 
-		Assert.assertEquals(1, lookupResult.getProperties(Attendee.ATTENDEE).size());
+		Assert.assertEquals(2, lookupResult.getProperties(Attendee.ATTENDEE).size());
 
 		Property visitorAttendee = this.eventUtils.getAttendeeForUserFromEvent(event, visitorCalendarAccount1);
 		Assert.assertNotNull(visitorAttendee);
@@ -263,7 +263,7 @@ public class CaldavIntegrationTest {
 		Assert.assertNotNull(lookup1);
 		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookup1.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
 		Assert.assertEquals(2, Integer.parseInt(lookup1.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
-		Assert.assertEquals(1, lookup1.getProperties(Attendee.ATTENDEE).size());
+		Assert.assertEquals(2, lookup1.getProperties(Attendee.ATTENDEE).size());
 		Property visitorAttendee = this.eventUtils.getAttendeeForUserFromEvent(lookup1, visitor1.getCalendarAccount());
 		Assert.assertNotNull(visitorAttendee);
 		Assert.assertEquals(AppointmentRole.VISITOR, visitorAttendee.getParameter(AppointmentRole.APPOINTMENT_ROLE));
@@ -275,7 +275,7 @@ public class CaldavIntegrationTest {
 		Assert.assertEquals(ical4jend, lookup1.getEndDate().getDate());
 		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookup1.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
 		Assert.assertEquals(2, Integer.parseInt(lookup1.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
-		Assert.assertEquals(1, lookup1.getProperties(Attendee.ATTENDEE).size());
+		Assert.assertEquals(2, lookup1.getProperties(Attendee.ATTENDEE).size());
 
 
 		MockScheduleVisitor visitor2 = new MockScheduleVisitor(visitorCalendarAccount2);
@@ -292,7 +292,7 @@ public class CaldavIntegrationTest {
 		Assert.assertEquals(ical4jend, lookup2.getEndDate().getDate());
 		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookup2.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
 		Assert.assertEquals(2, Integer.parseInt(lookup2.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
-		Assert.assertEquals(2, lookup2.getProperties(Attendee.ATTENDEE).size());
+		Assert.assertEquals(3, lookup2.getProperties(Attendee.ATTENDEE).size());
 		PropertyList attendeeList = lookup2.getProperties(Attendee.ATTENDEE);
 		for(Object o : attendeeList) {
 			Attendee attendee = (Attendee) o;
@@ -322,7 +322,7 @@ public class CaldavIntegrationTest {
 		Assert.assertEquals(ical4jend, lookup3.getEndDate().getDate());
 		Assert.assertEquals(SchedulingAssistantAppointment.TRUE, lookup3.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
 		Assert.assertEquals(2, Integer.parseInt(lookup3.getProperty(VisitorLimit.VISITOR_LIMIT).getValue()));
-		Assert.assertEquals(1, lookup3.getProperties(Attendee.ATTENDEE).size());
+		Assert.assertEquals(2, lookup3.getProperties(Attendee.ATTENDEE).size());
 		attendeeList = lookup3.getProperties(Attendee.ATTENDEE);
 		for(Object o : attendeeList) {
 			Attendee attendee = (Attendee) o;
