@@ -202,4 +202,12 @@ public interface IEventUtils {
 	 * @return a never null, but possibly empty, {@link PeriodList}
 	 */
 	PeriodList calculateRecurrence(VEvent event, Date startBoundary, Date endBoundary);
+	
+	/**
+	 * If the {@link Calendar} contains one and only one event (series), return the {@link Uid}.
+	 * 
+	 * @param calendar
+	 * @return the distinct {@link Uid} contains by the event in this calendar
+	 */
+	Uid extractUid(Calendar calendar);
 }

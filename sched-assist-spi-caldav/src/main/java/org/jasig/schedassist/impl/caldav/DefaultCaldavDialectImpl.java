@@ -50,6 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DefaultCaldavDialectImpl implements CaldavDialect{
 
+	private static final String UTF_8 = "UTF-8";
+	private static final String TEXT_CALENDAR = "text/calendar";
 	/**
 	 * Date format expected by CalDAV servers.
 	 */
@@ -126,7 +128,7 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 		
 		StringEntity requestEntity;
 		try {
-			requestEntity = new StringEntity(content, "text/xml", "UTF-8");
+			requestEntity = new StringEntity(content, "text/xml", UTF_8);
 			return requestEntity;
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException(e);
@@ -165,9 +167,18 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 	 * @see org.jasig.schedassist.impl.caldav.CaldavDialect#generateCreateAppointmentRequestEntity(net.fortuna.ical4j.model.component.VEvent)
 	 */
 	public HttpEntity generatePutAppointmentRequestEntity(VEvent event) {
-		final String requestEntityBody = this.eventUtils.wrapEventInCalendar(event).toString();
+		Calendar wrapped = this.eventUtils.wrapEventInCalendar(event);
+		return generatePutAppointmentRequestEntity(wrapped);
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.impl.caldav.CaldavDialect#generatePutAppointmentRequestEntity(net.fortuna.ical4j.model.Calendar)
+	 */
+	@Override
+	public HttpEntity generatePutAppointmentRequestEntity(Calendar calendar) {
 		try {
-			StringEntity requestEntity = new StringEntity(requestEntityBody, "text/calendar", "UTF-8");
+			StringEntity requestEntity = new StringEntity(calendar.toString(), TEXT_CALENDAR, UTF_8);
 			return requestEntity;
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException(e);

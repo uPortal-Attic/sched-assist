@@ -28,12 +28,14 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.UUID;
 
+import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateList;
 import net.fortuna.ical4j.model.DateTime;
@@ -45,7 +47,6 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.Cn;
-import net.fortuna.ical4j.model.parameter.CuType;
 import net.fortuna.ical4j.model.parameter.PartStat;
 import net.fortuna.ical4j.model.parameter.Rsvp;
 import net.fortuna.ical4j.model.parameter.Value;
@@ -435,7 +436,9 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		
 		List<net.fortuna.ical4j.model.Calendar> results = new ArrayList<net.fortuna.ical4j.model.Calendar>();
 		for(VEvent e: summaryToEvent.values()) {
-			results.add(wrapEventInCalendar(e));
+			ComponentList components = new ComponentList();
+			components.add(e);
+			results.add(wrapInternal(components));
 		}
 		return results;
 	}
@@ -447,6 +450,15 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	public net.fortuna.ical4j.model.Calendar wrapEventInCalendar(VEvent event) {
 		ComponentList components = new ComponentList();
 		components.add(event);
+		net.fortuna.ical4j.model.Calendar result = wrapInternal(components);
+		return result;
+	}
+	/**
+	 * 
+	 * @param components
+	 * @return
+	 */
+	protected net.fortuna.ical4j.model.Calendar wrapInternal(ComponentList components) {
 		net.fortuna.ical4j.model.Calendar result = new net.fortuna.ical4j.model.Calendar(components);
 		result.getProperties().add(Version.VERSION_2_0);
 		result.getProperties().add(PROD_ID);
@@ -592,6 +604,27 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		Period period = new Period(new DateTime(startBoundary), new DateTime(endBoundary));
 		PeriodList periodList = event.calculateRecurrenceSet(period);
 		return periodList;
+	}
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.model.IEventUtils#extractUid(net.fortuna.ical4j.model.Calendar)
+	 */
+	@Override
+	public Uid extractUid(net.fortuna.ical4j.model.Calendar calendar) {
+		ComponentList components = calendar.getComponents();
+		Uid unique = null;
+		for(Iterator<?> i = components.iterator(); i.hasNext();) {
+			Component component = (Component) i.next();
+			if(VEvent.VEVENT.equals(component.getName())) {
+				Uid uid = ((VEvent) component).getUid();
+				if(unique == null) {
+					unique = uid;
+				} else if (!unique.equals(uid) && uid != null) {
+					LOG.info("extractUid encountered a calendar that has 2 (or more) distinct UID values (" + unique.getValue() + ", " + uid.getValue() +")");
+					return null;
+				}
+			}
+		}
+		return unique;
 	}
 
 }

@@ -22,6 +22,7 @@ package org.jasig.schedassist.impl.caldav;
 import java.net.URI;
 import java.util.Date;
 
+import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.component.VEvent;
 
 import org.apache.http.HttpEntity;
@@ -107,6 +108,38 @@ public interface CaldavDialect {
 	 * @return a {@link RequestEntity} used with the PUT request to store the specified {@link VEvent}
 	 */
 	HttpEntity generatePutAppointmentRequestEntity(VEvent event);
+	
+	/**
+	 * Generate an appropriate {@link RequestEntity} body for storing the specified {@link Calendar}.
+	 * 
+	 * Per the CalDAV RFC:
+	 <pre> 
+	 	PUT /home/lisa/calendars/events/qwue23489.ics HTTP/1.1
+   		If-None-Match: *
+   		Host: cal.example.com
+   		Content-Type: text/calendar
+   		Content-Length: xxxx
+
+   		BEGIN:VCALENDAR
+   		VERSION:2.0
+   		PRODID:-//Example Corp.//CalDAV Client//EN
+   		BEGIN:VEVENT
+   		UID:20010712T182145Z-123401@example.com
+   		DTSTAMP:20060712T182145Z
+   		DTSTART:20060714T170000Z
+   		DTEND:20060715T040000Z
+   		SUMMARY:Bastille Day Party
+   		END:VEVENT
+   		END:VCALENDAR
+	 </pre>
+	 *
+	 * This method is focused on all of the content in the above example with the exception of
+	 * the very first line ('PUT /home/lisa...').
+	 * 
+	 * @param event
+	 * @return a {@link RequestEntity} used with the PUT request to store the specified {@link VEvent}
+	 */
+	HttpEntity generatePutAppointmentRequestEntity(Calendar calendar);
 	
 	/**
 	 * Generate an appropriate {@link RequestEntity} body for retrieving Calendar data between
