@@ -34,6 +34,7 @@ import org.jasig.schedassist.IDelegateCalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IDelegateCalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.ldap.SizeLimitExceededException;
 import org.springframework.ldap.TimeLimitExceededException;
@@ -46,8 +47,10 @@ import org.springframework.ldap.filter.LikeFilter;
 import org.springframework.ldap.filter.OrFilter;
 
 /**
+ * LDAP backed {@link IDelegateCalendarAccountDao} implementation.
+ * Returns "Resource" (or delegate) calendar accounts, e.g. {@link LDAPDelegateCalendarAccountImpl} instances.
+ *
  * @author Nicholas Blair
- * @version $ Id: LDAPDelegateCalendarAccountDaoImpl.java $
  */
 public class LDAPDelegateCalendarAccountDaoImpl implements
 		IDelegateCalendarAccountDao {
@@ -61,7 +64,7 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 	private String baseDn = "o=isp";
 	private long searchResultsLimit = 25L;
 	private int searchTimeLimit = 10000;
-	private boolean treatOwnerAttributeAsDistinguishedName = false;
+	private boolean treatOwnerAttributeAsDistinguishedName = true;
 	
 	/**
 	 * @param ldapTemplate the ldapTemplate to set
@@ -80,18 +83,21 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 	/**
 	 * @param baseDn the baseDn to set
 	 */
+	@Value("${ldap.resourceAccountBaseDn:o=isp}")
 	public void setBaseDn(String baseDn) {
 		this.baseDn = baseDn;
 	}
 	/**
 	 * @param searchResultsLimit the searchResultsLimit to set
 	 */
+	@Value("${ldap.searchResultsLimit:25}")
 	public void setSearchResultsLimit(long searchResultsLimit) {
 		this.searchResultsLimit = searchResultsLimit;
 	}
 	/**
 	 * @param searchTimeLimit the searchTimeLimit to set (in milliseconds)
 	 */
+	@Value("${ldap.searchTimeLimitMillis:5000}")
 	public void setSearchTimeLimit(int searchTimeLimit) {
 		this.searchTimeLimit = searchTimeLimit;
 	}
@@ -104,6 +110,7 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 	/**
 	 * @param treatOwnerAttributeAsDistinguishedName the treatOwnerAttributeAsDistinguishedName to set
 	 */
+	@Value("${ldap.treatResourceOwnerAttributeAsDistinguishedName:true}")
 	public void setTreatOwnerAttributeAsDistinguishedName(
 			boolean treatOwnerAttributeAsDistinguishedName) {
 		this.treatOwnerAttributeAsDistinguishedName = treatOwnerAttributeAsDistinguishedName;

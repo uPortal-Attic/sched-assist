@@ -39,7 +39,7 @@ public class LDAPAttributesKeyImpl implements LDAPAttributesKey {
 	private String eligibilityAttributeName = "eligibility";
 	private String emailAddressAttributeName = "mail";
 	private String uniqueIdentifierAttributeName = "uid";
-	private String delegateOwnerAttributeName = "owneruid";
+	private String delegateOwnerAttributeName = "owner";
 	private String delegateLocationAttributeName = "postaladdress";
 	private String delegateContactInformationAttributeName = "telephonenumber";
 	private String passwordAttributeName = "userPassword";

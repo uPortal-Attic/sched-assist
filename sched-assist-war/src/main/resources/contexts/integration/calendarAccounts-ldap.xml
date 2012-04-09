@@ -64,6 +64,8 @@
 		<property name="ldapTemplate" ref="ldapTemplate"/>
 		<property name="baseDn" ref="userAccountBaseDn"/>
 		<property name="ldapAttributesKey" ref="ldapAttributesKey"/>
+		<property name="searchResultsLimit" value="${ldap.searchResultsLimit}"/>
+		<property name="searchTimeLimit" value="${ldap.searchTimeLimitMillis}"/>
 		<qualifier value="people"></qualifier>
 	</bean>
 	 
@@ -71,6 +73,9 @@
 		<property name="ldapTemplate" ref="ldapTemplate"/>
 		<property name="baseDn" ref="resourceAccountBaseDn"/>
 		<property name="ldapAttributesKey" ref="ldapAttributesKey"/>
+		<property name="searchResultsLimit" value="${ldap.searchResultsLimit}"/>
+		<property name="searchTimeLimit" value="${ldap.searchTimeLimitMillis}"/>
+		<property name="treatOwnerAttributeAsDistinguishedName" value="${ldap.treatResourceOwnerAttributeAsDistinguishedName}"/>
 		<qualifier value="delegates"></qualifier>
 	</bean>
 	

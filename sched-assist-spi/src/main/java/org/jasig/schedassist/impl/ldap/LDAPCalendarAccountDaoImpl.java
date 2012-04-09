@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.ldap.SizeLimitExceededException;
 import org.springframework.ldap.TimeLimitExceededException;
@@ -44,8 +45,10 @@ import com.googlecode.ehcache.annotations.KeyGenerator;
 
 
 /**
+ * LDAP backed {@link ICalendarAccountDao} implementation.
+ * Returns "People" calendar accounts, e.g {@link LDAPPersonCalendarAccountImpl}.
+ * 
  * @author Nicholas Blair
- * @version $Id: LDAPCalendarAccountDaoImpl.java $
  */
 public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 
@@ -54,7 +57,7 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 	private String baseDn = "o=isp";
 
 	private LDAPAttributesKey ldapAttributesKey = new LDAPAttributesKeyImpl();
-	private long searchResultsLimit = 50L;
+	private long searchResultsLimit = 25L;
 	private int searchTimeLimit = 5000;
 	private final Log log = LogFactory.getLog(this.getClass());
 	
@@ -69,6 +72,7 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 	/**
 	 * @param baseDn the baseDn to set
 	 */
+	@Value("${ldap.userAccountBaseDn:o=isp}")
 	public void setBaseDn(String baseDn) {
 		this.baseDn = baseDn;
 	}
@@ -82,12 +86,14 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 	/**
 	 * @param searchResultsLimit the searchResultsLimit to set
 	 */
+	@Value("${ldap.searchResultsLimit:25}")
 	public void setSearchResultsLimit(long searchResultsLimit) {
 		this.searchResultsLimit = searchResultsLimit;
 	}
 	/**
 	 * @param searchTimeLimit the searchTimeLimit to set
 	 */
+	@Value("${ldap.searchTimeLimitMillis:5000}")
 	public void setSearchTimeLimit(int searchTimeLimit) {
 		this.searchTimeLimit = searchTimeLimit;
 	}
