@@ -135,7 +135,7 @@ public class DelegateCalendarAccountUserDetailsImpl implements CalendarAccountUs
 		StringBuilder display = new StringBuilder();
 		display.append(this.delegateCalendarAccount.getDisplayName());
 		display.append(" (managed by ");
-		display.append(this.delegateCalendarAccount.getAccountOwnerAttribute());
+		display.append(this.delegateCalendarAccount.getAccountOwner().getUsername());
 		display.append(")");
 		return display.toString();
 		
