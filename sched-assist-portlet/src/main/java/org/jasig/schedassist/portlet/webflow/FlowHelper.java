@@ -45,6 +45,8 @@ import org.jasig.schedassist.model.VisibleSchedule;
 import org.jasig.schedassist.model.VisibleScheduleRequestConstraints;
 import org.jasig.schedassist.model.VisibleWindow;
 import org.jasig.schedassist.portlet.EventCancellation;
+import org.jasig.schedassist.portlet.IPortletScheduleVisitor;
+import org.jasig.schedassist.portlet.IPortletScheduleVisitorFactory;
 import org.jasig.schedassist.portlet.PortletSchedulingAssistantService;
 import org.jasig.schedassist.portlet.ScheduleOwnerNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +70,7 @@ public class FlowHelper {
 	protected static final String NO = "no";
 	private Log LOG = LogFactory.getLog(this.getClass());
 	private PortletSchedulingAssistantService schedulingAssistantService;
+	private IPortletScheduleVisitorFactory scheduleVisitorFactory;
 	private String availableWebBaseUrl;
 	private String advisorUrl;
 	private String profileSearchUrl;
@@ -81,6 +84,14 @@ public class FlowHelper {
 	public void setPortletAvailableService(
 			@Qualifier("portlet") PortletSchedulingAssistantService schedulingAssistantService) {
 		this.schedulingAssistantService = schedulingAssistantService;
+	}
+	/**
+	 * @param scheduleVisitorFactory the scheduleVisitorFactory to set
+	 */
+	@Autowired
+	public void setScheduleVisitorFactory(
+			IPortletScheduleVisitorFactory scheduleVisitorFactory) {
+		this.scheduleVisitorFactory = scheduleVisitorFactory;
 	}
 	/**
 	 * @param availableWebBaseUrl the availableWebBaseUrl to set
@@ -133,25 +144,23 @@ public class FlowHelper {
 	}
 	/**
 	 * 
-	 * @return the value of REMOTE_USER in the current {@link PortletRequest}.
+	 * @return the current {@link IPortletScheduleVisitor} for the request.
 	 */
-	public String getCurrentVisitorUsername() {
+	public IPortletScheduleVisitor getCurrentVisitor() {
 		RequestContext requestContext = RequestContextHolder.getRequestContext();
 		PortletRequest request = (PortletRequest) requestContext.getExternalContext().getNativeRequest();
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("current visitor username " + request.getRemoteUser());
-		}
-		final String remoteUser = request.getRemoteUser();
+		IPortletScheduleVisitor visitor = this.scheduleVisitorFactory.getPortletScheduleVisitor(request);
 		PortletSession portletSession = request.getPortletSession();
-		portletSession.setAttribute(CURRENT_USER_ATTR, remoteUser, PortletSession.APPLICATION_SCOPE);
-		return remoteUser;
+		portletSession.setAttribute(CURRENT_USER_ATTR, visitor.getAccountId(), PortletSession.APPLICATION_SCOPE);
+		return visitor;
 	}
+	
 	/**
 	 * 
 	 * @return
 	 */
 	public boolean isCurrentVisitorEligible() {
-		return this.schedulingAssistantService.isEligible(getCurrentVisitorUsername());
+		return getCurrentVisitor().isEligible();
 	}
 	/**
 	 * 
@@ -161,7 +170,7 @@ public class FlowHelper {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("enter getRelationshipsForCurrentVisitor");
 		}
-		final String visitorUsername = getCurrentVisitorUsername();
+		final String visitorUsername = getCurrentVisitor().getAccountId();
 		List<Relationship> relationships = this.schedulingAssistantService.relationshipsForVisitor(visitorUsername);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("found " + relationships.size() + " relationships");
@@ -175,7 +184,7 @@ public class FlowHelper {
 	 * @return
 	 */
 	public boolean isOwnerSamePersonAsCurrentVisitor(IScheduleOwner owner) {
-		return owner.getCalendarAccount().getUsername().equals(getCurrentVisitorUsername());
+		return owner.getCalendarAccount().getUsername().equals(getCurrentVisitor().getAccountId());
 	}
 	/**
 	 * 
@@ -234,7 +243,7 @@ public class FlowHelper {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("enter testExceededMeetingLimit for " + owner);
 		}
-		final String visitorUsername = getCurrentVisitorUsername();
+		final String visitorUsername = getCurrentVisitor().getAccountId();
 		if(owner.hasMeetingLimit()) {
 			VisibleSchedule schedule = this.schedulingAssistantService.getVisibleSchedule(visitorUsername, owner.getId());
 			if(owner.isExceedingMeetingLimit(schedule.getAttendingCount())) {
@@ -270,7 +279,7 @@ public class FlowHelper {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("enter getVisibleSchedule, weekstart: " + weekStart + ", owner: " + owner);
 		}
-		final String visitorUsername = getCurrentVisitorUsername();
+		final String visitorUsername = getCurrentVisitor().getAccountId();
 		VisibleSchedule schedule = this.schedulingAssistantService.getVisibleSchedule(visitorUsername, owner.getId(), weekStart);
 		return schedule;
 	}
@@ -320,7 +329,7 @@ public class FlowHelper {
 	 * @throws SchedulingException
 	 */
 	public VEvent createAppointment(CreateAppointmentFormBackingObject fbo, IScheduleOwner owner) throws SchedulingException {
-		final String visitorUsername = getCurrentVisitorUsername();
+		final String visitorUsername = getCurrentVisitor().getAccountId();
 		AvailableBlock targetBlock = fbo.getTargetBlock();
 		if(NO.equals(validateChosenStartTime(owner.getPreferredVisibleWindow(), targetBlock.getStartTime()))) {
 			throw new SchedulingException("requested time is no longer within visible window");
@@ -400,7 +409,7 @@ public class FlowHelper {
 	 * @throws SchedulingException
 	 */
 	public EventCancellation cancelAppointment(CancelAppointmentFormBackingObject fbo, IScheduleOwner owner) throws SchedulingException {
-		final String visitorUsername = getCurrentVisitorUsername();
+		final String visitorUsername = getCurrentVisitor().getAccountId();
 		EventCancellation result = this.schedulingAssistantService.cancelAppointment(visitorUsername, owner.getId(), fbo.getTargetBlock(), fbo.getReason());
 		return result;
 	}

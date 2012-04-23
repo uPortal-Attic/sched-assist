@@ -22,18 +22,20 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:aop="http://www.springframework.org/schema/aop"
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
 	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
 	
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="locations">
-			<list>  
-				<value>classpath:/scheduling-assistant.properties</value>
-			</list>
-		</property>
-	</bean>
-	
+	<context:property-placeholder location="classpath:/scheduling-assistant.properties"/>
+	<context:annotation-config/>
+	<!-- 
+	 | Default factory identifies visitor by REMOTE_USER. This works if your portal
+	 | and your calendar server share a common username. Override this if you need different behavior.
+	 -->
+	<bean id="portletScheduleVisitorFactory" class="org.jasig.schedassist.portlet.visitors.DefaultPortletScheduleVisitorFactoryImpl"/>
+    
 	<bean id="securementInterceptor" class="org.springframework.ws.soap.security.wss4j.Wss4jSecurityInterceptor">
 		<property name="secureRequest" value="true" />
 		<property name="secureResponse" value="false" />
