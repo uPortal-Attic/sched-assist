@@ -160,7 +160,12 @@ public class FlowHelper {
 	 * @return
 	 */
 	public boolean isCurrentVisitorEligible() {
-		return getCurrentVisitor().isEligible();
+		IPortletScheduleVisitor visitor = getCurrentVisitor();
+		boolean result = visitor.isEligible();
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(visitor + " has eligibility: " + result);
+		}
+		return result;
 	}
 	/**
 	 * 
