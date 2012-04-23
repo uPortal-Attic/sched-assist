@@ -21,6 +21,8 @@ package org.jasig.schedassist.impl;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.IDelegateCalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -42,6 +44,7 @@ import org.springframework.stereotype.Service;
 @Qualifier("composite")
 public final class CompositeCalendarAccountDaoImpl implements ICalendarAccountDao {
 
+	private Log log = LogFactory.getLog(this.getClass());
 	private ICalendarAccountDao calendarAccountDao;
 	private IDelegateCalendarAccountDao delegateCalendarAccountDao;
 	
@@ -69,9 +72,14 @@ public final class CompositeCalendarAccountDaoImpl implements ICalendarAccountDa
 	public ICalendarAccount getCalendarAccount(final String username) {
 		ICalendarAccount person = this.calendarAccountDao.getCalendarAccount(username);
 		if(null == person) {
+			if(log.isDebugEnabled()) {
+				log.debug("getCalendarAccount(String) on user dao returned null, trying delegate");
+			}
 			IDelegateCalendarAccount delegate = this.delegateCalendarAccountDao.getDelegate(username);
 			if(null != delegate) {
-				
+				if(log.isDebugEnabled()) {
+					log.debug("getDelegate(String) on resource dao returned non-null, using");
+				}
 				return delegate;
 			}
 		}
@@ -86,6 +94,18 @@ public final class CompositeCalendarAccountDaoImpl implements ICalendarAccountDa
 	public ICalendarAccount getCalendarAccount(final String attributeName,
 			final String attributeValue) {
 		ICalendarAccount person = this.calendarAccountDao.getCalendarAccount(attributeName, attributeValue);
+		if(null == person) {
+			if(log.isDebugEnabled()) {
+				log.debug("getCalendarAccount(String, String) on user dao returned null, trying delegate");
+			}
+			IDelegateCalendarAccount delegate = this.delegateCalendarAccountDao.getDelegate(attributeName, attributeValue);
+			if(null != delegate) {
+				if(log.isDebugEnabled()) {
+					log.debug("getDelegate(String, String) on resource dao returned non-null, using");
+				}
+				return delegate;
+			}
+		}
 		return person;
 	}
 
@@ -98,8 +118,14 @@ public final class CompositeCalendarAccountDaoImpl implements ICalendarAccountDa
 			final String calendarUniqueId) {
 		ICalendarAccount person = this.calendarAccountDao.getCalendarAccountFromUniqueId(calendarUniqueId);
 		if(null == person) {
+			if(log.isDebugEnabled()) {
+				log.debug("getCalendarAccountFromUniqueId(String) on user dao returned null, trying delegate");
+			}
 			IDelegateCalendarAccount delegate = this.delegateCalendarAccountDao.getDelegateByUniqueId(calendarUniqueId);
 			if(null != delegate) {
+				if(log.isDebugEnabled()) {
+					log.debug("getDelegateByUniqueId(String) on resource dao returned non-null, using");
+				}
 				return delegate;
 			}
 		}

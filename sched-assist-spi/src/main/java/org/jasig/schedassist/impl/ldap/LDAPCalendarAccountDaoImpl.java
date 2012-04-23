@@ -52,6 +52,7 @@ import com.googlecode.ehcache.annotations.KeyGenerator;
  */
 public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 
+	private static final String OBJECTCLASS = "objectclass";
 	private static final String WILD = "*";
 	private LdapTemplate ldapTemplate;
 	private String baseDn = "o=isp";
@@ -60,7 +61,8 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 	private long searchResultsLimit = 25L;
 	private int searchTimeLimit = 5000;
 	private final Log log = LogFactory.getLog(this.getClass());
-	
+	private boolean enforceSpecificObjectClass = false;
+	private String requiredObjectClass = "inetorgperson";
 	
 	/**
 	 * @param ldapTemplate the ldapTemplate to set
@@ -97,14 +99,30 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 	public void setSearchTimeLimit(int searchTimeLimit) {
 		this.searchTimeLimit = searchTimeLimit;
 	}
-
+	/**
+	 * @param enforceSpecificObjectClass the enforceSpecificObjectClass to set
+	 */
+	@Value("${ldap.accounts.enforceSpecificObjectClass:false}")
+	public void setEnforceSpecificObjectClass(boolean enforceSpecificObjectClass) {
+		this.enforceSpecificObjectClass = enforceSpecificObjectClass;
+	}
+	/**
+	 * @param requiredObjectClass the requiredObjectClass to set
+	 */
+	@Value("${ldap.accounts.requiredObjectClass:inetorgperson}")
+	public void setRequiredObjectClass(String requiredObjectClass) {
+		this.requiredObjectClass = requiredObjectClass;
+	}
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.ICalendarAccountDao#getCalendarAccount(java.lang.String)
 	 */
 	@Override
 	@Cacheable(cacheName="userAccountCache", keyGenerator=@KeyGenerator(name="StringCacheKeyGenerator"))
 	public ICalendarAccount getCalendarAccount(String username) {
-		EqualsFilter filter = new EqualsFilter(ldapAttributesKey.getUsernameAttributeName(), username);
+		Filter filter = new EqualsFilter(ldapAttributesKey.getUsernameAttributeName(), username);
+		if(enforceSpecificObjectClass) {
+			filter = andObjectClass(filter);
+		}
 		return executeSearch(filter);
 	}
 
@@ -125,8 +143,10 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 	@Cacheable(cacheName="userAccountCache", keyGenerator=@KeyGenerator(name="StringCacheKeyGenerator"))
 	public ICalendarAccount getCalendarAccount(String attributeName,
 			String attributeValue) {
-		AndFilter filter = new AndFilter();
-		filter.and(new EqualsFilter(attributeName, attributeValue));
+		Filter filter = new EqualsFilter(attributeName, attributeValue);
+		if(enforceSpecificObjectClass) {
+			filter = andObjectClass(filter);
+		}
 		return executeSearch(filter);
 	}
 
@@ -150,9 +170,26 @@ public class LDAPCalendarAccountDaoImpl implements ICalendarAccountDao {
 		filter.and(orFilter);
 		// guarantee search for users with calendar attributes
 		filter.and(new LikeFilter(ldapAttributesKey.getUniqueIdentifierAttributeName(), WILD));
+		
+		if(enforceSpecificObjectClass) {
+			filter.and(new EqualsFilter(OBJECTCLASS, requiredObjectClass));
+		}
 		return executeSearchReturnList(filter);
 	}
 
+	/**
+	 * Wraps the {@link Filter} argument with an {@link AndFilter} which
+	 * includes an objectclass=requiredObjectClass filter.
+	 * 
+	 * @param filter
+	 * @return
+	 */
+	protected AndFilter andObjectClass(Filter filter) {
+		AndFilter andFilter = new AndFilter();
+		andFilter.and(filter);
+		andFilter.and(new EqualsFilter(OBJECTCLASS, requiredObjectClass));
+		return andFilter;
+	}
 	/**
 	 * 
 	 * @param searchFilter

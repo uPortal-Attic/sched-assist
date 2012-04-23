@@ -55,6 +55,7 @@ import org.springframework.ldap.filter.OrFilter;
 public class LDAPDelegateCalendarAccountDaoImpl implements
 		IDelegateCalendarAccountDao {
 
+	private static final String OBJECTCLASS = "objectclass";
 	private static final String WILDCARD = "*";
 
 	private final Log log = LogFactory.getLog(this.getClass());
@@ -65,6 +66,8 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 	private long searchResultsLimit = 25L;
 	private int searchTimeLimit = 10000;
 	private boolean treatOwnerAttributeAsDistinguishedName = true;
+	private boolean enforceSpecificObjectClass = false;
+	private String requiredObjectClass = "inetresource";
 	
 	/**
 	 * @param ldapTemplate the ldapTemplate to set
@@ -115,6 +118,20 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 			boolean treatOwnerAttributeAsDistinguishedName) {
 		this.treatOwnerAttributeAsDistinguishedName = treatOwnerAttributeAsDistinguishedName;
 	}
+	/**
+	 * @param enforceSpecificObjectClass the enforceSpecificObjectClass to set
+	 */
+	@Value("${ldap.resources.enforceSpecificObjectClass:false}")
+	public void setEnforceSpecificObjectClass(boolean enforceSpecificObjectClass) {
+		this.enforceSpecificObjectClass = enforceSpecificObjectClass;
+	}
+	/**
+	 * @param requiredObjectClass the requiredObjectClass to set
+	 */
+	@Value("${ldap.resources.requiredObjectClass:inetresource}")
+	public void setRequiredObjectClass(String requiredObjectClass) {
+		this.requiredObjectClass = requiredObjectClass;
+	}
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.IDelegateCalendarAccountDao#searchForDelegates(java.lang.String, org.jasig.schedassist.model.ICalendarAccount)
 	 */
@@ -142,6 +159,9 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 		searchFilter.and(orFilter);
 		searchFilter.and(new LikeFilter(ldapAttributesKey.getUniqueIdentifierAttributeName(), WILDCARD));
 
+		if(enforceSpecificObjectClass) {
+			searchFilter.and(new EqualsFilter(OBJECTCLASS, requiredObjectClass));
+		}
 		List<IDelegateCalendarAccount> results = new ArrayList<IDelegateCalendarAccount>(executeSearchReturnList(searchFilter, owner));
 		return results;
 	}
@@ -159,7 +179,7 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 	 */
 	@Override
 	public IDelegateCalendarAccount getDelegate(String accountName) {
-		return getDelegate(accountName, null);
+		return getDelegate(accountName, (ICalendarAccount) null);
 	}
 
 	/* (non-Javadoc)
@@ -176,6 +196,9 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 		}
 		searchFilter.and(new LikeFilter(ldapAttributesKey.getUniqueIdentifierAttributeName(), WILDCARD));
 
+		if(enforceSpecificObjectClass) {
+			searchFilter.and(new EqualsFilter(OBJECTCLASS, requiredObjectClass));
+		}
 		List<IDelegateCalendarAccount> results = executeSearchReturnList(searchFilter, owner);
 		IDelegateCalendarAccount delegate = (IDelegateCalendarAccount) DataAccessUtils.singleResult(results);
 		return delegate;
@@ -201,11 +224,31 @@ public class LDAPDelegateCalendarAccountDaoImpl implements
 			// TODO assumes delegateOwnerAttributeName has values of ICalendarAccount#getUsername
 			searchFilter.and(new EqualsFilter(ldapAttributesKey.getDelegateOwnerAttributeName(), owner.getUsername()));
 		}
+		if(enforceSpecificObjectClass) {
+			searchFilter.and(new EqualsFilter(OBJECTCLASS, requiredObjectClass));
+		}
 		List<IDelegateCalendarAccount> results = executeSearchReturnList(searchFilter, owner);
 		IDelegateCalendarAccount delegate = (IDelegateCalendarAccount) DataAccessUtils.singleResult(results);
 		return delegate;
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see org.jasig.schedassist.IDelegateCalendarAccountDao#getDelegate(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public IDelegateCalendarAccount getDelegate(String attributeName,
+			String attributeValue) {
+		Filter filter = new EqualsFilter(attributeName, attributeValue);
+		if(enforceSpecificObjectClass) {
+			AndFilter andFilter = new AndFilter();
+			andFilter.and(filter);
+			andFilter.and(new EqualsFilter(OBJECTCLASS, requiredObjectClass));
+			filter = andFilter;
+		}
+		List<IDelegateCalendarAccount> results = executeSearchReturnList(filter, null);
+		IDelegateCalendarAccount delegate = (IDelegateCalendarAccount) DataAccessUtils.singleResult(results);
+		return delegate;
+	}
 	/**
 	 * 
 	 * @param searchFilter

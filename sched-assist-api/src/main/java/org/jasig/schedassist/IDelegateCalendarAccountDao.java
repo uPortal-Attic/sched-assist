@@ -80,6 +80,15 @@ public interface IDelegateCalendarAccountDao  {
 	 */
 	IDelegateCalendarAccount getDelegate(String accountName, ICalendarAccount owner);
 	
+	/**
+	 * Return a matching {@link IDelegateCalendarAccount} with the specified
+	 * attributeName equal to the specified attributeValue.
+	 * 
+	 * @param attributeName the name of the attribute to use in the lookup
+	 * @param attributeValue the value of the attribute to use in the lookup
+	 * @return the {@link IDelegateCalendarAccount}, or null if not found
+	 */
+	IDelegateCalendarAccount getDelegate(String attributeName, String attributeValue);
 	
 	/**
 	 * Return the specified {@link IDelegateCalendarAccount} by calendar system unique id, only skip resolution of the 

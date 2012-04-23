@@ -69,8 +69,9 @@ $(document).ready(function(){
 <label for="endDatePhrase"><spring:message code="until.end.date"/>:</label>&nbsp;<form:input path="endDatePhrase"/>
 <br/>
 <br/>
-<input type="submit" name="_eventId_submit" value="<spring:message code="schedule.owner.registration.step2.createschedule"/>"/>&nbsp;or&nbsp;
-<input type="submit" name="_eventId_skipSchedule" <spring:message code="schedule.owner.registration.step2.skipschedule"/>"/>
+<input type="submit" name="_eventId_submit" value="<spring:message code="schedule.owner.registration.step2.createschedule"/>"/>
+&nbsp;or&nbsp;
+<input type="submit" name="_eventId_skipSchedule" value="<spring:message code="schedule.owner.registration.step2.skipschedule"/>"/>
 </fieldset>
 </form:form>
 </div> <!-- close ownerForm -->
