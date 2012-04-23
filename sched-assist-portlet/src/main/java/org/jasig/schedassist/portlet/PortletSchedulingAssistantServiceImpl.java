@@ -86,6 +86,9 @@ public final class PortletSchedulingAssistantServiceImpl extends WebServicesDaoS
 	public boolean isEligible(String visitorUsername) {
 		IsEligibleRequest request = new IsEligibleRequest();
 		request.setVisitorNetid(visitorUsername);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("sending isEligible request for " + visitorUsername);
+		}
 		IsEligibleResponse response = (IsEligibleResponse) this.doSendAndReceive(request);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("isEligible for " + visitorUsername + " returns " + response.isEligible());
@@ -101,7 +104,7 @@ public final class PortletSchedulingAssistantServiceImpl extends WebServicesDaoS
 			final AvailableBlock block, final String cancelReason) throws SchedulingException {
 		
 		if(LOG.isDebugEnabled()) {
-			LOG.debug("cancelAppointment, visitor: " + visitorUsername + ", owner: " + ownerId + ", block: " + block);
+			LOG.debug("sending cancelAppointment request, visitor: " + visitorUsername + ", owner: " + ownerId + ", block: " + block);
 		}
 		CancelAppointmentRequest request = new CancelAppointmentRequest();
 		request.setEndTime(XMLDataUtils.convertDateToXMLGregorianCalendar(block.getEndTime()));
@@ -144,7 +147,7 @@ public final class PortletSchedulingAssistantServiceImpl extends WebServicesDaoS
 			long ownerId, int weekStart) {
 		
 		if(LOG.isDebugEnabled()) {
-			LOG.debug("getVisibleSchedule, visitor: " + visitorUsername + ", owner: " + ownerId);
+			LOG.debug("sending getVisibleSchedule request, visitor: " + visitorUsername + ", owner: " + ownerId);
 		}
 		VisibleScheduleRequest request = new VisibleScheduleRequest();
 		request.setOwnerId(ownerId);
