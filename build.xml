@@ -52,9 +52,6 @@
 	<artifact:dependencies pathid="spi.maven.classpath">
 		<pom file="${basedir}/sched-assist-spi/pom.xml" />
 	</artifact:dependencies>
-	<artifact:dependencies pathid="integrationtest.maven.classpath">
-		<dependency groupId="org.jasig.sched-assist" artifactId="sched-assist-spi-caldav-integrationtest" version="1.1.0-SNAPSHOT" />
-	</artifact:dependencies>
 
 	<target name="hsql" description="Start a HSQLDB instance consistent with the default RDBMS requirements of Available">
 		<property name="spawn" value="false" />
@@ -181,6 +178,9 @@
 	</target>
 
 	<target name="run-integration-test">
+		<artifact:dependencies pathid="integrationtest.maven.classpath" >
+			<dependency groupId="org.jasig.sched-assist" artifactId="sched-assist-spi-caldav-integrationtest" version="1.1.0-SNAPSHOT" />
+		</artifact:dependencies>
 		<junit fork="true" printsummary="withOutAndErr" haltonfailure="true">
 			<classpath>
 				<path refid="integrationtest.maven.classpath" />
