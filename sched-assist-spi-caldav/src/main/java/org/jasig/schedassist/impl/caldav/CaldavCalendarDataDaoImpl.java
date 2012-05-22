@@ -477,6 +477,9 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 			for(Object component : events) {
 				VEvent event = (VEvent) component;
 				if(this.eventUtils.willEventCauseConflict(owner.getCalendarAccount(), event)) {
+					if(log.isDebugEnabled()) {
+						log.debug("conflict detected for " + owner + " at block " + block + ", event: " + event);
+					}
 					throw new ConflictExistsException("an appointment already exists for " + block);
 				} 
 			}
