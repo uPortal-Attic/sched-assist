@@ -43,6 +43,7 @@ import net.fortuna.ical4j.util.Calendars;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.Validate;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
@@ -471,7 +472,10 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 	@Override
 	public void checkForConflicts(IScheduleOwner owner, AvailableBlock block)
 			throws ConflictExistsException {
-		List<CalendarWithURI> calendars = getCalendarsInternal(owner.getCalendarAccount(), block.getStartTime(), block.getEndTime());
+		// use a start and end time slightly smaller than the block to avoid events that start/end on the edge of the block
+		Date start = DateUtils.addSeconds(block.getStartTime(), 1);
+		Date end = DateUtils.addSeconds(block.getEndTime(), -1);
+		List<CalendarWithURI> calendars = getCalendarsInternal(owner.getCalendarAccount(), start, end);
 		for(CalendarWithURI calendar: calendars) {
 			ComponentList events = calendar.getCalendar().getComponents(VEvent.VEVENT);
 			for(Object component : events) {
