@@ -114,7 +114,7 @@ import org.springframework.stereotype.Service;
  * @author Nicholas Blair, nblair@doit.wisc.edu
  * @version $Id: CaldavCalendarDataDaoImpl.java 50 2011-05-05 21:07:25Z nblair $
  */
-@Service
+@Service("caldavCalendarDataDao")
 public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 
 	static final Header IF_NONE_MATCH_HEADER = new BasicHeader("If-None-Match", "*");
