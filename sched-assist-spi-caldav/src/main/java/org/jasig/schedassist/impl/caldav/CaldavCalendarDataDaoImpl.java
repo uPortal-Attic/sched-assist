@@ -53,12 +53,16 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScheme;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.auth.DigestScheme;
+import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
@@ -83,6 +87,7 @@ import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.IScheduleVisitor;
 import org.jasig.schedassist.model.SchedulingAssistantAppointment;
 import org.jasig.schedassist.model.VisitorLimit;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -115,7 +120,7 @@ import org.springframework.stereotype.Service;
  * @version $Id: CaldavCalendarDataDaoImpl.java 50 2011-05-05 21:07:25Z nblair $
  */
 @Service("caldavCalendarDataDao")
-public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
+public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, InitializingBean {
 
 	static final Header IF_NONE_MATCH_HEADER = new BasicHeader("If-None-Match", "*");
 	static final Header ICALENDAR_CONTENT_TYPE_HEADER = new BasicHeader("Content-Type", "text/calendar");
@@ -123,23 +128,25 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 
 	private static final Header DEPTH_HEADER = new BasicHeader("Depth", "1");
 	protected final Log log = LogFactory.getLog(this.getClass());
-	private HttpClient httpClient;
+	private AbstractHttpClient httpClient;
 	private CredentialsProviderFactory credentialsProviderFactory;
 	private HttpHost httpHost;
 	private AuthScope caldavAdminAuthScope;
-
+	
 	private IEventUtils eventUtils = new CaldavEventUtilsImpl(new NullAffiliationSourceImpl());
 	private CaldavDialect caldavDialect;
 	private HttpMethodInterceptor methodInterceptor = new NoopHttpMethodInterceptorImpl();
 	private boolean cancelUpdatesVisitorCalendar = false;
 	private boolean reflectionEnabled = false;
+	private boolean preemptiveAuthenticationEnabled = false;
+	private AuthScheme preemptiveAuthenticationScheme;
 	private ApplicationEventPublisher applicationEventPublisher;
 
 	/**
 	 * @param httpClient the httpClient to set
 	 */
 	@Autowired
-	public void setHttpClient(HttpClient httpClient) {
+	public void setHttpClient(AbstractHttpClient httpClient) {
 		this.httpClient = httpClient;
 	}
 	/**
@@ -239,7 +246,75 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 	public void setReflectionEnabled(boolean reflectionEnabled) {
 		this.reflectionEnabled = reflectionEnabled;
 	}
-
+	/**
+	 * @return the cancelUpdatesVisitorCalendar
+	 */
+	public boolean isCancelUpdatesVisitorCalendar() {
+		return cancelUpdatesVisitorCalendar;
+	}
+	/**
+	 * @param cancelUpdatesVisitorCalendar the cancelUpdatesVisitorCalendar to set
+	 */
+	public void setCancelUpdatesVisitorCalendar(boolean cancelUpdatesVisitorCalendar) {
+		this.cancelUpdatesVisitorCalendar = cancelUpdatesVisitorCalendar;
+	}
+	/**
+	 * @return the eventUtils
+	 */
+	public IEventUtils getEventUtils() {
+		return eventUtils;
+	}
+	/**
+	 * @return the caldavDialect
+	 */
+	public CaldavDialect getCaldavDialect() {
+		return caldavDialect;
+	}
+	/**
+	 * @return the reflectionEnabled
+	 */
+	public boolean isReflectionEnabled() {
+		return reflectionEnabled;
+	}
+	/**
+	 * @return the preemptiveAuthenticationEnabled
+	 */
+	public boolean isPreemptiveAuthenticationEnabled() {
+		return preemptiveAuthenticationEnabled;
+	}
+	/**
+	 * @param preemptiveAuthenticationEnabled the preemptiveAuthenticationEnabled to set
+	 */
+	@Value("${caldav.preemptiveAuthenticationEnabled:false}")
+	public void setPreemptiveAuthenticationEnabled(
+			boolean preemptiveAuthenticationEnabled) {
+		this.preemptiveAuthenticationEnabled = preemptiveAuthenticationEnabled;
+	}
+	
+	/**
+	 * 
+	 * @param scheme
+	 * @return
+	 */
+	protected AuthScheme identifyScheme(String scheme) {
+		if(new BasicScheme().getSchemeName().equalsIgnoreCase(scheme)) {
+			return new BasicScheme();
+		} else if (new DigestScheme().getSchemeName().equalsIgnoreCase(scheme)) {
+			return new DigestScheme();
+		} else {
+			throw new IllegalArgumentException("cannot determine AuthScheme implementation from " + scheme);
+		}
+	}
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(isPreemptiveAuthenticationEnabled()) {
+			this.httpClient.addRequestInterceptor(new PreemptiveAuthInterceptor(caldavAdminAuthScope), 0);
+			this.preemptiveAuthenticationScheme = identifyScheme(caldavAdminAuthScope.getScheme());
+		}
+	}
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.ICalendarDataDao#getCalendar(org.jasig.schedassist.model.ICalendarAccount, java.util.Date, java.util.Date)
 	 */
@@ -342,6 +417,12 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao {
 	protected HttpContext constructHttpContext(ICalendarAccount calendarAccount) {
 		CredentialsProvider credentialsProvider = this.credentialsProviderFactory.getCredentialsProvider(calendarAccount);
 		HttpContext context = new BasicHttpContext();
+		if(isPreemptiveAuthenticationEnabled()) {
+			if(preemptiveAuthenticationScheme == null) {
+				throw new IllegalStateException("preemptiveAuthentication is enabled, but the preemptiveAuthenticationScheme is null. Was afterPropertiesSet invoked?");
+			}
+			context.setAttribute(PreemptiveAuthInterceptor.PREEMPTIVE_AUTH, preemptiveAuthenticationScheme);
+		}
 		context.setAttribute(ClientContext.CREDS_PROVIDER, credentialsProvider);
 		return context;
 	}
