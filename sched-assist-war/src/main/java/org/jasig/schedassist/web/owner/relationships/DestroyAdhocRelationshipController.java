@@ -125,7 +125,7 @@ public class DestroyAdhocRelationshipController {
 		
 		ICalendarAccount visitorUser = calendarAccountDao.getCalendarAccount(identifyingAttributeName, fbo.getVisitorUsername());
 		if(null == visitorUser) {
-			throw new CalendarAccountNotFoundException(fbo.getVisitorUsername() + " does not exist or is not eligible for WiscCal");
+			throw new CalendarAccountNotFoundException(fbo.getVisitorUsername() + " does not exist or is not eligible for Calendar Service");
 		}
 		IScheduleVisitor visitor = visitorDao.toVisitor(visitorUser);
 		mutableRelationshipDao.destroyRelationship(owner, visitor);

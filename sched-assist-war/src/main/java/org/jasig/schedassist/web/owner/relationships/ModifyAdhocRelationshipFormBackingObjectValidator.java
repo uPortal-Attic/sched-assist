@@ -27,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
 /**
@@ -61,19 +60,16 @@ public class ModifyAdhocRelationshipFormBackingObjectValidator implements Valida
 	 * @see org.springframework.validation.Validator#validate(java.lang.Object, org.springframework.validation.Errors)
 	 */
 	public void validate(Object target, Errors errors) {
-		ValidationUtils.rejectIfEmpty(errors, "visitorUsername", "visitorUsername", "No person matching your input was found.");
-		ValidationUtils.rejectIfEmpty(errors, "relationship", "relationship.empty", "You must specify a description for your relationship.");
-
 		ModifyAdhocRelationshipFormBackingObject fbo = (ModifyAdhocRelationshipFormBackingObject) target;
 		Matcher m = VALID_USERNAME_PATTERN.matcher(fbo.getVisitorUsername());
 		if(StringUtils.isBlank(fbo.getVisitorUsername())) {
-			errors.rejectValue("visitorUsername", "visitorUsername", "You must specify a NetID (field was empty).");
+			errors.rejectValue("visitorUsername", "visitor.notfound", "Account not found or not eligible for Calendar Service.");
 		} else if(!m.matches()) {
-			errors.rejectValue("visitorUsername", "visitorUsername", "Invalid NetID");
+			errors.rejectValue("visitorUsername", "visitor.notfound", "Account not found or not eligible for Calendar Service.");
 		} else {
 			ICalendarAccount account = calendarAccountDao.getCalendarAccount(fbo.getVisitorUsername());
 			if(null == account) {
-				errors.rejectValue("visitorUsername", "visitor.notfound", "Person not found or not eligible for WiscCal.");
+				errors.rejectValue("visitorUsername", "visitor.notfound", "Account not found or not eligible for Calendar Service.");
 			}
 		}
 		if(StringUtils.isBlank(fbo.getRelationship())) {

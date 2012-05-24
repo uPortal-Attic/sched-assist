@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -128,7 +129,10 @@ public class CreateAdhocRelationshipFormController {
 	 * @throws NotRegisteredException 
 	 */
 	@RequestMapping(method=RequestMethod.POST)
-	protected String createRelationship(@Valid @ModelAttribute("command") ModifyAdhocRelationshipFormBackingObject fbo, final ModelMap model) throws CalendarAccountNotFoundException, NotAVisitorException, NotRegisteredException {
+	protected String createRelationship(@Valid @ModelAttribute("command") ModifyAdhocRelationshipFormBackingObject fbo, BindingResult bindResult, final ModelMap model) throws CalendarAccountNotFoundException, NotAVisitorException, NotRegisteredException {
+		if(bindResult.hasErrors()) {
+			return "owner-relationships/create-adhoc-relationship-form";
+		}
 		CalendarAccountUserDetails currentUser = (CalendarAccountUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		IScheduleOwner owner = currentUser.getScheduleOwner();
 		ICalendarAccount visitorUser = calendarAccountDao.getCalendarAccount(this.identifyingAttributeName, fbo.getVisitorUsername());
