@@ -41,6 +41,7 @@ This project includes:
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   HSQLDB Database under HSQLDB License, a BSD open source license
   HttpClient under Apache License
+  HttpCore under Apache License
   iCal4j under iCal4j - License
   Jackson under The Apache Software License, Version 2.0
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
@@ -68,6 +69,7 @@ This project includes:
   Scheduling Assistant Parent under Apache License Version 2.0
   Scheduling Assistant Portlet under Apache License Version 2.0
   Scheduling Assistant SPI: CalDAV under Apache License Version 2.0
+  Scheduling Assistant SPI: CalDAV Integration Test under Apache License Version 2.0
   Scheduling Assistant SPI: Common under Apache License Version 2.0
   Scheduling Assistant SPI: Relationship Providers under Apache License Version 2.0
   Scheduling Assistant WAR under Apache License Version 2.0

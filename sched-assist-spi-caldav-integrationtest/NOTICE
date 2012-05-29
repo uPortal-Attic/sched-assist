@@ -23,7 +23,6 @@ This project includes:
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
-  EasyMock under Apache 2
   Ehcache Core under The Apache Software License, Version 2.0
   Ehcache Spring Annotations under Apache 2
   HttpClient under Apache License
@@ -35,6 +34,7 @@ This project includes:
   Scheduling Assistant API under Apache License Version 2.0
   Scheduling Assistant Mocks under Apache License Version 2.0
   Scheduling Assistant SPI: CalDAV under Apache License Version 2.0
+  Scheduling Assistant SPI: CalDAV Integration Test under Apache License Version 2.0
   Scheduling Assistant SPI: Common under Apache License Version 2.0
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
