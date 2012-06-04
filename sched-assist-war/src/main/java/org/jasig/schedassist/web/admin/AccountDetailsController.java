@@ -102,6 +102,42 @@ public class AccountDetailsController {
 		this.affiliationSource = affiliationSource;
 	}
 	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
+	 * @return the delegateCalendarAccountDao
+	 */
+	public IDelegateCalendarAccountDao getDelegateCalendarAccountDao() {
+		return delegateCalendarAccountDao;
+	}
+	/**
+	 * @return the visitorDao
+	 */
+	public VisitorDao getVisitorDao() {
+		return visitorDao;
+	}
+	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the publicProfileDao
+	 */
+	public PublicProfileDao getPublicProfileDao() {
+		return publicProfileDao;
+	}
+	/**
+	 * @return the affiliationSource
+	 */
+	public IAffiliationSource getAffiliationSource() {
+		return affiliationSource;
+	}
+	/**
 	 * 
 	 * @param uniqueId
 	 * @param model

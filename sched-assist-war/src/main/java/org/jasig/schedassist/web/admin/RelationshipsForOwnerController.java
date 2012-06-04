@@ -85,7 +85,30 @@ public class RelationshipsForOwnerController {
 			MutableRelationshipDao mutableRelationshipDao) {
 		this.mutableRelationshipDao = mutableRelationshipDao;
 	}
-	
+	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the visitorDao
+	 */
+	public VisitorDao getVisitorDao() {
+		return visitorDao;
+	}
+	/**
+	 * @return the mutableRelationshipDao
+	 */
+	public MutableRelationshipDao getMutableRelationshipDao() {
+		return mutableRelationshipDao;
+	}
 	/**
 	 * 
 	 * @param ctcalxitemid

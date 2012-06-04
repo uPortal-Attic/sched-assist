@@ -73,7 +73,24 @@ public class RelationshipsForVisitorController {
 	public void setRelationshipDao(@Qualifier("composite") RelationshipDao relationshipDao) {
 		this.relationshipDao = relationshipDao;
 	}
-	
+	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
+	 * @return the visitorDao
+	 */
+	public VisitorDao getVisitorDao() {
+		return visitorDao;
+	}
+	/**
+	 * @return the relationshipDao
+	 */
+	public RelationshipDao getRelationshipDao() {
+		return relationshipDao;
+	}
 	/**
 	 * 
 	 * @param ctcalxitemid
