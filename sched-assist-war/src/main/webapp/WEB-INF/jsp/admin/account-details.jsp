@@ -112,7 +112,8 @@
 <ul>
 <li><spring:message code="id"/>: <c:out value="${publicProfile.publicProfileId.profileKey}"/></li>
 <li><spring:message code="description"/>: <c:out value="${publicProfile.description}"/></li>
-<li><a href="/available/public/profiles/${publicProfile.publicProfileId.profileKey}.html"><spring:message code="profile.link"/>&raquo;</a></li>
+<c:url value="/public/profiles/${publicProfile.publicProfileId.profileKey}.html" var="profileUrl"/>
+<li><a href="${profileUrl}"><spring:message code="profile.link"/>&raquo;</a></li>
 </ul>
 </li>
 </c:if>
