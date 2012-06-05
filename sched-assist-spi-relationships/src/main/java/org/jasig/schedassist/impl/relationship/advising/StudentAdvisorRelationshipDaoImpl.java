@@ -101,6 +101,13 @@ implements RelationshipDao {
 		this.ownerDao = ownerDao;
 	}
 	/**
+	 * @param visitorDao the visitorDao to set
+	 */
+	@Autowired
+	public void setVisitorDao(VisitorDao visitorDao) {
+		this.visitorDao = visitorDao;
+	}
+	/**
 	 * @param studentEmplidAttributeName the studentEmplidAttributeName to set
 	 */
 	public void setStudentEmplidAttributeName(String studentEmplidAttributeName) {
