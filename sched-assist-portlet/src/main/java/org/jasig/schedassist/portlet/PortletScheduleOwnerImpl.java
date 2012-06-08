@@ -91,6 +91,15 @@ class PortletScheduleOwnerImpl extends AbstractScheduleOwner {
 		return new HashMap<Preferences, String>(this.preferences);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "PortletScheduleOwnerImpl [id=" + id + ", toString()="
+				+ super.toString() + "]";
+	}
+
 	/**
 	 * Inner implementation of {@link ICalendarAccount} that only
 	 * provides the displayName and username fields (all that's available
@@ -183,6 +192,15 @@ class PortletScheduleOwnerImpl extends AbstractScheduleOwner {
 		@Override
 		public boolean isDelegate() {
 			throw new UnsupportedOperationException();
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "CalendarAccountImpl [displayName=" + displayName
+					+ ", username=" + username + "]";
 		}
 		
 	}
