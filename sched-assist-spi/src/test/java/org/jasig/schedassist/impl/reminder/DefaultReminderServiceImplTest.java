@@ -50,6 +50,7 @@ import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
 import org.jasig.schedassist.model.CommonDateOperations;
 import org.jasig.schedassist.model.DefaultEventUtilsImpl;
+import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.InputFormatException;
 import org.jasig.schedassist.model.mock.MockCalendarAccount;
 import org.jasig.schedassist.model.mock.MockScheduleOwner;
@@ -224,5 +225,32 @@ public class DefaultReminderServiceImplTest {
 		event.getProperties().remove(attendee);
 		
 		Assert.assertFalse(reminderService.shouldSend(reminder));
+	}
+	
+	@Test
+	public void testValidatorSaysNo() {
+		IReminder reminder = mock(IReminder.class);
+		DefaultReminderServiceImpl reminderService = new DefaultReminderServiceImpl();
+		reminderService.setEmailAddressValidator(new EmailAddressValidator() {
+			@Override
+			public boolean canSendToEmailAddress(ICalendarAccount calendarAccount) {
+				return false;
+			}
+		});
+		
+		MockCalendarAccount account = new MockCalendarAccount();
+		account.setDisplayName("Some Person");
+		account.setEmailAddress("someone@nowhere.com");
+		MockScheduleOwner owner = new MockScheduleOwner(account, 1L);
+		when(reminder.getScheduleOwner()).thenReturn(owner);
+		
+		MockCalendarAccount recipient = new MockCalendarAccount();
+		recipient.setDisplayName("Some Visitor");
+		recipient.setEmailAddress("bogus@nowhere.com");
+		
+		when(reminder.getRecipient()).thenReturn(recipient);
+		Assert.assertFalse(reminderService.shouldSend(reminder));
+		
+		
 	}
 }

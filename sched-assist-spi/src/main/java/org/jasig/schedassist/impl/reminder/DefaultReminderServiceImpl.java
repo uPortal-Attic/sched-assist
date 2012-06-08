@@ -35,7 +35,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.SchedulingAssistantService;
-import org.jasig.schedassist.impl.events.EmailNotificationApplicationListener;
 import org.jasig.schedassist.impl.owner.OwnerDao;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -71,6 +70,7 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	private ICalendarAccountDao calendarAccountDao;
 	private MessageSource messageSource;
 	private String noReplyFromAddress;
+	private EmailAddressValidator emailAddressValidator = new DefaultEmailAddressValidatorImpl();
 	private final Log LOG = LogFactory.getLog(this.getClass());
 	
 	/**
@@ -122,6 +122,13 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 	@Autowired
 	public void setMessageSource(MessageSource messageSource) {
 		this.messageSource = messageSource;
+	}
+	/**
+	 * @param emailAddressValidator the emailAddressValidator to set
+	 */
+	@Autowired(required=false)
+	public void setEmailAddressValidator(EmailAddressValidator emailAddressValidator) {
+		this.emailAddressValidator = emailAddressValidator;
 	}
 	/**
 	 * @param noReplyFromAddress the noReplyFromAddress to set
@@ -286,13 +293,14 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 			final boolean includeOwner = reminderPrefs.isIncludeOwner();
 			
 			SimpleMailMessage message = new SimpleMailMessage();
-			if(!EmailNotificationApplicationListener.isEmailAddressValid(owner.getCalendarAccount().getEmailAddress())) {
-				message.setFrom(noReplyFromAddress);
-			} else {
+			final boolean canSendToOwner = emailAddressValidator.canSendToEmailAddress(owner.getCalendarAccount());
+			if(canSendToOwner) {
 				message.setFrom(owner.getCalendarAccount().getEmailAddress());
+			} else {
+				message.setFrom(noReplyFromAddress);
 			}	
 			
-			if(includeOwner) {
+			if(includeOwner && canSendToOwner) {
 				message.setTo(new String[] { owner.getCalendarAccount().getEmailAddress(), recipient.getEmailAddress() });
 			} else {
 				message.setTo(new String[] { recipient.getEmailAddress() });
@@ -334,6 +342,10 @@ public class DefaultReminderServiceImpl implements ReminderService, Runnable {
 		final ICalendarAccount recipient = reminder.getRecipient();
 		if(recipient == null) {
 			LOG.debug("recipient null, should not send " + reminder);
+			return false;
+		}
+		if(!emailAddressValidator.canSendToEmailAddress(recipient)) {
+			LOG.debug("validator claims we cannot send to recipient's email, not send " + reminder);
 			return false;
 		}
 		final VEvent event = reminder.getEvent();
