@@ -129,15 +129,9 @@ public class GetTargetAvailableBlockRequest {
 	 */
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("GetTargetAvailableBlockRequest [ownerId=");
-		builder.append(ownerId);
-		builder.append(", startTime=");
-		builder.append(startTime);
-		builder.append(", doubleLength=");
-		builder.append(doubleLength);
-		builder.append("]");
-		return builder.toString();
+		return "GetTargetAvailableBlockRequest [ownerId=" + ownerId
+				+ ", startTime=" + startTime + ", doubleLength=" + doubleLength
+				+ "]";
 	}
 
 }

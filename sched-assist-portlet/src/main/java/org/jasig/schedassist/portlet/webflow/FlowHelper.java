@@ -203,11 +203,15 @@ public class FlowHelper {
 		for(Relationship r : relationships) {
 			if(r.getOwner().getId() == ownerId) {
 				target = r.getOwner();
+				if(LOG.isInfoEnabled()) {
+					LOG.info(getCurrentVisitor() + " requested schedule of " + target);
+				}
 				break;
 			}
 		}
 
 		if(null == target) {
+			LOG.error(getCurrentVisitor() + " requested schedule for ownerId= " + ownerId + " and does not have a relationship, throwing ScheduleOwnerNotFoundException");
 			throw new ScheduleOwnerNotFoundException(ownerId + " not found");
 		}
 		return target;
@@ -334,7 +338,8 @@ public class FlowHelper {
 	 * @throws SchedulingException
 	 */
 	public VEvent createAppointment(CreateAppointmentFormBackingObject fbo, IScheduleOwner owner) throws SchedulingException {
-		final String visitorUsername = getCurrentVisitor().getAccountId();
+		final IPortletScheduleVisitor currentVisitor = getCurrentVisitor();
+		final String visitorUsername = currentVisitor.getAccountId();
 		AvailableBlock targetBlock = fbo.getTargetBlock();
 		if(NO.equals(validateChosenStartTime(owner.getPreferredVisibleWindow(), targetBlock.getStartTime()))) {
 			throw new SchedulingException("requested time is no longer within visible window");
@@ -350,6 +355,9 @@ public class FlowHelper {
 					throw new SchedulingException("second half of request time is not available");
 				}
 			}
+		}
+		if(LOG.isInfoEnabled()) {
+			LOG.info(currentVisitor + " submitting scheduleAppointment request with " + owner + " at " + targetBlock);
 		}
 		VEvent event = this.schedulingAssistantService.scheduleAppointment(visitorUsername, owner.getId(), targetBlock, fbo.getReason());
 		return event;
@@ -414,7 +422,11 @@ public class FlowHelper {
 	 * @throws SchedulingException
 	 */
 	public EventCancellation cancelAppointment(CancelAppointmentFormBackingObject fbo, IScheduleOwner owner) throws SchedulingException {
-		final String visitorUsername = getCurrentVisitor().getAccountId();
+		final IPortletScheduleVisitor currentVisitor = getCurrentVisitor();
+		final String visitorUsername = currentVisitor.getAccountId();
+		if(LOG.isInfoEnabled()) {
+			LOG.info(currentVisitor + " submitting cancelAppointment request with " + owner + " at " + fbo.getTargetBlock());
+		}
 		EventCancellation result = this.schedulingAssistantService.cancelAppointment(visitorUsername, owner.getId(), fbo.getTargetBlock(), fbo.getReason());
 		return result;
 	}

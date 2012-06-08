@@ -122,8 +122,10 @@ public final class PortletSchedulingAssistantServiceImpl extends WebServicesDaoS
 			return result;
 		} catch (SoapFaultClientException e) {
 			if(CANCEL_FAILED_MESSAGE.equals(e.getFaultStringOrReason())) {
+				LOG.info("cancelAppointment request for visitor " + visitorUsername + " and owner " + ownerId + " failed since appointment no longer exists");
 				throw new NoAppointmentExistsException(CANCEL_FAILED_MESSAGE, e);
 			} else {
+				LOG.error("cancelAppointment request for visitor " + visitorUsername + " and owner " + ownerId + " failed with SoapFaultClientException", e);
 				throw new SchedulingException(e);
 			}
 		}

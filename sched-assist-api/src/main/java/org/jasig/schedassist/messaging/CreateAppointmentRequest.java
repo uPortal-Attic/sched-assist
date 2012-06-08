@@ -189,4 +189,15 @@ public class CreateAppointmentRequest {
         this.selectedDuration = value;
     }
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "CreateAppointmentRequest [startTime=" + startTime
+				+ ", visitorNetid=" + visitorNetid + ", ownerId=" + ownerId
+				+ ", eventDescription=" + eventDescription
+				+ ", selectedDuration=" + selectedDuration + "]";
+	}
+
 }

@@ -197,4 +197,14 @@ public class CancelAppointmentRequest {
         this.reason = value;
     }
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "CancelAppointmentRequest [startTime=" + startTime
+				+ ", endTime=" + endTime + ", visitorNetid=" + visitorNetid
+				+ ", ownerId=" + ownerId + ", reason=" + reason + "]";
+	}
+
 }
