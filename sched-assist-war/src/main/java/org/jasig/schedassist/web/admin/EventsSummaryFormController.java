@@ -55,6 +55,13 @@ public class EventsSummaryFormController {
 	}
 
 	/**
+	 * @return the statisticsDao
+	 */
+	public StatisticsDao getStatisticsDao() {
+		return statisticsDao;
+	}
+
+	/**
 	 * 
 	 * @param model
 	 * @return

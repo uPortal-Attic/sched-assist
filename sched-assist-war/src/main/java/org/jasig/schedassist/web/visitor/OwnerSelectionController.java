@@ -60,6 +60,12 @@ public class OwnerSelectionController {
 		this.relationshipDao = relationshipDao;
 	}
 	/**
+	 * @return the relationshipDao
+	 */
+	public RelationshipDao getRelationshipDao() {
+		return relationshipDao;
+	}
+	/**
 	 * Locate relationships for the authenticated visitor and add them to the model.
 	 * 
 	 * @return the view name for the owner select form

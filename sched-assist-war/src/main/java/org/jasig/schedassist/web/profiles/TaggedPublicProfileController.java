@@ -56,6 +56,13 @@ public class TaggedPublicProfileController {
 		this.publicProfileDao = publicProfileDao;
 	}
 	
+	/**
+	 * @return the publicProfileDao
+	 */
+	public PublicProfileDao getPublicProfileDao() {
+		return publicProfileDao;
+	}
+
 	@RequestMapping(value="/public/tags/{tag}", method = RequestMethod.GET)
 	public String displayProfileIdsByTag(final ModelMap model, @PathVariable("tag") String tag, 
 			@RequestParam(value="startIndex",required=false,defaultValue="0") int startIndex) throws UnsupportedEncodingException {

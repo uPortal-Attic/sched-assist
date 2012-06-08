@@ -54,10 +54,16 @@ public class DelegateAccountSearchFormController {
 	/**
 	 * @param delegateCalendarAccountDao the delegateCalendarAccountDao to set
 	 */
-	@Autowired(required=true)
+	@Autowired
 	public void setDelegateCalendarAccountDao(
 			IDelegateCalendarAccountDao delegateCalendarAccountDao) {
 		this.delegateCalendarAccountDao = delegateCalendarAccountDao;
+	}
+	/**
+	 * @return the delegateCalendarAccountDao
+	 */
+	public IDelegateCalendarAccountDao getDelegateCalendarAccountDao() {
+		return delegateCalendarAccountDao;
 	}
 
 	/**

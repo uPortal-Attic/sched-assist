@@ -53,7 +53,13 @@ public class CacheManagerController {
 	public void setCacheManager(CacheManager cacheManager) {
 		this.cacheManager = cacheManager;
 	}
-	
+	/**
+	 * @return the cacheManager
+	 */
+	public CacheManager getCacheManager() {
+		return cacheManager;
+	}
+
 	/**
 	 * 
 	 * @param model

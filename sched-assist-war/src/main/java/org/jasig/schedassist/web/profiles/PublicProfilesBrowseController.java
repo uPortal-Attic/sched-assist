@@ -53,6 +53,13 @@ public class PublicProfilesBrowseController {
 	}
 	
 	/**
+	 * @return the publicProfileDao
+	 */
+	public PublicProfileDao getPublicProfileDao() {
+		return publicProfileDao;
+	}
+
+	/**
 	 * Retrieve profiles between startIndex and (startIndex + resultsPerPage).
 	 * @param startIndex
 	 * @param resultsPerPage

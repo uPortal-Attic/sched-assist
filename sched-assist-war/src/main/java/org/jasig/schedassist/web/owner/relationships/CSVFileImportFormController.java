@@ -138,6 +138,42 @@ public class CSVFileImportFormController implements DisposableBean {
 		this.calendarAccountDao = calendarAccountDao;
 	}
 	/**
+	 * @return the statusViewName
+	 */
+	public String getStatusViewName() {
+		return statusViewName;
+	}
+	/**
+	 * @return the formViewName
+	 */
+	public String getFormViewName() {
+		return formViewName;
+	}
+	/**
+	 * @return the executorService
+	 */
+	public ExecutorService getExecutorService() {
+		return executorService;
+	}
+	/**
+	 * @return the mutableRelationshipDao
+	 */
+	public MutableRelationshipDao getMutableRelationshipDao() {
+		return mutableRelationshipDao;
+	}
+	/**
+	 * @return the visitorDao
+	 */
+	public VisitorDao getVisitorDao() {
+		return visitorDao;
+	}
+	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
 	 * Invokes {@link ExecutorService#shutdownNow()} on the configured instance.
 	 * 
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
@@ -161,7 +197,7 @@ public class CSVFileImportFormController implements DisposableBean {
 		request.getSession(true).setAttribute(IMPORT_FUTURE_NAME, f);
 
 		model.addAttribute("submitted", true);
-		return statusViewName;
+		return getStatusViewName();
 	}
 
 	/**
@@ -193,15 +229,15 @@ public class CSVFileImportFormController implements DisposableBean {
 					model.addAttribute("processing", false);
 					model.addAttribute("importResult", importResult);
 					currentSession.setAttribute(IMPORT_FUTURE_NAME, null);
-					return statusViewName;
+					return getStatusViewName();
 				} else {
 					model.addAttribute("processing", true);
-					return statusViewName;
+					return getStatusViewName();
 				}
 			}
 		}
 		// no upload being processed, display form
-		return formViewName;
+		return getFormViewName();
 	}
 
 	/**

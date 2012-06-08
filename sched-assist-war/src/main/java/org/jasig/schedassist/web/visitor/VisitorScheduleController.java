@@ -87,11 +87,35 @@ public class VisitorScheduleController {
 		this.publicProfileDao = publicProfileDao;
 	}
 	/**
-	 * @param schedulingAssistantService the availableService to set
+	 * @param schedulingAssistantService the schedulingAssistantService to set
 	 */
 	@Autowired
-	public void setAvailableService(SchedulingAssistantService schedulingAssistantService) {
+	public void setSchedulingAssistantService(SchedulingAssistantService schedulingAssistantService) {
 		this.schedulingAssistantService = schedulingAssistantService;
+	}
+	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the relationshipDao
+	 */
+	public RelationshipDao getRelationshipDao() {
+		return relationshipDao;
+	}
+	/**
+	 * @return the publicProfileDao
+	 */
+	public PublicProfileDao getPublicProfileDao() {
+		return publicProfileDao;
+	}
+	/**
+	 * @return the schedulingAssistantService
+	 */
+	public SchedulingAssistantService getSchedulingAssistantService() {
+		return schedulingAssistantService;
 	}
 	/**
 	 * 

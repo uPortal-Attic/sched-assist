@@ -50,7 +50,7 @@ import org.springframework.web.servlet.view.RedirectView;
 @RequestMapping(value={"/owner/clear-entire-schedule.html", "/delegate/clear-entire-schedule.html" })
 public class ClearEntireAvailableScheduleFormController {
 
-	private Log LOG = LogFactory.getLog(this.getClass());
+	protected final Log log = LogFactory.getLog(this.getClass());
 	
 	private AvailableScheduleDao availableScheduleDao;
 	private AvailableScheduleReflectionService reflectionService;
@@ -70,6 +70,18 @@ public class ClearEntireAvailableScheduleFormController {
 		this.reflectionService = reflectionService;
 	}
 
+	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
+	}
+	/**
+	 * @return the reflectionService
+	 */
+	public AvailableScheduleReflectionService getReflectionService() {
+		return reflectionService;
+	}
 	/**
 	 * 
 	 */
@@ -99,7 +111,7 @@ public class ClearEntireAvailableScheduleFormController {
 			}
 			return new ModelAndView("owner-schedule/clear-schedule-success");
 		} else {
-			LOG.info("owner (" + owner + ") did not confirm request to clear schedule, cancelling");
+			log.info("owner (" + owner + ") did not confirm request to clear schedule, cancelling");
 			return new ModelAndView(new RedirectView("schedule.html", true));
 		}
 	}

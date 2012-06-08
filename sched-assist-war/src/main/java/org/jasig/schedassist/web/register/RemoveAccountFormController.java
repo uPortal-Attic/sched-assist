@@ -78,6 +78,24 @@ public class RemoveAccountFormController  {
 		this.availableScheduleReflectionService = availableScheduleReflectionService;
 	}
 	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
+	}
+	/**
+	 * @return the availableScheduleReflectionService
+	 */
+	public AvailableScheduleReflectionService getAvailableScheduleReflectionService() {
+		return availableScheduleReflectionService;
+	}
+	/**
 	 * 
 	 * @param binder
 	 */

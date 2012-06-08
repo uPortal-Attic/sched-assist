@@ -87,6 +87,24 @@ public class AdvancedPreferencesFormController {
 		this.affiliationSource = affiliationSource;
 	}
 	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the publicProfileDao
+	 */
+	public PublicProfileDao getPublicProfileDao() {
+		return publicProfileDao;
+	}
+	/**
+	 * @return the affiliationSource
+	 */
+	public IAffiliationSource getAffiliationSource() {
+		return affiliationSource;
+	}
+	/**
 	 * 
 	 * @param binder
 	 */

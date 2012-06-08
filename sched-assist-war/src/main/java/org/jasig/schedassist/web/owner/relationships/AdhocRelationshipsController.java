@@ -56,6 +56,13 @@ public class AdhocRelationshipsController {
 	}
 	
 	/**
+	 * @return the mutableRelationshipDao
+	 */
+	public MutableRelationshipDao getMutableRelationshipDao() {
+		return mutableRelationshipDao;
+	}
+
+	/**
 	 * 
 	 * @param request
 	 * @return

@@ -77,7 +77,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 public class CreateAppointmentFormController {
 
 	private static final String COMMAND_ATTR_NAME = "command";
-	private Log LOG = LogFactory.getLog(this.getClass());
+	protected final Log log = LogFactory.getLog(this.getClass());
 	
 	private SchedulingAssistantService schedulingAssistantService;
 	private RelationshipDao relationshipDao;
@@ -86,13 +86,6 @@ public class CreateAppointmentFormController {
 	private PublicProfileDao publicProfileDao;
 	private IEventUtils eventUtils;
 	
-	/**
-	 * @param schedulingAssistantService the schedulingAssistantService to set
-	 */
-	@Autowired
-	public void setAvailableService(SchedulingAssistantService schedulingAssistantService) {
-		this.schedulingAssistantService = schedulingAssistantService;
-	}
 	/**
 	 * @param relationshipDao the relationshipDao to set
 	 */
@@ -127,6 +120,50 @@ public class CreateAppointmentFormController {
 	@Autowired
 	public void setEventUtils(IEventUtils eventUtils) {
 		this.eventUtils = eventUtils;
+	}
+	/**
+	 * @return the schedulingAssistantService
+	 */
+	public SchedulingAssistantService getSchedulingAssistantService() {
+		return schedulingAssistantService;
+	}
+	/**
+	 * @param schedulingAssistantService the schedulingAssistantService to set
+	 */
+	@Autowired
+	public void setSchedulingAssistantService(
+			SchedulingAssistantService schedulingAssistantService) {
+		this.schedulingAssistantService = schedulingAssistantService;
+	}
+	/**
+	 * @return the relationshipDao
+	 */
+	public RelationshipDao getRelationshipDao() {
+		return relationshipDao;
+	}
+	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
+	}
+	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the publicProfileDao
+	 */
+	public PublicProfileDao getPublicProfileDao() {
+		return publicProfileDao;
+	}
+	/**
+	 * @return the eventUtils
+	 */
+	public IEventUtils getEventUtils() {
+		return eventUtils;
 	}
 	/**
 	 * 
@@ -180,7 +217,7 @@ public class CreateAppointmentFormController {
 			int attendingCount = sched.getAttendingCount();
 			if(selectedOwner.isExceedingMeetingLimit(attendingCount)) {
 				// visitor has already matched owner's appointment limit
-				LOG.warn("blocked attempt to use create form by visitor: " + visitor + ", target owner: " + selectedOwner);
+				log.warn("blocked attempt to use create form by visitor: " + visitor + ", target owner: " + selectedOwner);
 				return "redirect:view.html";
 			}
 		}

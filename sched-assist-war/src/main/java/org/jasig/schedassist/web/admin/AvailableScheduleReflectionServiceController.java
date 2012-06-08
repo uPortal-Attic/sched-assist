@@ -72,13 +72,36 @@ public class AvailableScheduleReflectionServiceController {
 			AvailableScheduleReflectionService reflectionService) {
 		this.reflectionService = reflectionService;
 	}
-	
 	/**
 	 * @param availableScheduleDao the availableScheduleDao to set
 	 */
 	@Autowired
 	public void setAvailableScheduleDao(AvailableScheduleDao availableScheduleDao) {
 		this.availableScheduleDao = availableScheduleDao;
+	}
+	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the reflectionService
+	 */
+	public AvailableScheduleReflectionService getReflectionService() {
+		return reflectionService;
+	}
+	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
 	}
 	
 	@RequestMapping

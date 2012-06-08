@@ -57,7 +57,12 @@ public class AdhocRelationshipsDataController {
 	public void setRelationshipDao(@Qualifier("adhoc") RelationshipDao relationshipDao) {
 		this.relationshipDao = relationshipDao;
 	}
-
+	/**
+	 * @return the relationshipDao
+	 */
+	public RelationshipDao getRelationshipDao() {
+		return relationshipDao;
+	}
 	/**
 	 * 
 	 * @param identifyingAttributeName

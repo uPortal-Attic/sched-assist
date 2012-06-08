@@ -59,7 +59,6 @@ public class AccountLookupFormController {
 	public void setCalendarAccountDao(@Qualifier("people") ICalendarAccountDao calendarAccountDao) {
 		this.calendarAccountDao = calendarAccountDao;
 	}
-
 	/**
 	 * @param delegateCalendarAccountDao the delegateCalendarAccountDao to set
 	 */
@@ -68,7 +67,18 @@ public class AccountLookupFormController {
 			@Qualifier("delegates") IDelegateCalendarAccountDao delegateCalendarAccountDao) {
 		this.delegateCalendarAccountDao = delegateCalendarAccountDao;
 	}
-
+	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
+	 * @return the delegateCalendarAccountDao
+	 */
+	public IDelegateCalendarAccountDao getDelegateCalendarAccountDao() {
+		return delegateCalendarAccountDao;
+	}
 	@RequestMapping(method=RequestMethod.GET)
 	protected String showForm(final ModelMap model) {
 		AccountLookupFormBackingObject fbo = new AccountLookupFormBackingObject();

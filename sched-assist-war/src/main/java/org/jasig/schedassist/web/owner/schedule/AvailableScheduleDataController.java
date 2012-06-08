@@ -62,7 +62,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping(value={"/owner/schedule-data.json","/delegate/schedule-data.json" })
 public class AvailableScheduleDataController {
 
-	private Log LOG = LogFactory.getLog(this.getClass());
+	protected final Log log = LogFactory.getLog(this.getClass());
 	
 	private AvailableScheduleDao availableScheduleDao;
 
@@ -72,6 +72,13 @@ public class AvailableScheduleDataController {
 	@Autowired
 	public void setAvailableScheduleDao(AvailableScheduleDao availableScheduleDao) {
 		this.availableScheduleDao = availableScheduleDao;
+	}
+
+	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
 	}
 
 	/**
@@ -93,7 +100,7 @@ public class AvailableScheduleDataController {
 			try {
 				startDate = df.parse(startParam);
 			} catch (ParseException e) {
-				LOG.debug("ignoring unparseable startDate: " + startDate);
+				log.debug("ignoring unparseable startDate: " + startDate);
 			}
 		}
 

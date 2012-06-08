@@ -66,6 +66,12 @@ public class CalendarUserSearchFormController {
 		this.calendarAccountDao = calendarAccountDao;
 	}
 	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
 	 * 
 	 * @param identifyingAttributeName
 	 */

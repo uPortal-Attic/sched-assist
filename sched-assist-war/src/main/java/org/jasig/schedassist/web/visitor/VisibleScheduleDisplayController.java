@@ -61,7 +61,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class VisibleScheduleDisplayController {
 
-	private Log LOG = LogFactory.getLog(this.getClass());
+	protected final Log log = LogFactory.getLog(this.getClass());
 	private SchedulingAssistantService schedulingAssistantService;
 	private RelationshipDao relationshipDao;
 	private OwnerDao ownerDao;
@@ -71,7 +71,7 @@ public class VisibleScheduleDisplayController {
 	 * @param schedulingAssistantService the schedulingAssistantService to set
 	 */
 	@Autowired
-	public void setAvailableService(SchedulingAssistantService schedulingAssistantService) {
+	public void setSchedulingAssistantService(SchedulingAssistantService schedulingAssistantService) {
 		this.schedulingAssistantService = schedulingAssistantService;
 	}
 	/**
@@ -96,6 +96,30 @@ public class VisibleScheduleDisplayController {
 		this.publicProfileDao = publicProfileDao;
 	}
 	/**
+	 * @return the schedulingAssistantService
+	 */
+	public SchedulingAssistantService getSchedulingAssistantService() {
+		return schedulingAssistantService;
+	}
+	/**
+	 * @return the relationshipDao
+	 */
+	public RelationshipDao getRelationshipDao() {
+		return relationshipDao;
+	}
+	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the publicProfileDao
+	 */
+	public PublicProfileDao getPublicProfileDao() {
+		return publicProfileDao;
+	}
+	/**
 	 * 
 	 * @param ownerId
 	 * @param highContrast
@@ -112,8 +136,8 @@ public class VisibleScheduleDisplayController {
 
 		IScheduleOwner selectedOwner = locateOwnerFromIdentifier(ownerIdentifier, visitor);
 		VisibleScheduleRequestConstraints requestConstraints = VisibleScheduleRequestConstraints.newInstance(selectedOwner, weekStart);
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("displaySchedule request, currentUser: " + currentUser + "; weekStart: " + weekStart + "requestConstraints " + requestConstraints);
+		if(log.isDebugEnabled()) {
+			log.debug("displaySchedule request, currentUser: " + currentUser + "; weekStart: " + weekStart + "requestConstraints " + requestConstraints);
 		}
 		
 		Map<String, Object> model = new HashMap<String, Object>();

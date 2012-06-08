@@ -91,6 +91,30 @@ public class PreferencesFormController {
 		this.validator = validator;
 	}
 	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
+	}
+	/**
+	 * @return the reflectionService
+	 */
+	public AvailableScheduleReflectionService getReflectionService() {
+		return reflectionService;
+	}
+	/**
+	 * @return the validator
+	 */
+	public PreferencesFormBackingObjectValidator getValidator() {
+		return validator;
+	}
+	/**
 	 * 
 	 * @param binder
 	 */

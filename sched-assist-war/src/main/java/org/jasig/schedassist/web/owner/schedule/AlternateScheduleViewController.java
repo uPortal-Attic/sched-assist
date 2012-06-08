@@ -60,7 +60,7 @@ import org.springframework.web.servlet.ModelAndView;
 @RequestMapping(value={"/owner/schedule-noscript.html","/delegate/schedule-noscript.html" })
 public class AlternateScheduleViewController {
 
-	private Log LOG = LogFactory.getLog(this.getClass());
+	protected final Log log = LogFactory.getLog(this.getClass());
 	
 	private AvailableScheduleDao availableScheduleDao;	
 	/**
@@ -69,6 +69,13 @@ public class AlternateScheduleViewController {
 	@Autowired
 	public void setAvailableScheduleDao(AvailableScheduleDao availableScheduleDao) {
 		this.availableScheduleDao = availableScheduleDao;
+	}
+
+	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
 	}
 
 	/**
@@ -90,7 +97,7 @@ public class AlternateScheduleViewController {
 			try {
 				startDate = df.parse(startParam);
 			} catch (ParseException e) {
-				LOG.debug("ignoring unparseable startDate: " + startDate);
+				log.debug("ignoring unparseable startDate: " + startDate);
 			}
 		}
 		

@@ -116,6 +116,36 @@ public class CancelAppointmentFormController {
 		this.publicProfileDao = publicProfileDao;
 	}
 	/**
+	 * @return the schedulingAssistantService
+	 */
+	public SchedulingAssistantService getSchedulingAssistantService() {
+		return schedulingAssistantService;
+	}
+	/**
+	 * @return the relationshipDao
+	 */
+	public RelationshipDao getRelationshipDao() {
+		return relationshipDao;
+	}
+	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
+	}
+	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the publicProfileDao
+	 */
+	public PublicProfileDao getPublicProfileDao() {
+		return publicProfileDao;
+	}
+	/**
 	 * 
 	 * @param binder
 	 */

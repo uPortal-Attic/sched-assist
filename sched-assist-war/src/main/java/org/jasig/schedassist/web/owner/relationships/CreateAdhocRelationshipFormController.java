@@ -99,6 +99,24 @@ public class CreateAdhocRelationshipFormController {
 		this.mutableRelationshipDao = mutableRelationshipDao;
 	}
 	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
+	 * @return the visitorDao
+	 */
+	public VisitorDao getVisitorDao() {
+		return visitorDao;
+	}
+	/**
+	 * @return the mutableRelationshipDao
+	 */
+	public MutableRelationshipDao getMutableRelationshipDao() {
+		return mutableRelationshipDao;
+	}
+	/**
 	 * 
 	 * @param binder
 	 */

@@ -50,6 +50,13 @@ public class RelationshipDataSourceAdminController {
 	}
 
 	/**
+	 * @return the relationshipDataSource
+	 */
+	public RelationshipDataSource getRelationshipDataSource() {
+		return relationshipDataSource;
+	}
+
+	/**
 	 * 
 	 * @param model
 	 * @return

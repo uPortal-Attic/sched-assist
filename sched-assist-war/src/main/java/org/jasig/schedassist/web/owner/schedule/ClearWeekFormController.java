@@ -61,7 +61,7 @@ import org.springframework.web.servlet.view.RedirectView;
 @RequestMapping(value={"/owner/clear-week.html", "/delegate/clear-week.html" })
 public class ClearWeekFormController {
 
-	private Log LOG = LogFactory.getLog(this.getClass());
+	protected final Log log = LogFactory.getLog(this.getClass());
 	
 	private AvailableScheduleDao availableScheduleDao;	
 	/**
@@ -70,6 +70,12 @@ public class ClearWeekFormController {
 	@Autowired
 	public void setAvailableScheduleDao(AvailableScheduleDao availableScheduleDao) {
 		this.availableScheduleDao = availableScheduleDao;
+	}
+	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
 	}
 	/**
 	 * 
@@ -96,7 +102,7 @@ public class ClearWeekFormController {
 		try {
 			model.addAttribute("weekOf", CommonDateOperations.parseDatePhrase(fbo.getWeekOfPhrase()));
 		} catch (InputFormatException e) {
-			LOG.warn("illegal state, InputFormatException thrown for known safe weekOfPhrase", e);
+			log.warn("illegal state, InputFormatException thrown for known safe weekOfPhrase", e);
 		}
 		model.addAttribute("command", fbo);
 		return "owner-schedule/clear-week-form";
@@ -121,7 +127,7 @@ public class ClearWeekFormController {
 		} catch (InputFormatException e) {
 			// failed to parse weekOf, default to "this week"
 			setWeekOfDefault(command);
-			LOG.debug("failed to parse " + weekOfPhrase + ", using default values");
+			log.debug("failed to parse " + weekOfPhrase + ", using default values");
 		}
 	}
 	/**
@@ -153,7 +159,7 @@ public class ClearWeekFormController {
 			model.put("weekOf", weekOf);
 			return new ModelAndView("owner-schedule/clear-week-success", model);
 		} else {
-			LOG.debug("owner (" + owner + ") did not confirm request to clear schedule for weekOf " + fbo.getWeekOfPhrase() + ", cancelling");
+			log.debug("owner (" + owner + ") did not confirm request to clear schedule for weekOf " + fbo.getWeekOfPhrase() + ", cancelling");
 			return new ModelAndView(new RedirectView("schedule.html", true));
 		}
 	}

@@ -51,7 +51,7 @@ import org.springframework.web.servlet.view.RedirectView;
 @RequestMapping(value={"/owner/remove-block-alternate.html", "/delegate/remove-block-alternate.html" })
 public class AlternateRemoveAvailableBlockController {
 
-	private final Log LOG = LogFactory.getLog(this.getClass());
+	protected final Log log = LogFactory.getLog(this.getClass());
 	
 	private AvailableScheduleDao availableScheduleDao;
 	/**
@@ -60,6 +60,12 @@ public class AlternateRemoveAvailableBlockController {
 	@Autowired
 	public void setAvailableScheduleDao(AvailableScheduleDao availableScheduleDao) {
 		this.availableScheduleDao = availableScheduleDao;
+	}
+	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
 	}
 	/**
 	 * 
@@ -75,10 +81,10 @@ public class AlternateRemoveAvailableBlockController {
 		
 		try {
 			AvailableBlock block = AvailableBlockBuilder.createBlock(startTimePhrase, endTimePhrase);
-			LOG.debug("parsed request parameters: " + block);
+			log.debug("parsed request parameters: " + block);
 			availableScheduleDao.removeFromSchedule(owner, block);
 		} catch (InputFormatException e) {
-			LOG.info("cannot create block", e);
+			log.info("cannot create block", e);
 			// TODO should redirect to error form
 		} 
 		

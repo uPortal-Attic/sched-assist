@@ -63,7 +63,7 @@ import org.springframework.web.servlet.view.json.MappingJacksonJsonView;
 @Controller
 public class VisibleScheduleDebugController {
 
-	private Log LOG = LogFactory.getLog(this.getClass());
+	protected final Log LOG = LogFactory.getLog(this.getClass());
 	private SchedulingAssistantService schedulingAssistantService;
 	private ICalendarAccountDao calendarAccountDao;
 	private OwnerDao ownerDao;
@@ -104,7 +104,36 @@ public class VisibleScheduleDebugController {
 	public void setCalendarDataDao(ICalendarDataDao calendarDataDao) {
 		this.calendarDataDao = calendarDataDao;
 	}
-	
+	/**
+	 * @return the schedulingAssistantService
+	 */
+	public SchedulingAssistantService getSchedulingAssistantService() {
+		return schedulingAssistantService;
+	}
+	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
+	 * @return the ownerDao
+	 */
+	public OwnerDao getOwnerDao() {
+		return ownerDao;
+	}
+	/**
+	 * @return the visitorDao
+	 */
+	public VisitorDao getVisitorDao() {
+		return visitorDao;
+	}
+	/**
+	 * @return the calendarDataDao
+	 */
+	public ICalendarDataDao getCalendarDataDao() {
+		return calendarDataDao;
+	}
 	/**
 	 * 
 	 * @param ownerId

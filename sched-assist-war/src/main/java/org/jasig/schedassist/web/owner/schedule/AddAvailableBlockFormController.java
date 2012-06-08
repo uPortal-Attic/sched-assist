@@ -67,6 +67,12 @@ public class AddAvailableBlockFormController {
 		this.availableScheduleDao = availableScheduleDao;
 	}
 	/**
+	 * @return the availableScheduleDao
+	 */
+	public AvailableScheduleDao getAvailableScheduleDao() {
+		return availableScheduleDao;
+	}
+	/**
 	 * 
 	 * @param binder
 	 */

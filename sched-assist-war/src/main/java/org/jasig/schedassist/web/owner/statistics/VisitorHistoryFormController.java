@@ -81,6 +81,18 @@ public class VisitorHistoryFormController {
 	}
 	
 	/**
+	 * @return the statisticsDao
+	 */
+	public StatisticsDao getStatisticsDao() {
+		return statisticsDao;
+	}
+	/**
+	 * @return the calendarAccountDao
+	 */
+	public ICalendarAccountDao getCalendarAccountDao() {
+		return calendarAccountDao;
+	}
+	/**
 	 * 
 	 * @param binder
 	 */

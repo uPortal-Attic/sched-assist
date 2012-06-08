@@ -53,6 +53,13 @@ public class PublicProfileController {
 	}
 
 	/**
+	 * @return the publicProfileDao
+	 */
+	public PublicProfileDao getPublicProfileDao() {
+		return publicProfileDao;
+	}
+
+	/**
 	 * Retrieve the {@link PublicProfile} for the profileKey argument, returning
 	 * the appropriate view if found.
 	 * @param model

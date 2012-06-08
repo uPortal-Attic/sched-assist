@@ -65,6 +65,13 @@ public class PreviewVisibleScheduleController {
 	}
 
 	/**
+	 * @return the schedulingAssistantService
+	 */
+	public SchedulingAssistantService getSchedulingAssistantService() {
+		return schedulingAssistantService;
+	}
+
+	/**
 	 * 
 	 * @param highContrast
 	 * @return

@@ -59,6 +59,13 @@ public class EventDetailsController {
 	}
 
 	/**
+	 * @return the statisticsDao
+	 */
+	public StatisticsDao getStatisticsDao() {
+		return statisticsDao;
+	}
+
+	/**
 	 * 
 	 * @param binder
 	 */
