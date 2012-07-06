@@ -135,7 +135,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 
 	private static final Header DEPTH_HEADER = new BasicHeader("Depth", "1");
 	protected final Log log = LogFactory.getLog(this.getClass());
-	private AbstractHttpClient httpClient;
+	private HttpClient httpClient;
 	private CredentialsProviderFactory credentialsProviderFactory;
 	private HttpHost httpHost;
 	private AuthScope caldavAdminAuthScope;
@@ -153,7 +153,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	 * @param httpClient the httpClient to set
 	 */
 	@Autowired
-	public void setHttpClient(AbstractHttpClient httpClient) {
+	public void setHttpClient(HttpClient httpClient) {
 		this.httpClient = httpClient;
 	}
 	/**
@@ -318,7 +318,8 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if(isPreemptiveAuthenticationEnabled()) {
-			this.httpClient.addRequestInterceptor(new PreemptiveAuthInterceptor(caldavAdminAuthScope), 0);
+			// addRequestInterceptor method not visible on the HttpClient interface
+			((AbstractHttpClient) this.httpClient).addRequestInterceptor(new PreemptiveAuthInterceptor(caldavAdminAuthScope), 0);
 			this.preemptiveAuthenticationScheme = identifyScheme(caldavAdminAuthScope.getScheme());
 		}
 	}
@@ -1082,6 +1083,10 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		}
 		for(Object o: componentList) {
 			VEvent event = (VEvent) o;
+			if(event.getStartDate().getDate().before(new java.util.Date())) {
+				// short-circuit non events in the past
+				continue;
+			}
 			final boolean hasAvailableAppointmentProperty = SchedulingAssistantAppointment.TRUE.equals(event.getProperty(SchedulingAssistantAppointment.AVAILABLE_APPOINTMENT));
 			final boolean isAttendingAsOwner = this.eventUtils.isAttendingAsOwner(event, owner);
 			if(hasAvailableAppointmentProperty && isAttendingAsOwner) {
