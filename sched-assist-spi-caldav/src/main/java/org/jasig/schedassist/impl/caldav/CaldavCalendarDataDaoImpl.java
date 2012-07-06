@@ -25,20 +25,26 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.parameter.PartStat;
 import net.fortuna.ical4j.model.property.Attendee;
 import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Uid;
+import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.util.Calendars;
 
 import org.apache.commons.io.IOUtils;
@@ -81,6 +87,7 @@ import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableSchedule;
 import org.jasig.schedassist.model.AvailableVersion;
 import org.jasig.schedassist.model.CommonDateOperations;
+import org.jasig.schedassist.model.DefaultEventUtilsImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IEventUtils;
 import org.jasig.schedassist.model.IScheduleOwner;
@@ -782,13 +789,65 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		} else if(size == 1) {
 			return calendars.get(0).getCalendar();
 		} else if (size == 2) {
-			return Calendars.merge(calendars.get(0).getCalendar(), calendars.get(1).getCalendar());
+			return merge(calendars.get(0).getCalendar(), calendars.get(1).getCalendar());
 		} else {
-			Calendar main = Calendars.merge(calendars.get(0).getCalendar(), calendars.get(1).getCalendar());
-			for(int i = 2; i < size; i++) {
-				main = Calendars.merge(main, calendars.get(i).getCalendar());
+			// create target by merging first 2
+			Calendar main = merge(calendars.get(0).getCalendar(), calendars.get(1).getCalendar());
+			// loop over the rest
+			List<CalendarWithURI> remaining = calendars.subList(2, calendars.size());
+			for(Iterator<CalendarWithURI> i = remaining.iterator(); i.hasNext();) {
+				CalendarWithURI left = i.next();
+				// if there aren't any more in the iterator, merge an empty calendar
+				Calendar right = new Calendar();
+				if(i.hasNext()) {
+					right = i.next().getCalendar();
+				} 
+				merge(main, left.getCalendar(), right);
 			}
 			return main;
+		}
+	}
+	
+	/**
+	 * Merge the components from all calendars into one result.
+	 * 
+	 * @param calendars
+	 * @return
+	 */
+	protected Calendar merge(Calendar left, Calendar right) {
+		Calendar result = new Calendar();
+		result.getProperties().add(DefaultEventUtilsImpl.PROD_ID);
+		result.getProperties().add(Version.VERSION_2_0);
+		merge(result, left, right);
+		return result;
+	}
+	
+	/**
+	 * Mutative method.
+	 * The first {@link Calendar} argument is altered by this method.
+	 * 
+	 * @param target
+	 * @param left
+	 * @param right
+	 */
+	protected void merge(Calendar target, Calendar left, Calendar right) {
+		Map<String, VTimeZone> existingTimezones = new HashMap<String, VTimeZone>();
+		for(Iterator<?> i = left.getComponents().iterator(); i.hasNext();) {
+			Component c = (Component) i.next();
+			if(VTimeZone.VTIMEZONE.equals(c.getName())) {
+				VTimeZone tz = (VTimeZone) c;
+				existingTimezones.put(tz.getTimeZoneId().getValue(), tz);
+			}
+			target.getComponents().add(c);
+		}
+		// then iterate over the right
+		for(Iterator<?> i = right.getComponents().iterator(); i.hasNext();) {
+			Component c = (Component) i.next();
+			if(VTimeZone.VTIMEZONE.equals(c.getName()) && existingTimezones.containsKey(((VTimeZone) c).getTimeZoneId().getValue())) {
+				// don't add this timezone, we've already got a copy
+			} else {
+				target.getComponents().add(c);
+			}
 		}
 	}
 
