@@ -158,4 +158,19 @@ public class ReportResponseHandlerImplTest {
 		Assert.assertNotNull(cal);
 		Assert.assertEquals(1, cal.getComponents(VEvent.VEVENT).size());
 	}
+	
+	@Test
+	public void testProblemResponse1() throws IOException {
+		Resource controlExample = new ClassPathResource("caldav-examples/report-response-problem1.xml");
+		
+		ReportResponseHandlerImpl handler = new ReportResponseHandlerImpl();
+		List<CalendarWithURI> calendars = handler.extractCalendars(controlExample.getInputStream());
+		Assert.assertEquals(5, calendars.size());
+		
+		for(CalendarWithURI withUri: calendars) {
+			Assert.assertNotNull(withUri.getCalendar());
+			Assert.assertNotNull(withUri.getEtag());
+			Assert.assertNotNull(withUri.getUri());
+		}
+	}
 }

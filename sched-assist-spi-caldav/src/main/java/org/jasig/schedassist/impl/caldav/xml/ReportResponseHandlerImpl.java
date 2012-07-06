@@ -126,10 +126,13 @@ public class ReportResponseHandlerImpl {
 			
 		} catch (XMLStreamException e) {
 			if(capturedContent != null) {
-				log.error("caught XMLStreamException in extractCalendars, captured content: " + capturedContent.toString());
+				log.error("caught XMLStreamException in extractCalendars, captured content: " + capturedContent.toString(), e);
+			} else {
+				log.error("caught XMLStreamException in extractCalendars, no captured content available", e);
 			}
 			throw new XmlParsingException("caught XMLStreamException in extractCalendars", e);
 		} catch (IOException e) {
+			log.error("caught IOException in extractCalendars", e);
 			throw new XmlParsingException("caught IOException in extractCalendars", e);
 		}
 
