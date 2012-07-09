@@ -146,6 +146,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	private boolean cancelUpdatesVisitorCalendar = false;
 	private boolean reflectionEnabled = false;
 	private boolean preemptiveAuthenticationEnabled = false;
+	private boolean getCalendarPerformsPurgeDeclinedAttendees = true;
 	private AuthScheme preemptiveAuthenticationScheme;
 	private ApplicationEventPublisher applicationEventPublisher;
 
@@ -298,6 +299,20 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 		this.preemptiveAuthenticationEnabled = preemptiveAuthenticationEnabled;
 	}
 	
+	/**
+	 * @return the getCalendarPerformsPurgeDeclinedAttendees
+	 */
+	public boolean isGetCalendarPerformsPurgeDeclinedAttendees() {
+		return getCalendarPerformsPurgeDeclinedAttendees;
+	}
+	/**
+	 * @param getCalendarPerformsPurgeDeclinedAttendees the getCalendarPerformsPurgeDeclinedAttendees to set
+	 */
+	@Value("${caldav.getCalendarPerformsPurgeDeclinedAttendees:true}")
+	public void setGetCalendarPerformsPurgeDeclinedAttendees(
+			boolean getCalendarPerformsPurgeDeclinedAttendees) {
+		this.getCalendarPerformsPurgeDeclinedAttendees = getCalendarPerformsPurgeDeclinedAttendees;
+	}
 	/**
 	 * 
 	 * @param scheme
@@ -758,13 +773,17 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 				InputStream content = entity.getContent();
 				ReportResponseHandlerImpl reportResponseHandler = new ReportResponseHandlerImpl();
 				List<CalendarWithURI> calendars = reportResponseHandler.extractCalendars(content);
-				List<CalendarWithURI> results = new ArrayList<CalendarWithURI>();
-				for(CalendarWithURI c: calendars) {
-					if(purgeDeclinedAttendees(c, calendarAccount) != null) {
-						results.add(c);
+				if(isGetCalendarPerformsPurgeDeclinedAttendees()) {
+					List<CalendarWithURI> results = new ArrayList<CalendarWithURI>();
+					for(CalendarWithURI c: calendars) {
+						if(purgeDeclinedAttendees(c, calendarAccount) != null) {
+							results.add(c);
+						}
 					}
-				}
-				return results;
+					return results;
+				} 
+				// purgeDeclinedAttendees disabled
+				return calendars;
 			} else {
 				throw new CaldavDataAccessException("unexpected status code: " + statusCode);
 			}
