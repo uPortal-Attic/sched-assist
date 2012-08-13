@@ -32,6 +32,7 @@ This project includes:
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaMail API under Common Development and Distribution License (CDDL) v1.0
   JUnit under Common Public License Version 1.0
+  Mockito under The MIT License
   Scheduling Assistant API under Apache License Version 2.0
   Scheduling Assistant Mocks under Apache License Version 2.0
   Scheduling Assistant SPI: CalDAV under Apache License Version 2.0

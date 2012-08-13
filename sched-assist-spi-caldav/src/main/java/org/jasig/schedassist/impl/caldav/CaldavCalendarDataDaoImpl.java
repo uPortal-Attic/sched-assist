@@ -852,15 +852,29 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 	 */
 	protected void merge(Calendar target, Calendar left, Calendar right) {
 		Map<String, VTimeZone> existingTimezones = new HashMap<String, VTimeZone>();
-		for(Iterator<?> i = left.getComponents().iterator(); i.hasNext();) {
+		// first pass is through the target to id VTIMEZONEs already stored
+		for(Iterator<?> i = target.getComponents().iterator(); i.hasNext();) {
 			Component c = (Component) i.next();
 			if(VTimeZone.VTIMEZONE.equals(c.getName())) {
 				VTimeZone tz = (VTimeZone) c;
 				existingTimezones.put(tz.getTimeZoneId().getValue(), tz);
 			}
-			target.getComponents().add(c);
 		}
-		// then iterate over the right
+		// 2nd: pass through left
+		for(Iterator<?> i = left.getComponents().iterator(); i.hasNext();) {
+			Component c = (Component) i.next();
+			final boolean componentIsTimezone = VTimeZone.VTIMEZONE.equals(c.getName());
+			if(componentIsTimezone && existingTimezones.containsKey(((VTimeZone) c).getTimeZoneId().getValue())) {
+				// don't add this timezone, we've already got a copy
+			} else {
+				target.getComponents().add(c);
+				if(componentIsTimezone) {
+					VTimeZone tz = (VTimeZone) c;
+					existingTimezones.put(tz.getTimeZoneId().getValue(), tz);
+				}
+			}
+		}
+		// 3rd: iterate over the right
 		for(Iterator<?> i = right.getComponents().iterator(); i.hasNext();) {
 			Component c = (Component) i.next();
 			if(VTimeZone.VTIMEZONE.equals(c.getName()) && existingTimezones.containsKey(((VTimeZone) c).getTimeZoneId().getValue())) {

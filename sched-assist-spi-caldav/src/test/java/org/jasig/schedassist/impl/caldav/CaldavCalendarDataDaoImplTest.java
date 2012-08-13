@@ -19,9 +19,8 @@
 
 package org.jasig.schedassist.impl.caldav;
 
-import static org.mockito.Matchers.isA;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,10 +47,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.BasicHttpProcessor;
 import org.apache.http.protocol.HttpContext;
 import org.jasig.schedassist.model.DefaultEventUtilsImpl;
 import org.jasig.schedassist.model.ICalendarAccount;
@@ -122,6 +117,76 @@ public class CaldavCalendarDataDaoImplTest {
 		Assert.assertEquals(2, result.getComponents(VEvent.VEVENT).size());
 		Assert.assertEquals(1, result.getComponents(VTimeZone.VTIMEZONE).size());
 	}
+	
+	@Test
+	public void testMergeThreeCalendarsWithTimezones() {
+		TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
+		TimeZone _timeZone = registry.getTimeZone("America/Chicago");
+
+		java.util.Date now = new java.util.Date();
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl();
+
+		VEvent target1 = new VEvent(new DateTime(now), new DateTime(DateUtils.addHours(now, 1)), "target");
+		target1.getProperties().add(new Uid("abcde12344"));
+		Calendar target = eventUtils.wrapEventInCalendar(target1);
+		target.getComponents().add(_timeZone.getVTimeZone());
+		
+		VEvent event1 = new VEvent(new DateTime(now), new DateTime(DateUtils.addHours(now, 1)), "event 1");
+		event1.getProperties().add(new Uid("abcde12345"));
+		Calendar left = eventUtils.wrapEventInCalendar(event1);
+		left.getComponents().add(_timeZone.getVTimeZone());
+
+		VEvent event2 = new VEvent(new DateTime(DateUtils.addHours(now, 1)), new DateTime(DateUtils.addHours(now, 2)), "event 2");
+		event2.getProperties().add(new Uid("abcde12346"));
+		Calendar right = eventUtils.wrapEventInCalendar(event2);
+		right.getComponents().add(_timeZone.getVTimeZone());
+
+		CaldavCalendarDataDaoImpl calendarDataDao = new CaldavCalendarDataDaoImpl();
+		calendarDataDao.merge(target, left, right);
+		Assert.assertEquals(4, target.getComponents().size());
+		Assert.assertEquals(3, target.getComponents(VEvent.VEVENT).size());
+		Assert.assertEquals(1, target.getComponents(VTimeZone.VTIMEZONE).size());
+	}
+	@Test
+	public void testConsolidateFourCalendarsWithTimezones() {
+		TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
+		TimeZone _timeZone = registry.getTimeZone("America/Chicago");
+
+		java.util.Date now = new java.util.Date();
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl();
+
+		VEvent target1 = new VEvent(new DateTime(now), new DateTime(DateUtils.addHours(now, 1)), "target");
+		target1.getProperties().add(new Uid("abcde12344"));
+		Calendar calendar1 = eventUtils.wrapEventInCalendar(target1);
+		calendar1.getComponents().add(_timeZone.getVTimeZone());
+		
+		VEvent event1 = new VEvent(new DateTime(now), new DateTime(DateUtils.addHours(now, 1)), "event 1");
+		event1.getProperties().add(new Uid("abcde12345"));
+		Calendar calendar2 = eventUtils.wrapEventInCalendar(event1);
+		calendar2.getComponents().add(_timeZone.getVTimeZone());
+
+		VEvent event2 = new VEvent(new DateTime(DateUtils.addHours(now, 1)), new DateTime(DateUtils.addHours(now, 2)), "event 2");
+		event2.getProperties().add(new Uid("abcde12346"));
+		Calendar calendar3 = eventUtils.wrapEventInCalendar(event2);
+		calendar3.getComponents().add(_timeZone.getVTimeZone());
+		
+		VEvent event3 = new VEvent(new DateTime(DateUtils.addHours(now, 2)), new DateTime(DateUtils.addHours(now, 3)), "event 3");
+		event3.getProperties().add(new Uid("abcde12347"));
+		Calendar calendar4 = eventUtils.wrapEventInCalendar(event3);
+		calendar4.getComponents().add(_timeZone.getVTimeZone());
+
+		List<CalendarWithURI> calendars = new ArrayList<CalendarWithURI>();
+		calendars.add(new CalendarWithURI(calendar1, null));
+		calendars.add(new CalendarWithURI(calendar2, null));
+		calendars.add(new CalendarWithURI(calendar3, null));
+		calendars.add(new CalendarWithURI(calendar4, null));
+		CaldavCalendarDataDaoImpl calendarDataDao = new CaldavCalendarDataDaoImpl();
+		Calendar result = calendarDataDao.consolidate(calendars);
+		
+		Assert.assertEquals(5, result.getComponents().size());
+		Assert.assertEquals(4, result.getComponents(VEvent.VEVENT).size());
+		Assert.assertEquals(1, result.getComponents(VTimeZone.VTIMEZONE).size());
+	}
 
 	@Test
 	public void testMergeWithDifferentTimezones() {
@@ -147,6 +212,47 @@ public class CaldavCalendarDataDaoImplTest {
 		Assert.assertNotNull(result);
 		Assert.assertEquals(4, result.getComponents().size());
 		Assert.assertEquals(2, result.getComponents(VEvent.VEVENT).size());
+		Assert.assertEquals(2, result.getComponents(VTimeZone.VTIMEZONE).size());
+	}
+	@Test
+	public void testConsolidateFourCalendarsWithDifferentTimezones() {
+		TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
+		TimeZone _timeZone = registry.getTimeZone("America/Chicago");
+		TimeZone _timeZone2 = registry.getTimeZone("America/Los_Angeles");
+
+		java.util.Date now = new java.util.Date();
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl();
+
+		VEvent target1 = new VEvent(new DateTime(now), new DateTime(DateUtils.addHours(now, 1)), "target");
+		target1.getProperties().add(new Uid("abcde12344"));
+		Calendar calendar1 = eventUtils.wrapEventInCalendar(target1);
+		calendar1.getComponents().add(_timeZone.getVTimeZone());
+		
+		VEvent event1 = new VEvent(new DateTime(now), new DateTime(DateUtils.addHours(now, 1)), "event 1");
+		event1.getProperties().add(new Uid("abcde12345"));
+		Calendar calendar2 = eventUtils.wrapEventInCalendar(event1);
+		calendar2.getComponents().add(_timeZone.getVTimeZone());
+
+		VEvent event2 = new VEvent(new DateTime(DateUtils.addHours(now, 1)), new DateTime(DateUtils.addHours(now, 2)), "event 2");
+		event2.getProperties().add(new Uid("abcde12346"));
+		Calendar calendar3 = eventUtils.wrapEventInCalendar(event2);
+		calendar3.getComponents().add(_timeZone.getVTimeZone());
+		
+		VEvent event3 = new VEvent(new DateTime(DateUtils.addHours(now, 2)), new DateTime(DateUtils.addHours(now, 3)), "event 3");
+		event3.getProperties().add(new Uid("abcde12347"));
+		Calendar calendar4 = eventUtils.wrapEventInCalendar(event3);
+		calendar4.getComponents().add(_timeZone2.getVTimeZone());
+
+		List<CalendarWithURI> calendars = new ArrayList<CalendarWithURI>();
+		calendars.add(new CalendarWithURI(calendar1, null));
+		calendars.add(new CalendarWithURI(calendar2, null));
+		calendars.add(new CalendarWithURI(calendar3, null));
+		calendars.add(new CalendarWithURI(calendar4, null));
+		CaldavCalendarDataDaoImpl calendarDataDao = new CaldavCalendarDataDaoImpl();
+		Calendar result = calendarDataDao.consolidate(calendars);
+		
+		Assert.assertEquals(6, result.getComponents().size());
+		Assert.assertEquals(4, result.getComponents(VEvent.VEVENT).size());
 		Assert.assertEquals(2, result.getComponents(VTimeZone.VTIMEZONE).size());
 	}
 
