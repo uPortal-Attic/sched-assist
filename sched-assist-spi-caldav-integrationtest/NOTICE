@@ -29,7 +29,7 @@ This project includes:
   HttpCore under Apache License
   iCal4j under iCal4j - License
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
-  JavaMail API under Common Development and Distribution License (CDDL) v1.0
+  JavaMail API under Sun Binary Code License
   JUnit under Common Public License Version 1.0
   Scheduling Assistant API under Apache License Version 2.0
   Scheduling Assistant Mocks under Apache License Version 2.0
