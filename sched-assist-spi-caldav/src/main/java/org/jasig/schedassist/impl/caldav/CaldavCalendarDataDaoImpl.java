@@ -781,7 +781,7 @@ public class CaldavCalendarDataDaoImpl implements ICalendarDataDao, Initializing
 						}
 					}
 					return results;
-				} 
+				}
 				// purgeDeclinedAttendees disabled
 				return calendars;
 			} else {

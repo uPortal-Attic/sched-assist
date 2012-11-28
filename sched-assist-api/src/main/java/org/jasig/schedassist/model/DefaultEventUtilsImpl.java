@@ -39,6 +39,7 @@ import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateList;
 import net.fortuna.ical4j.model.DateTime;
+import net.fortuna.ical4j.model.Dur;
 import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.ParameterList;
 import net.fortuna.ical4j.model.Period;
@@ -97,13 +98,13 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	// Commons-Lang provides a thread-safe replacement for SimpleDateFormat
 	private static final FastDateFormat FASTDATEFORMAT = FastDateFormat.getInstance(ICAL_DATETIME_FORMAT, 
 			TimeZone.getTimeZone("UTC"));
-	
+
 	protected final Log LOG = LogFactory.getLog(this.getClass());
-	
+
 	private final IAffiliationSource affiliationSource;
 	private String eventClassForPersonOwners = Clazz.CONFIDENTIAL.getValue();
 	private String eventClassForResourceOwners = Clazz.PUBLIC.getValue();
-	
+
 	/**
 	 * Default constructor, sets the {@link IAffiliationSource} to the 
 	 * {@link NullAffiliationSourceImpl} implementation.
@@ -158,7 +159,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		if(null == attendee) {
 			return false;
 		}
-		
+
 		Cn cn = (Cn) attendee.getParameter(Cn.CN);
 		if(null == cn) {
 			return false;
@@ -187,10 +188,10 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			VEvent event = new VEvent();
 			event.getProperties().add(new DtStart(new DateTime(convertToICalendarFormat(block.getStartTime()))));
 			event.getProperties().add(new DtEnd(new DateTime(convertToICalendarFormat(block.getEndTime()))));
-			
+
 			Organizer ownerOrganizer = constructOrganizer(owner.getCalendarAccount());
 			event.getProperties().add(ownerOrganizer);
-			
+
 			Attendee visitorAttendee = constructSchedulingAssistantAttendee(visitor.getCalendarAccount(), AppointmentRole.VISITOR);
 			event.getProperties().add(visitorAttendee);
 			Attendee ownerAttendee = constructSchedulingAssistantAttendee(owner.getCalendarAccount(), AppointmentRole.OWNER);
@@ -204,20 +205,20 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 
 			StringBuilder title = new StringBuilder();
 			title.append(owner.getPreference(Preferences.MEETING_PREFIX));
-			
+
 			// update title with visitor name and add description only if visitorLimit == 1
 			if(block.getVisitorLimit() == 1) {
 				title.append(" with ");
 				title.append(visitor.getCalendarAccount().getDisplayName());
-				
+
 				// build event description
 				Description description = new Description(eventDescription);
 				event.getProperties().add(description);
 			} 
-			
+
 			// finally add meeting title
 			event.getProperties().add(new Summary(title.toString()));
-			
+
 			if(owner.getCalendarAccount() instanceof IDelegateCalendarAccount) {
 				event.getProperties().add(new Clazz(eventClassForResourceOwners));
 			} else {
@@ -235,19 +236,19 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 					event.getProperties().add(new Location(preferredLocation));
 				}
 			}
-			
+
 			// add CONFIRMED status
 			event.getProperties().add(Status.VEVENT_CONFIRMED);
-			
+
 			// lastly we must add a UID
 			event.getProperties().add(generateNewUid());
-			
+
 			return event;
 		} catch (ParseException e) {
 			throw new IllegalArgumentException("caught ParseException creating event", e);
 		}
 	}
-	
+
 	/**
 	 * Called by {@link #constructAvailableAppointment(AvailableBlock, IScheduleOwner, IScheduleVisitor, String)};
 	 * returns an appropriate {@link Clazz} depending on whether or not the {@link ICalendarAccount} is a resource account.
@@ -259,10 +260,10 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		if(calendarAccount instanceof IDelegateCalendarAccount) {
 			return new Clazz(eventClassForResourceOwners);
 		}
-		
+
 		return new Clazz(eventClassForPersonOwners);
 	}
-	
+
 	/**
 	 * Construct an {@link Attendee} property for the specified user and role.
 	 * The PARTSTAT parameter will be set to ACCEPTED.
@@ -318,12 +319,12 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 				return attendee;
 			}
 		}
-		
+
 		//otherwise the calendarUser might be the organizer
 		if(isAttendingAsOwner(event, calendarUser)) {
 			return event.getProperty(Organizer.ORGANIZER);
 		}
-		
+
 		return null;
 	}
 
@@ -370,7 +371,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 	public boolean willEventCauseConflict(ICalendarAccount calendarAccount, VEvent event) {
 		// check to see if the owner an attendee and has ACCEPTED
 		Property ownerAttendee = getAttendeeForUserFromEvent(event, calendarAccount);
-		
+
 		if(ownerAttendee != null) {
 			if(Organizer.ORGANIZER.equals(ownerAttendee.getName())) {
 				return true;
@@ -380,7 +381,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Check the event to see if this event represents an existing available appointment
 	 * that the visitor is "visiting" and the owner is "owning" (including the special case
@@ -402,14 +403,14 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			if(!visitorMatch) {
 				return false;
 			}
-			
+
 			boolean ownerMatch = isAttendingAsOwner(event, owner.getCalendarAccount());
 			return ownerMatch;
 		}
-		
+
 		return false;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.jasig.schedassist.model.IEventUtils#isAttendingAsVisitor(net.fortuna.ical4j.model.component.VEvent, org.jasig.schedassist.model.ICalendarAccount)
@@ -448,14 +449,14 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			Organizer organizer = (Organizer) event.getProperty(Organizer.ORGANIZER);
 			if(organizer == null) {
 				return false;
-				
+
 			}
 			return attendeeMatchesPerson(organizer, proposedOwner);
 		}
-		
+
 		return false;
 	}
-	
+
 
 	/*
 	 * (non-Javadoc)
@@ -476,16 +477,16 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 				event = convertBlockToReflectionEvent(block);
 				summaryToEvent.put(summary, event);
 			} else {
-			    // add Rdate to existing event
-			 	net.fortuna.ical4j.model.Date start = new net.fortuna.ical4j.model.Date(DateUtils.truncate(block.getStartTime(), java.util.Calendar.DATE));
-			 	DateList dates = new DateList(Value.DATE);
-			 	dates.add(start);
-			 	
-			 	RDate rDate = new RDate(dates);
+				// add Rdate to existing event
+				net.fortuna.ical4j.model.Date start = new net.fortuna.ical4j.model.Date(DateUtils.truncate(block.getStartTime(), java.util.Calendar.DATE));
+				DateList dates = new DateList(Value.DATE);
+				dates.add(start);
+
+				RDate rDate = new RDate(dates);
 				event.getProperties().add(rDate);
 			}
 		}
-		
+
 		List<net.fortuna.ical4j.model.Calendar> results = new ArrayList<net.fortuna.ical4j.model.Calendar>();
 		for(VEvent e: summaryToEvent.values()) {
 			ComponentList components = new ComponentList();
@@ -494,7 +495,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		}
 		return results;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.model.IEventUtils#wrapEventInCalendar(net.fortuna.ical4j.model.component.VEvent)
 	 */
@@ -541,7 +542,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		DtStamp stamp = new DtStamp(new net.fortuna.ical4j.model.DateTime(new Date()));
 		Date blockEndTime = DateUtils.addDays(blockStartTime, 1);
 		DtEnd end = new DtEnd(new net.fortuna.ical4j.model.Date(blockEndTime));
-		
+
 		PropertyList properties = new PropertyList();
 		properties.add(new Summary(constructSummaryValueForReflectionEvent(block)));
 		properties.add(start);
@@ -551,9 +552,9 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		properties.add(new LastModified(new DateTime(new Date())));
 		properties.add(Clazz.PRIVATE);
 		properties.add(new Sequence(0));
-		
+
 		properties.add(Transp.TRANSPARENT);
-		
+
 		if(StringUtils.isNotBlank(block.getMeetingLocation())) {
 			properties.add(new Location(block.getMeetingLocation()));
 		} 
@@ -561,7 +562,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		VEvent event = new VEvent(properties);
 		return event;
 	}
-	
+
 	/**
 	 * 
 	 * @param block
@@ -622,7 +623,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		}
 	}
 
-	
+
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.model.IEventUtils#getEventVisitorLimit(net.fortuna.ical4j.model.component.VEvent)
 	 */
@@ -635,7 +636,7 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 		if(limit != null) {
 			return Integer.parseInt(limit.getValue());
 		}
-		
+
 		return null;
 	}
 	/*
@@ -655,7 +656,37 @@ public class DefaultEventUtilsImpl implements IEventUtils {
 			Date startBoundary, Date endBoundary) {
 		Period period = new Period(new DateTime(startBoundary), new DateTime(endBoundary));
 		PeriodList periodList = event.calculateRecurrenceSet(period);
-		return periodList;
+		PeriodList results = new PeriodList();
+		for(Object o: periodList) {
+			Period p = (Period) o;
+			
+			if(isAllDayPeriod(p)) {
+				// this period is broken
+				// the Periods returned by ical4j's calculateRecurrenceSet have range start/ends that are off by the system default's timezone offset
+				TimeZone systemTimezone = java.util.TimeZone.getDefault();
+
+				int offset = systemTimezone.getOffset(p.getStart().getTime());
+				Period fixed = new Period(
+						new DateTime(DateUtils.addMilliseconds(p.getRangeStart(), -offset)), 
+						new DateTime(DateUtils.addMilliseconds(p.getRangeEnd(), -offset)));
+				results.add(fixed);
+			} else {
+				results.add(p);
+			}
+		}
+		return results;
+	}
+	protected boolean isAllDayPeriod(Period period) {
+		Dur duration = period.getDuration();
+		return duration.getDays() == 1 && duration.getHours() == 0 && duration.getMinutes() == 0;
+	}
+	/**
+	 * 
+	 * @param event
+	 * @return
+	 */
+	protected boolean isAllDayEvent(VEvent event) {
+		return Value.DATE.equals(event.getStartDate().getParameter(Value.VALUE));
 	}
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.model.IEventUtils#extractUid(net.fortuna.ical4j.model.Calendar)

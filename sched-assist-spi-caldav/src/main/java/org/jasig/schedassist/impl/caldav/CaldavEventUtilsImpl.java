@@ -64,7 +64,6 @@ import org.springframework.beans.factory.annotation.Value;
  * environment.
  * 
  * @author Nicholas Blair, npblair@wisc.edu
- * @version $Id: CaldavEventUtilsImpl.java 51 2011-05-06 14:35:33Z nblair $
  */
 public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements InitializingBean {
 
@@ -182,7 +181,6 @@ public class CaldavEventUtilsImpl extends DefaultEventUtilsImpl implements Initi
 		}
 		return attendee;
 	}
-	
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.model.DefaultEventUtilsImpl#convertBlockToReflectionEvent(org.jasig.schedassist.model.AvailableBlock)
 	 */

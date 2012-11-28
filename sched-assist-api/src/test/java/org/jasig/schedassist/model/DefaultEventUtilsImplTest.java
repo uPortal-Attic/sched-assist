@@ -19,6 +19,7 @@
 
 package org.jasig.schedassist.model;
 
+import java.io.IOException;
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,9 +31,13 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TimeZone;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
+import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Parameter;
+import net.fortuna.ical4j.model.Period;
+import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -49,6 +54,8 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jasig.schedassist.NullAffiliationSourceImpl;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 /**
  * Test harness for {@link OracleEventUtilsImpl}.
@@ -908,6 +915,26 @@ public class DefaultEventUtilsImplTest {
 		
 		eventUtils.setEventClassForPersonOwners("SOMETHING-STRANGE");
 		Assert.assertEquals(new Clazz("SOMETHING-STRANGE"), eventUtils.determineAppropriateClassProperty(new MockCalendarAccount()));
+	}
+	
+	@Test
+	public void testCalculateRecurrenceDayEvent() throws IOException, ParserException, InputFormatException, ParseException {
+		Resource resource = new ClassPathResource("org/jasig/schedassist/model/recurring-allDay-event.ics");
+	
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(resource.getInputStream());
+		
+		VEvent event = (VEvent) calendar.getComponent(VEvent.VEVENT);
+		DefaultEventUtilsImpl eventUtils = new DefaultEventUtilsImpl(new NullAffiliationSourceImpl());
+		// should return 1 instance on Oct 5 2012
+		PeriodList list = eventUtils.calculateRecurrence(event, CommonDateOperations.parseDatePhrase("20121004"), CommonDateOperations.parseDatePhrase("20121006"));
+		Assert.assertEquals(1, list.size());
+		
+		for(Object o: list) {
+			Period p = (Period) o;
+			Assert.assertEquals(makeDateTime("20121005-0000").getTime(), p.getRangeStart().getTime());
+			Assert.assertEquals(makeDateTime("20121006-0000").getTime(), p.getRangeEnd().getTime());
+		}
 	}
 	
 	/**

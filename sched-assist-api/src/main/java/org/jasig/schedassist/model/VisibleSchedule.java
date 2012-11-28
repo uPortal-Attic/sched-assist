@@ -334,7 +334,7 @@ public class VisibleSchedule implements Serializable {
 		Set<AvailableBlock> conflictingKeys = new HashSet<AvailableBlock>();
 		
 		Date conflictDayStart = DateUtils.truncate(conflict.getStartTime(), java.util.Calendar.DATE);
-		Date conflictDayEnd = DateUtils.addDays(conflictDayStart, 1);
+		Date conflictDayEnd = DateUtils.addDays(DateUtils.truncate(conflict.getEndTime(), java.util.Calendar.DATE), 1);
 		conflictDayEnd = DateUtils.addMinutes(conflictDayEnd, -1);
 		
 		AvailableBlock rangeStart = AvailableBlockBuilder.createPreferredMinimumDurationBlock(
