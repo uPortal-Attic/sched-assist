@@ -21,33 +21,21 @@ package org.jasig.schedassist.impl.owner;
 
 import java.util.List;
 
-import javax.sql.DataSource;
-
-import org.apache.commons.io.IOUtils;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.Relationship;
 import org.jasig.schedassist.model.mock.MockCalendarAccount;
 import org.jasig.schedassist.model.mock.MockScheduleVisitor;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
+ * Tests for {@link OwnerDefinedRelationshipDaoImpl}.
+ * 
  * @author Nicholas Blair
- * @version $Id: OwnerDefinedRelationshipDaoImplTest.java $
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:database-test.xml"})
-public class OwnerDefinedRelationshipDaoImplTest extends AbstractJUnit4SpringContextTests {
+public class OwnerDefinedRelationshipDaoImplTest extends NeedsTestDatabase {
 
 	@Autowired
 	private OwnerDefinedRelationshipDaoImpl relationshipDao;
@@ -57,6 +45,16 @@ public class OwnerDefinedRelationshipDaoImplTest extends AbstractJUnit4SpringCon
 	private MockCalendarAccountDao calendarAccountDao;
 	private IScheduleOwner[] sampleOwners = new IScheduleOwner[2];
 	
+	@Override
+	public void afterCreate() throws Exception {
+		for(int i = 0; i < sampleOwners.length; i++) {
+			ICalendarAccount calendarAccount = this.calendarAccountDao.getCalendarAccount("user"+i);
+			sampleOwners[i] = ownerDao.register(calendarAccount);
+		}
+	}
+	@Override
+	public void afterDestroy() throws Exception {
+	}
 	/**
 	 * 
 	 */
@@ -163,38 +161,4 @@ public class OwnerDefinedRelationshipDaoImplTest extends AbstractJUnit4SpringCon
 		Assert.assertEquals(0, relationshipDao.forOwner(sampleOwners[0]).size());
 	}
 	
-	/**
-	 * Creates the database.
-	 * Also pulls the {@link OwnerDao} from the configuration and registers a few 
-	 * sample {@link IScheduleOwner}s.
-	 * 
-	 * @throws Exception
-	 */
-	@Before
-	public void createDatabase() throws Exception {
-		Resource createDdl = (Resource) this.applicationContext.getBean("createDdl");
-		
-		String sql = IOUtils.toString(createDdl.getInputStream());
-		JdbcTemplate template = new JdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
-		template.execute(sql);
-		
-		for(int i = 0; i < sampleOwners.length; i++) {
-			ICalendarAccount calendarAccount = this.calendarAccountDao.getCalendarAccount("user"+i);
-			sampleOwners[i] = ownerDao.register(calendarAccount);
-		}
-	}
-	
-	/**
-	 * Destroy the database.
-	 * 
-	 * @throws Exception
-	 */
-	@After
-	public void destroyDatabase() throws Exception {
-		Resource destroyDdl = (Resource) this.applicationContext.getBean("destroyDdl");
-		
-		String sql = IOUtils.toString(destroyDdl.getInputStream());
-		JdbcTemplate template = new JdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
-		template.execute(sql);
-	}
 }

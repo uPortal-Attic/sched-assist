@@ -70,22 +70,19 @@
 	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
   		<property name="dataSource" ref="dataSource"/>
 	</bean> 
-	<bean id="ownerIdSequence" class="org.springframework.jdbc.support.incrementer.HsqlMaxValueIncrementer">
+	<bean id="ownerIdSequence" class="org.springframework.jdbc.support.incrementer.HsqlSequenceMaxValueIncrementer">
 		<property name="dataSource" ref="dataSource"/>
 		<property name="incrementerName" value="ownerid_seq"/>
-		<property name="columnName" value="user_id"/>
 		<qualifier value="owners"/>
 	</bean>
-	<bean id="eventIdSequence" class="org.springframework.jdbc.support.incrementer.HsqlMaxValueIncrementer">
+	<bean id="eventIdSequence" class="org.springframework.jdbc.support.incrementer.HsqlSequenceMaxValueIncrementer">
 		<property name="dataSource" ref="dataSource"/>
 		<property name="incrementerName" value="eventid_seq"/>
-		<property name="columnName" value="event_id"/>
 		<qualifier value="statistics"/>
 	</bean>
-	<bean id="reminderIdSequence" class="org.springframework.jdbc.support.incrementer.HsqlMaxValueIncrementer">
+	<bean id="reminderIdSequence" class="org.springframework.jdbc.support.incrementer.HsqlSequenceMaxValueIncrementer">
 		<property name="dataSource" ref="dataSource"/>
 		<property name="incrementerName" value="reminderid_seq"/>
-		<property name="columnName" value="reminder_id"/>
 		<qualifier value="reminders"/>
 	</bean>
 	<tx:annotation-driven transaction-manager="txManager" />

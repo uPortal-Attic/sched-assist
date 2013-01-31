@@ -40,26 +40,23 @@
 	
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.SingleConnectionDataSource">
 		<property name="driverClassName"><value>org.hsqldb.jdbcDriver</value></property>
-		<property name="url"><value>jdbc:hsqldb:mem:storagedb</value></property>
+		<property name="url"><value>jdbc:hsqldb:mem:storagedb;shutdown=true </value></property>
 		<property name="username"><value>SA</value></property>
 		<property name="password"><value></value></property>
 	</bean>
-	<bean id="ownerIdSequenceGenerator" class="org.springframework.jdbc.support.incrementer.HsqlMaxValueIncrementer">
+	<bean id="ownerIdSequenceGenerator" class="org.springframework.jdbc.support.incrementer.HsqlSequenceMaxValueIncrementer">
 		<property name="dataSource" ref="dataSource"/>
 		<property name="incrementerName" value="ownerid_seq"/>
-		<property name="columnName" value="user_id"/>
 		<qualifier value="owners"/>
 	</bean>  
-	<bean id="eventIdSequenceGenerator" class="org.springframework.jdbc.support.incrementer.HsqlMaxValueIncrementer">
-		<property name="dataSource"><ref bean="dataSource"/></property>
-		<property name="incrementerName"><value>eventid_seq</value></property>
-		<property name="columnName"><value>event_id</value></property>
+	<bean id="eventIdSequenceGenerator" class="org.springframework.jdbc.support.incrementer.HsqlSequenceMaxValueIncrementer">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="incrementerName" value="eventid_seq"/>
 		<qualifier value="statistics"/>
 	</bean>
-	<bean id="reminderIdSequenceGenerator" class="org.springframework.jdbc.support.incrementer.HsqlMaxValueIncrementer">
+	<bean id="reminderIdSequenceGenerator" class="org.springframework.jdbc.support.incrementer.HsqlSequenceMaxValueIncrementer">
 		<property name="dataSource" ref="dataSource"/>
 		<property name="incrementerName" value="reminderid_seq"/>
-		<property name="columnName" value="reminder_id"/>
 		<qualifier value="reminders"/>
 	</bean>  
 	

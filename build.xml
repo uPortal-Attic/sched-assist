@@ -43,7 +43,8 @@
 	<property file="${basedir}/build.properties" />
 
 	<artifact:dependencies pathid="hsql.classpath">
-		<dependency groupId="hsqldb" artifactId="hsqldb" version="1.8.0.10" />
+		<dependency groupId="org.hsqldb" artifactId="hsqldb" version="2.2.9" />
+		<dependency groupId="org.hsqldb" artifactId="sqltool" version="2.2.9" />
 	</artifact:dependencies>
 
 	<artifact:dependencies pathid="parent.maven.classpath">
@@ -65,14 +66,16 @@
 
 		<echo message="Starting HSQL" />
 		<echo message="Using: ${hsql.data.directory}" />
-		<java fork="true" spawn="${spawn}" maxmemory="96M" classname="org.hsqldb.Server" failonerror="${failonerror}">
-			<classpath refid="hsql.classpath" />
+		<java fork="true" spawn="${spawn}" maxmemory="96M" classname="org.hsqldb.server.Server" failonerror="${failonerror}">
+			<classpath refid="hsql.classpath" />	
+			<arg value="--database.0" />
+			<arg value="${hsql.data.directory}/schedassistdb;hsqldb.tx=mvcc" />
+			<arg value="--dbname.0" />
+			<arg value="schedassistdb" />
+			<arg value="--address" />
+			<arg value="localhost" />
 			<arg value="-port" />
 			<arg value="${port}" />
-			<arg value="-database.0" />
-			<arg value="${hsql.data.directory}/schedassistdb" />
-			<arg value="-dbname.0" />
-			<arg value="schedassistdb" />
 		</java>
 	</target>
 
@@ -87,7 +90,7 @@
 		<echo message="Stopping HSQL" />
 		<trycatch reference="hsql-shutdown.exceptionId">
 			<try>
-				<java fork="true" dir="." classname="org.hsqldb.util.SqlTool" timeout="5000" errorproperty="hsql-shutdown.err.out" failonerror="true">
+				<java fork="true" dir="." classname="org.hsqldb.cmdline.SqlTool" timeout="5000" errorproperty="hsql-shutdown.err.out" failonerror="true">
 					<classpath refid="hsql.classpath" />
 					<arg value="--rcFile" />
 					<arg value="${basedir}/bootstrap/hsqldb.sqltool.rc" />

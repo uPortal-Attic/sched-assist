@@ -26,11 +26,8 @@ import java.util.Date;
 import java.util.Set;
 import java.util.SortedSet;
 
-import javax.sql.DataSource;
-
 import junit.framework.Assert;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jasig.schedassist.model.AvailableBlock;
 import org.jasig.schedassist.model.AvailableBlockBuilder;
@@ -41,30 +38,16 @@ import org.jasig.schedassist.model.IScheduleOwner;
 import org.jasig.schedassist.model.InputFormatException;
 import org.jasig.schedassist.model.MeetingDurations;
 import org.jasig.schedassist.model.Preferences;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Test harness for {@link SpringJDBCAvailableScheduleDaoImpl}.
- * 
- * Depends on spring configuration in database-test.xml (on classpath, src/test/resources).
- * 
  *  
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: SpringJDBCAvailableScheduleDaoImplTest.java 2536 2010-09-13 15:53:56Z npblair $
+ * @author Nicholas Blair
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:database-test.xml"})
 public class SpringJDBCAvailableScheduleDaoImplTest extends
-		AbstractJUnit4SpringContextTests {
+		NeedsTestDatabase {
 
 	@Autowired
 	private SpringJDBCAvailableScheduleDaoImpl availableScheduleDao;
@@ -74,6 +57,24 @@ public class SpringJDBCAvailableScheduleDaoImplTest extends
 	@Autowired
 	private MockCalendarAccountDao calendarAccountDao;
 	
+	@Override
+	public void afterCreate() throws IneligibleException {
+		for(int i = 0; i < sampleOwners.length; i++) {
+			ICalendarAccount calendarAccount = this.calendarAccountDao.getCalendarAccount("user"+i);
+			sampleOwners[i] = ownerDao.register(calendarAccount);
+		}
+		// give 3rd owner a 17 minute meeting duration preference
+		sampleOwners[2] = ownerDao.updatePreference(sampleOwners[3], Preferences.DURATIONS, MeetingDurations.fromKey("20").getKey());
+		
+		// give 4th owner a 20 minute meeting duration preference
+		sampleOwners[3] = ownerDao.updatePreference(sampleOwners[3], Preferences.DURATIONS, MeetingDurations.fromKey("20").getKey());
+		
+		// give 5th owner the double length preference
+		sampleOwners[4] = ownerDao.updatePreference(sampleOwners[4], Preferences.DURATIONS, MeetingDurations.THIRTY_SIXTY.getKey());
+	}
+	@Override
+	public void afterDestroy() {
+	}
 	/**
 	 * 
 	 * @throws Exception
@@ -573,49 +574,6 @@ public class SpringJDBCAvailableScheduleDaoImplTest extends
 		
 		AvailableSchedule storedAfterRemove = availableScheduleDao.retrieve(owner);
 		Assert.assertEquals(12, storedAfterRemove.getAvailableBlocks().size());
-	}
-	
-	/**
-	 * Creates the database.
-	 * Also pulls the {@link OwnerDao} from the configuration and registers a few 
-	 * sample {@link IScheduleOwner}s.
-	 * 
-	 * @throws Exception
-	 */
-	@Before
-	public void createDatabase() throws Exception {
-		Resource createDdl = (Resource) this.applicationContext.getBean("createDdl");
-		
-		String sql = IOUtils.toString(createDdl.getInputStream());
-		JdbcTemplate template = new JdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
-		template.execute(sql);
-		
-		for(int i = 0; i < sampleOwners.length; i++) {
-			ICalendarAccount calendarAccount = this.calendarAccountDao.getCalendarAccount("user"+i);
-			sampleOwners[i] = ownerDao.register(calendarAccount);
-		}
-		// give 3rd owner a 17 minute meeting duration preference
-		sampleOwners[2] = ownerDao.updatePreference(sampleOwners[3], Preferences.DURATIONS, MeetingDurations.fromKey("20").getKey());
-		
-		// give 4th owner a 20 minute meeting duration preference
-		sampleOwners[3] = ownerDao.updatePreference(sampleOwners[3], Preferences.DURATIONS, MeetingDurations.fromKey("20").getKey());
-		
-		// give 5th owner the double length preference
-		sampleOwners[4] = ownerDao.updatePreference(sampleOwners[4], Preferences.DURATIONS, MeetingDurations.THIRTY_SIXTY.getKey());
-	}
-	
-	/**
-	 * Destroy the database.
-	 * 
-	 * @throws Exception
-	 */
-	@After
-	public void destroyDatabase() throws Exception {
-		Resource destroyDdl = (Resource) this.applicationContext.getBean("destroyDdl");
-		
-		String sql = IOUtils.toString(destroyDdl.getInputStream());
-		JdbcTemplate template = new JdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
-		template.execute(sql);
 	}
 	
 }

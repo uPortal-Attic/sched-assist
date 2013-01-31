@@ -23,9 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
-import org.apache.commons.io.IOUtils;
 import org.jasig.schedassist.ICalendarAccountDao;
 import org.jasig.schedassist.model.ICalendarAccount;
 import org.jasig.schedassist.model.IScheduleOwner;
@@ -33,27 +30,16 @@ import org.jasig.schedassist.model.Preferences;
 import org.jasig.schedassist.model.PublicProfile;
 import org.jasig.schedassist.model.PublicProfileId;
 import org.jasig.schedassist.model.PublicProfileTag;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Tests for {@link SpringJDBCPublicProfileDaoImpl}.
  *  
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: SpringJDBCPublicProfileDaoImplTest.java 2243 2010-06-25 21:08:38Z npblair $
+ * @author Nicholas Blair
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:database-test.xml"})
-public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringContextTests {
+public class SpringJDBCPublicProfileDaoImplTest extends NeedsTestDatabase {
 
 	private SpringJDBCOwnerDaoImpl ownerDao;
 	private SpringJDBCPublicProfileDaoImpl publicProfileDao;
@@ -81,6 +67,16 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 		this.ownerDao = ownerDao;
 	}
 	
+	@Override
+	public void afterCreate() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void afterDestroy() throws Exception {
+		// always clear the CalendarUserDao in case a mock was temporarily set
+		ownerDao.setCalendarAccountDao(null);
+	}
 	/**
 	 * 
 	 * @throws Exception
@@ -417,32 +413,4 @@ public class SpringJDBCPublicProfileDaoImplTest extends AbstractJUnit4SpringCont
 		Assert.assertTrue(profileIds.contains(profile3.getPublicProfileId()));
 	}
 	
-	/**
-	 * 
-	 * @throws Exception
-	 */
-	@Before
-	public void createDatabase() throws Exception {
-		Resource createDdl = (Resource) this.applicationContext.getBean("createDdl");
-		
-		String sql = IOUtils.toString(createDdl.getInputStream());
-		JdbcTemplate template = new JdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
-		template.execute(sql);
-	}
-	
-	/**
-	 * 
-	 * @throws Exception
-	 */
-	@After
-	public void destroyDatabase() throws Exception {
-		Resource destroyDdl = (Resource) this.applicationContext.getBean("destroyDdl");
-		
-		String sql = IOUtils.toString(destroyDdl.getInputStream());
-		JdbcTemplate template = new JdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
-		template.execute(sql);
-		
-		// always clear the CalendarUserDao in case a mock was temporarily set
-		ownerDao.setCalendarAccountDao(null);
-	}
 }

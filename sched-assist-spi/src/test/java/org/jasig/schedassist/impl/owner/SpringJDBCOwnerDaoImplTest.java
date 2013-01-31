@@ -32,25 +32,20 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.test.jdbc.SimpleJdbcTestUtils;
 
 /**
  * Test harness for {@link SpringJDBCOwnerDaoImpl}.
  * 
- * Depends on test configuration in database-test.xml (on classpath, src/test/resources).
+ * Depends on {@link NeedsTestDatabase}.
  *  
- * @author Nicholas Blair, nblair@doit.wisc.edu
- * @version $Id: SpringJDBCOwnerDaoImplTest.java 3100 2011-02-28 18:41:40Z npblair $
+ * @author Nicholas Blair
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:database-test.xml"})
-public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests {
+public class SpringJDBCOwnerDaoImplTest extends NeedsTestDatabase {
 
 	private SpringJDBCOwnerDaoImpl ownerDao;
 	private MockCalendarAccountDao calendarAccountDao;
@@ -69,7 +64,14 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 		this.calendarAccountDao = calendarAccountDao;
 	}
 
-
+	@Override
+	public void afterCreate() {
+	}
+	@Override
+	public void afterDestroy() {
+		// always clear the CalendarUserDao in case a mock was temporarily set
+		ownerDao.setCalendarAccountDao(null);
+	}
 	/**
 	 * 
 	 * @throws Exception
@@ -290,9 +292,8 @@ public class SpringJDBCOwnerDaoImplTest extends AbstractJUnit4SpringContextTests
 	public void createDatabase() throws Exception {
 		Resource createDdl = (Resource) this.applicationContext.getBean("createDdl");
 		
-		String sql = IOUtils.toString(createDdl.getInputStream());
-		JdbcTemplate template = new JdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
-		template.execute(sql);
+		SimpleJdbcTemplate template = new SimpleJdbcTemplate((DataSource) this.applicationContext.getBean("dataSource"));
+		SimpleJdbcTestUtils.executeSqlScript(template, createDdl, false);
 	}
 	
 	/**
