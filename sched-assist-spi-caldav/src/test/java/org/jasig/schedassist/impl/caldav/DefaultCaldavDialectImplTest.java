@@ -64,7 +64,7 @@ public class DefaultCaldavDialectImplTest {
 		dialect.setCaldavHost(new URI("http://localhost:8080"));
 		
 		MockCalendarAccount calendarAccount = new MockCalendarAccount();
-		calendarAccount.setUsername("somebody");
+		calendarAccount.setAttributeValue(dialect.getUserPathSegmentAttributeName(), "somebody");
 		Assert.assertEquals("http://localhost:8080/ucaldav/user/somebody/calendar/", dialect.getCalendarAccountHome(calendarAccount));
 	}
 	
