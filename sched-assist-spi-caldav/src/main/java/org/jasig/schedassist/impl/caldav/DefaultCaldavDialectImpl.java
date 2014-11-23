@@ -65,7 +65,7 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 	private String accountHomePrefix = "/ucaldav/user/";
 	private String accountHomeSuffix = "/calendar/";
 	private IEventUtils eventUtils;
-	
+	private String userPathSegmentAttributeName = "uid";
 	private Log log = LogFactory.getLog(this.getClass());
 	
 	/**
@@ -92,8 +92,19 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 	public void setAccountHomeSuffix(String accountHomeSuffix) {
 		this.accountHomeSuffix = accountHomeSuffix;
 	}
-	
-	
+	/**
+	 * 
+	 * @return the userPathSegmentAttributeName
+	 */
+	public String getUserPathSegmentAttributeName() {
+		return userPathSegmentAttributeName;
+	}
+	/**
+	 * @param userPathSegmentAttributeName
+	 */
+	public void setUserPathSegmentAttributeName(String userPathSegmentAttributeName) {
+		this.userPathSegmentAttributeName = userPathSegmentAttributeName;
+	}
 	/* (non-Javadoc)
 	 * @see org.jasig.schedassist.impl.caldav.CaldavDialect#getCaldavHost()
 	 */
@@ -191,13 +202,13 @@ public class DefaultCaldavDialectImpl implements CaldavDialect{
 	@Override
 	public String getCalendarAccountHome(ICalendarAccount calendarAccount) {
 		Validate.notNull(calendarAccount, "calendarAccount argument must not be null");
-		final String accountUsername = calendarAccount.getUsername();
-		Validate.notNull(accountUsername, "username in calendarAccount argument must not be null");
+		final String userPathSegmentAttribute = calendarAccount.getAttributeValue(userPathSegmentAttributeName);
+		Validate.notNull(userPathSegmentAttribute, "userPathSegment attribute (" + userPathSegmentAttributeName + ") in calendarAccount argument must not be null");
 		
 		StringBuilder uri = new StringBuilder();
 		uri.append(getCaldavHost().toString());
 		uri.append(getAccountHomePrefix());
-		uri.append(accountUsername);
+		uri.append(userPathSegmentAttribute);
 		uri.append(getAccountHomeSuffix());
 		return uri.toString();
 	}

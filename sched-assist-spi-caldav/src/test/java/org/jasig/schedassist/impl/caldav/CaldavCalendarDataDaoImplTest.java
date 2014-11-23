@@ -362,7 +362,7 @@ public class CaldavCalendarDataDaoImplTest {
 
 		CaldavCalendarDataDaoImpl calendarDataDao = new CaldavCalendarDataDaoImpl();
 		ICalendarAccount calendarAccount = mock(ICalendarAccount.class);
-		when(calendarAccount.getUsername()).thenReturn("username");
+		when(calendarAccount.getAttributeValue("uid")).thenReturn("username");
 		when(calendarAccount.getEmailAddress()).thenReturn("username@server.edu");
 		DefaultCaldavDialectImpl dialect = new DefaultCaldavDialectImpl();
 		dialect.setCaldavHost(URI.create("http://localhost:8080/"));

@@ -63,7 +63,14 @@
 	<bean id="calendarAccountDao" class="org.jasig.schedassist.impl.ldap.LDAPCalendarAccountDaoImpl">
 		<property name="ldapTemplate" ref="ldapTemplate"/>
 		<property name="baseDn" ref="userAccountBaseDn"/>
-		<property name="ldapAttributesKey" ref="ldapAttributesKey"/>
+		<property name="ldapAttributesKey">
+			<bean class="org.jasig.schedassist.impl.ldap.LDAPAttributesKeyImpl">
+				<property name="usernameAttributeName" value="mail"/>
+				<property name="uniqueIdentifierAttributeName" value="mail"/>
+				<property name="emailAddressAttributeName" value="mail"/>
+				<property name="displayNameAttributeName" value="cn"/>
+			</bean>
+		</property>
 		<property name="searchResultsLimit" value="${ldap.searchResultsLimit}"/>
 		<property name="searchTimeLimit" value="${ldap.searchTimeLimitMillis}"/>
 		<property name="enforceSpecificObjectClass" value="${ldap.accounts.enforceSpecificObjectClass}"/>
